@@ -338,6 +338,86 @@ h2.sec{font:900 clamp(28px,4vw,44px)/1.15 var(--serif-cn);margin:8px 0 0;text-wr
 body.talking #mapCard,body.talking #kpiCard,body.talking #prompt{display:none}
 body.talking #quests{opacity:.35}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* ---- v5: time blocks, planner, trust, epilogue, career ---- */
+#scrPlan{background:linear-gradient(90deg,rgba(3,14,24,.95) 0%,rgba(3,14,24,.88) 55%,rgba(3,14,24,.74) 100%)}
+.blockStrip{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;margin-top:4px}
+.blockStrip div{position:relative;font-size:10px;color:var(--muted);padding:2px 0 3px;border-top:2px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;gap:3px;min-height:18px}
+.blockStrip div.past{border-top-color:rgba(140,205,255,.4)}
+.blockStrip div.now{border-top-color:var(--gold);color:var(--gold);font-weight:700}
+.blockStrip div.ot span{color:#d58a9a}
+.blockStrip i{font-style:normal;display:inline-grid;place-items:center;width:15px;height:15px;font-size:9px;color:#051C2C;font-weight:800;border-radius:2px}
+.blockStrip i.z{background:rgba(255,255,255,.14);color:var(--muted)}
+.planSub{font-size:13.5px;line-height:1.7;color:#cfe2ee;max-width:640px;margin:8px 0 0}
+.planGrid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:26px;margin-top:18px}
+.planBlocks{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin-top:8px}
+.pb{border-top:2px solid var(--line2);padding:8px 6px 10px;background:rgba(255,255,255,.025);min-height:120px}
+.pb.busy{border-top-color:var(--cyan)}
+.pb.ot{border-top-color:rgba(255,90,110,.5);opacity:.8}
+.pbH b{display:block;font:700 14px var(--serif-cn,var(--display));color:var(--text)}
+.pbH span{font:11px var(--mono);color:var(--muted)}
+.pbE{margin-top:7px;font-size:11.5px;line-height:1.4;color:var(--ice);border-left:2px solid var(--cyan);padding-left:6px}
+.pbE.u{border-left-color:var(--danger)}
+.pbE em{font-style:normal;font-size:10px;color:var(--danger)}
+.pbFree{margin-top:8px;font-size:11px;color:var(--muted)}
+.planNotes{display:grid;gap:8px;margin-top:8px}
+.planNotes>div{font-size:12.5px;line-height:1.6;color:#cfe2ee;padding:8px 0;border-top:1px solid rgba(255,255,255,.1)}
+.planNotes>div b{display:block;color:var(--text);font-size:13px}
+.planNotes>div em{font-style:normal;color:var(--gold);font-weight:700}
+.planNotes>div.bad b{color:var(--danger)}
+.planTrust{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:8px}
+.planTrust div{text-align:center;font-size:12px;color:var(--text)}
+.planTrust img{width:52px;height:52px;object-fit:cover;border-radius:50%;background:rgba(255,255,255,.06);display:block;margin:0 auto 4px}
+.planTrust i{display:block;height:4px;margin:5px 6px 3px;background:linear-gradient(90deg,var(--c) var(--v),rgba(255,255,255,.1) var(--v))}
+.planTrust small{color:var(--muted);font-size:10.5px}
+.planTrust .lost{opacity:.4}
+.planIntents{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.intent{all:unset;cursor:pointer;display:grid;grid-template-columns:34px 1fr;grid-template-rows:auto auto;column-gap:10px;padding:12px;border:1px solid var(--line2);background:rgba(255,255,255,.03);transition:border-color .2s,background .2s}
+.intent:hover,.intent:focus-visible{border-color:var(--gold);background:rgba(255,200,87,.08)}
+.intent .ic{grid-row:1/3;display:grid;place-items:center;width:34px;height:34px;background:var(--blue);color:#fff;font-weight:800}
+.intent b{font:700 15px var(--serif-cn,var(--display));color:var(--text)}
+.intent small{font-size:11.5px;color:var(--muted);margin-top:2px}
+.tbRow{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px;margin-top:8px}
+.tbB b{display:block;font-size:11.5px;color:var(--text)}
+.tbB small{font-size:10.5px;color:var(--muted)}
+.tbB.ot b{color:#d58a9a}
+.tbBar{display:flex;height:10px;margin:4px 0 3px;background:rgba(255,255,255,.05);overflow:hidden}
+.tbBar i{display:block;height:100%}
+.trustList{display:grid;gap:6px;margin-top:8px}
+.tr{display:grid;grid-template-columns:34px 92px 1fr 46px;align-items:center;gap:8px;font-size:12.5px;color:var(--text)}
+.tr img{width:34px;height:34px;border-radius:50%;object-fit:cover;background:rgba(255,255,255,.06)}
+.tr small{display:block;font-size:10.5px;color:var(--muted)}
+.tr>div{height:6px;background:rgba(255,255,255,.08)}
+.tr>div i{display:block;height:100%}
+.tr b{text-align:right;font:12px var(--mono)}
+.tr.lost{opacity:.45}
+.outcomes{display:grid;gap:2px;margin-top:8px}
+.oc{display:grid;grid-template-columns:22px 1fr 30px;gap:10px;align-items:start;padding:8px 0;border-top:1px solid rgba(255,255,255,.1)}
+.oc .m{font-weight:800;color:var(--ok)}
+.oc.bad .m{color:var(--danger)} .oc.mid .m{color:var(--warn)}
+.oc b{font-size:13.5px;color:var(--text)}
+.oc small{display:block;font-size:12px;color:var(--muted);line-height:1.55;margin-top:2px}
+.oc em{font-style:normal;font:700 13px var(--mono);color:var(--gold);text-align:right}
+.career{margin-top:8px}
+.crTop b{font:900 22px var(--display);color:var(--text);margin-right:10px}
+.crTop span{font-size:12px;color:var(--muted)}
+.crBar{height:8px;background:rgba(255,255,255,.08);margin:8px 0 6px}
+.crBar i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--cyan));box-shadow:0 0 10px var(--cyan)}
+.crSub{font-size:12px;color:#cfe2ee}
+.crHist{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.crHist span{font:11px var(--mono);color:var(--muted);border:1px solid var(--line);padding:3px 7px}
+.crHist b{color:var(--gold)}
+.catBars{display:grid;gap:5px;margin-top:8px}
+.cb{display:grid;grid-template-columns:78px 1fr 56px;align-items:center;gap:8px;font-size:12px;color:var(--ice)}
+.cb>div{height:8px;background:rgba(255,255,255,.06)}
+.cb>div i{display:block;height:100%}
+.cb b{font:11px var(--mono);color:var(--muted);text-align:right}
+.bub.mem .tx{font-style:italic;color:#d9c6ff}
+@media (max-width:900px){
+  .planGrid{grid-template-columns:1fr}
+  .planBlocks,.tbRow{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .planIntents{grid-template-columns:1fr}
+  .planTrust img{width:40px;height:40px}
+}
 </style>
 <div id="stage"></div>
 
@@ -370,6 +450,7 @@ body.talking #quests{opacity:.35}
     <div class="vits">
       <div class="vit" style="color:#3DDC97"><svg class="ic"><use href="#i-bolt"/></svg><span style="color:var(--ice)">精力</span><div class="bar"><i id="vE"></i></div><span class="v mono" id="vEn">86%</span></div>
       <div class="vit" style="color:#FFB547"><svg class="ic"><use href="#i-bowl"/></svg><span style="color:var(--ice)">饱腹</span><div class="bar"><i id="vH"></i></div><span class="v" id="vHn">55%</span></div>
+      <div class="vit" style="color:#c58bff" title="身心：慢慢消耗，只有植物园、运动和早点回家能补回来"><svg class="ic"><use href="#i-quest"/></svg><span style="color:var(--ice)">身心</span><div class="bar"><i id="vW"></i></div><span class="v mono" id="vWn">72</span></div>
       <div class="vit" style="color:#5cc8ff"><svg class="ic"><use href="#i-drop"/></svg><span style="color:var(--ice)">尿意</span><div class="bar"><i id="vB"></i></div><span class="v mono" id="vBn">18%</span></div>
     </div>
   </div>
@@ -387,6 +468,7 @@ body.talking #quests{opacity:.35}
   <div id="clockPill" class="hud panel">
     <div class="clkRow"><span id="clockEyebrow">DAY 1 · 上班中</span><span id="clock">08:00</span><span id="clockSub">基金截止 <b id="toDeadline">15:59</b></span></div>
     <div class="dayLine" id="dayLine"><i id="dayFill"></i></div>
+    <div class="blockStrip" id="blockStrip"></div>
   </div>
   <div id="rightCol" class="hud">
     <div id="ctrlRow">
@@ -541,7 +623,8 @@ body.talking #quests{opacity:.35}
           <li>任务会一直进来，有的是小事，有的真的危险。</li>
           <li>让人等太久，事情会自己变糟。</li>
           <li>对话时时钟暂停，但每个决定都要花分钟。</li>
-          <li>在办公桌写基金和论文：基金周五 23:59、论文周日 23:59 前提交。</li><li>每天结束会自动存档，可以分几次玩完一周。</li>
+          <li>在办公桌写基金和论文：一次写满一个时段，中途被打断会掉专注。基金周五 23:59、论文周日 23:59 前提交。</li>
+          <li><b>身心</b>只有植物园、运动和早点回家能补回来。学生的<b>信任</b>掉到 30 以下，他们会考虑离开。</li><li>每天结束会自动存档，可以分几次玩完一周。</li>
         </ul>
       </div>
     </div>
@@ -556,6 +639,7 @@ body.talking #quests{opacity:.35}
     </div>
     <div class="startRow">
       <button class="btn ghost" id="handBack" type="button">← 返回</button>
+      <span id="handCareer" class="note" style="color:var(--warn);max-width:420px"></span>
       <button class="btn gold" id="startBtn" type="button">我准备好了 · 开始上班 ▶</button>
     </div>
   </div>
@@ -571,14 +655,21 @@ body.talking #quests{opacity:.35}
         <div class="row" style="gap:22px;align-items:flex-end"><div class="grade" id="endGrade">A</div><img id="endImg" alt="" style="width:120px;height:150px;object-fit:cover"></div>
         <div class="gradeTitle" id="endTitle">稳健的长聘教授</div>
         <p id="endSummary" style="font-size:13.5px;line-height:1.75;color:#cfe2ee;max-width:560px"></p>
-        <table class="endKpis" id="endKpis"></table>
+        <div class="eyebrow" style="margin-top:14px">Epilogue · 这一周变成了什么</div>
+        <div class="outcomes" id="endOutcomes"></div>
+        <div class="eyebrow" style="margin-top:18px">Career · 晋升之路</div>
+        <div class="career" id="endCareer"></div>
         <div class="row" style="margin-top:18px">
-          <button class="btn gold" id="againBtn" type="button">再上一天班</button>
+          <button class="btn gold" id="againBtn" type="button">开始下一周 ▶</button>
           <button class="btn ghost" id="homeBtn" type="button">回到首页</button>
         </div>
       </div>
       <div>
-        <div class="eyebrow">Achievements · 成就</div>
+        <div class="eyebrow">Time · 这一周的时间都去哪了</div>
+        <div class="catBars" id="endTime"></div>
+        <table class="endKpis" id="endMetrics"></table>
+        <table class="endKpis" id="endKpis"></table>
+        <div class="eyebrow" style="margin-top:20px">Achievements · 成就</div>
         <div class="achGrid" id="endAch"></div>
         <div class="eyebrow" style="margin-top:20px">Log · 今天的记录</div>
         <div class="logList" id="endLog"></div>
@@ -594,6 +685,29 @@ body.talking #quests{opacity:.35}
   </div>
 </section>
 
+<!-- morning planner (v5) -->
+<section id="scrPlan" class="screen hidden">
+  <div class="wrap">
+    <div class="eyebrow" id="planEyebrow">第 1 周 · 第 1 天 · 07:45</div>
+    <h2 class="sec" id="planHead">今天的计划</h2>
+    <p id="planSub" class="planSub"></p>
+    <div class="planGrid">
+      <div>
+        <div class="eyebrow">Blocks · 今天的五个时段</div>
+        <div class="planBlocks" id="planBlocks"></div>
+        <div class="eyebrow" style="margin-top:18px">Threads · 这周要扛住的事</div>
+        <div class="planNotes" id="planNotes"></div>
+      </div>
+      <div>
+        <div class="eyebrow">Team · 学生们的信任</div>
+        <div class="planTrust" id="planTrust"></div>
+        <div class="eyebrow" style="margin-top:18px">Intention · 今天的打算（选一个开始，键盘 1–4）</div>
+        <div class="planIntents" id="planIntents"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- day summary -->
 <section id="scrDay" class="screen hidden">
   <div class="wrap">
@@ -602,6 +716,8 @@ body.talking #quests{opacity:.35}
     <div class="endGrid">
       <div>
         <p id="daySummary" style="font-size:13.5px;line-height:1.75;color:#cfe2ee;max-width:560px"></p>
+        <div class="eyebrow" style="margin-top:16px">Time · 今天的时间都去哪了</div>
+        <div id="dayTime"></div>
         <table class="endKpis" id="dayKpis"></table>
         <div id="weekStrip" class="weekStrip"></div>
         <div class="row" style="margin-top:18px">
@@ -610,7 +726,9 @@ body.talking #quests{opacity:.35}
         </div>
       </div>
       <div>
-        <div class="eyebrow">Log · 今天的记录</div>
+        <div class="eyebrow">Team · 学生们的信任</div>
+        <div class="trustList" id="dayTrust"></div>
+        <div class="eyebrow" style="margin-top:18px">Log · 今天的记录</div>
         <div class="logList" id="dayLog"></div>
         <div class="eyebrow" style="margin-top:18px">今天收集的科普卡</div>
         <div class="cards" id="dayCards"></div>
@@ -5626,20 +5744,21 @@ const DAYS = [
 function parseFx(s) { const o = {}; (s || '').trim().split(/\s+/).forEach(tok => { const m = tok.match(/^([a-z]+)([+-]\d+)$/); if (m) o[m[1]] = (o[m[1]] || 0) + +m[2]; }); return o; }
 function parseLines(s) { if (!s) return []; return s.split('|').map(x => { const m = x.match(/^([^：|]{1,6})：(.+)$/); return m ? [m[1], m[2]] : ['', x]; }); }
 const WEEK = [];
-function C(day, time, loc, who, tag, title, line, open, choices, o = {}) {
+function C(day, time, loc, who, tag, title, line, open, choices, o = {}) { WEEK.push(mkC(day, time, loc, who, tag, title, line, open, choices, o)); }
+function mkC(day, time, loc, who, tag, title, line, open, choices, o = {}) {
   const [h, m] = time.split(':').map(Number), name = who.split(' · ')[0];
   const phone = loc === 'phone';
   const [efx, elog] = (o.exp || 'rep-2|').split('|');
-  WEEK.push({
+  return ({
     id: o.id || `w${day}_${time.replace(':', '')}`, day, at: hm(h, m), loc: phone ? undefined : loc, phone, win: o.win || (phone ? 30 : o.u ? 40 : 100),
-    urgent: !!o.u, alarm: !!o.alarm, who, tag, title, line, status: o.st || [], card: o.card || null,
+    urgent: !!o.u, alarm: !!o.alarm, req: o.req, reqNot: o.reqNot, who, tag, title, line, status: o.st || [], card: o.card || null,
     npc: SPEAKERS[name] || null, mood: o.mood || (o.u ? 'shock' : 'normal'),
     expire: { fx: parseFx(efx), log: elog || `没来得及处理：${title}。` },
     pro: o.pro !== false && !/邮件|系统|通知|公告|短信/.test(who),
     persona: `${who}。说话自然、口语化，符合在大学物理系里的身份。`,
     scene: `${tag}：${title}。${(open || '').replace(/\|/g, ' ')}`,
     rubric: o.rubric || '好的教授会诚实、负责、讲安全、尊重学生，也会合理安排自己的时间，不轻易做出违反学术规范或安全规范的决定。',
-    start: 'a', nodes: { a: { say: parseLines(open), choices: choices.map(([t, fx, min, fb, d, after]) => ({ t, d, fx: parseFx(fx), min: min || 0, fb: parseLines(fb), after: after ? { type: after.split(':')[0], min: +after.split(':')[1] } : undefined, ach: o.ach && fx.includes('+') && o.achOn === t ? o.ach : undefined })) } },
+    start: 'a', nodes: { a: { say: parseLines(open), choices: choices.map(([t, fx, min, fb, d, after]) => ({ t, d, fx: parseFx(fx), flags: (fx.match(/@\w+/g) || []).map(f => f.slice(1)), min: min || 0, fb: parseLines(fb), after: after ? { type: after.split(':')[0], min: +after.split(':')[1] } : undefined, ach: o.ach && fx.includes('+') && o.achOn === t ? o.ach : undefined })) } },
   });
 }
 
@@ -5787,7 +5906,7 @@ C(1, '21:30', 'optics', '小林 · 硕士一年级', '实验室安全', '小林�
   ['提醒他注意安全就走了', 'safety-6', 1, '实验室里还是只有他一个人。'],
 ], { u: true, win: 40, exp: 'safety-6|小林独自做完了高压实验。' });
 C(1, '22:40', 'desk', '论文 · 审稿意见', '论文', '审稿人 2 质疑系统误差', '论文：审稿人 2 的问题', '审稿人 2：“作者没有考虑探测器效率随温度变化带来的系统误差。”', [
-  ['调出温度日志，补做效率-温度相关性分析', 'paper+8 research+3 energy-4', 45, '相关性很弱，但这一段让论文更扎实了。'],
+  ['调出温度日志，补做效率-温度相关性分析', 'paper+8 research+3 energy-4 @r2_data', 45, '相关性很弱，但这一段让论文更扎实了。'],
   ['在回复里说明“影响可以忽略”', 'paper+2', 10, '没有数据支撑的“可以忽略”，审稿人通常不会接受。'],
 ], { win: 120 });
 
@@ -6008,7 +6127,7 @@ C(5, '16:00', 'rack', '机房 · 报警', '计算', '机房空调故障，温度
   ['先不管，看看会不会自己降下来', 'research-6', 2, '两台节点因过热自动关机，作业全挂。'],
 ], { u: true, alarm: true, win: 40, exp: 'research-8|机房过热，三台节点宕机。' });
 C(5, '17:30', 'desk', '论文 · 修改', '论文', '修改稿：重画图 3', '论文：审稿人要求重画图 3', '审稿人 1：“图 3 的颜色难以区分，且没有标明统计误差。”', [
-  ['重画：色盲友好配色，加误差棒和图例', 'paper+7 research+2', 35, '新的图 3 一眼就能看懂。'],
+  ['重画：色盲友好配色，加误差棒和图例', 'paper+7 research+2 @fig_ok', 35, '新的图 3 一眼就能看懂。'],
   ['只改颜色', 'paper+3', 10, '误差棒还是没有。'],
 ]);
 C(5, '19:00', 'phone', '老同学', '电话', '老同学聚会：你来不来？', '老同学来电', '老同学：今晚大学同学聚会，就在学校附近，来坐一会儿？', [
@@ -6030,11 +6149,11 @@ C(6, '09:00', 'phone', '家里', '电话', '家里：周日早餐', '家里来�
   ['先改论文', 'energy-2', 1, '煎蛋凉了。'],
 ], { pro: false });
 C(6, '10:00', 'desk', '论文 · 修改', '论文', '逐条回复审稿意见', '论文：Response letter', '审稿意见一共 23 条，回复信里每一条都要写清楚“改了什么、在哪里”。', [
-  ['逐条回复，礼貌、具体，标注页码和行号', 'paper+10 integrity+2 energy-4', 60, '回复信写了 9 页，编辑会喜欢的。'],
+  ['逐条回复，礼貌、具体，标注页码和行号', 'paper+10 integrity+2 energy-4 @resp_full', 60, '回复信写了 9 页，编辑会喜欢的。'],
   ['合并成几大段回复', 'paper+4', 25, '审稿人得自己去找哪里改了。'],
 ]);
 C(6, '11:30', 'bay', '小陈 · 博士二年级', '论文', '小陈：补跑的系统误差检查', '小陈：系统误差检查跑完了', '小陈：老师，温度修正之后，结果变了 0.3σ，还在误差范围内。', [
-  ['把这个检查写进补充材料，诚实报告', 'paper+6 integrity+4', 20, '补充材料多了一张表，结论更可信了。'],
+  ['把这个检查写进补充材料，诚实报告', 'paper+6 integrity+4 @sys_ok', 20, '补充材料多了一张表，结论更可信了。'],
   ['变化不大，就不写了', 'integrity-4', 3, '审稿人在第二轮很可能会再问。'],
 ], { card: 'sigma' });
 C(6, '13:00', 'phone', '合作者', '学术规范', '合作者：作者列表能不能加一个人？', '合作者来电', '合作者：我们院长想挂个名，你看能不能把他加到作者列表？他没参与，但对我们很支持。', [
@@ -6104,7 +6223,7 @@ C(2, '15:50', 'meeting', '复试考生 C', '研究生招生', '复试：紧张�
   ['按流程继续提问', 'rep+0', 15, '他全程都没能缓过来。'],
 ]);
 C(2, '20:30', 'desk', '论文 · 修改', '论文', '论文：审稿人 3 要求补引文献', '论文：审稿人 3 的意见', '审稿人 3：“作者忽略了近三年的几篇相关工作，其中两篇是我的。”', [
-  ['认真看这几篇，确实相关的就引用并讨论', 'paper+5 integrity+3', 30, '其中一篇确实相关，另一篇关系不大，你在回复里礼貌说明了。'],
+  ['认真看这几篇，确实相关的就引用并讨论', 'paper+5 integrity+3 @refs_ok', 30, '其中一篇确实相关，另一篇关系不大，你在回复里礼貌说明了。'],
   ['全部照引', 'paper+2 integrity-2', 5, '参考文献里多了一篇和本文无关的论文。'],
 ]);
 C(3, '08:50', 'phone', '研究生院', '电话', '研究生院：学位论文查重', '研究生院来电', '研究生院：老师，您的硕士毕业生论文查重 21%，超过 15% 的要求，需要导师意见。', [
@@ -6140,7 +6259,7 @@ C(5, '08:30', 'phone', '家里', '电话', '家里：今天也要去学校？', 
   ['今天要很晚', 'energy-2', 1, ''],
 ], { pro: false });
 C(5, '18:00', 'desk', '论文 · 修改', '论文', '论文：讨论部分要重写', '论文：讨论部分', '审稿人 1：“讨论部分只是重复了结果，没有说明对领域的意义。”', [
-  ['重写讨论：和其他实验比、局限性、下一步', 'paper+8 research+2 energy-3', 40, '讨论部分终于有了自己的观点。'],
+  ['重写讨论：和其他实验比、局限性、下一步', 'paper+8 research+2 energy-3 @disc_ok', 40, '讨论部分终于有了自己的观点。'],
   ['加两句话', 'paper+2', 5, ''],
 ]);
 C(5, '22:30', 'phone', '赵博士 · 消息', '团队', '赵博士：周一组会议程', '赵博士发来消息', '赵博士：老师，周一组会我排了议程，小雨讲伪影，小敏讲模拟，您看看？', [
@@ -6231,8 +6350,14 @@ const QUICK = [
 
 function buildDay(d, dayType) {
   const crunch = dayType === 'crunch';
-  const det = buildEvents(dayType).filter(e => e.day === d);
-  const wk = WEEK.filter(e => e.day === d).map(e => Object.assign({}, e, { state: 'pending', win: crunch ? Math.round(e.win * 0.85) : e.win }));
+  // v5: flag-gated events, lost students, career difficulty and café rumours
+  const st = (typeof S !== 'undefined' && S) || { flags: {}, lost: [], week: 1, intel: {} };
+  const flags = st.flags || {}, lost = st.lost || [];
+  const okReq = (e) => (!e.req || flags[e.req]) && (!e.reqNot || !flags[e.reqNot]) && !(e.npc && lost.includes(e.npc));
+  const wkMul = Math.max(0.8, 1 - 0.04 * ((st.week || 1) - 1)), intel = !!(st.intel && st.intel[d]);
+  const det = buildEvents(dayType).filter(e => e.day === d && okReq(e));
+  const wk = WEEK.filter(e => e.day === d && okReq(e)).map(e => Object.assign({}, e, { state: 'pending', win: crunch ? Math.round(e.win * 0.85) : e.win }));
+  const crisis = typeof crisisEvents === 'function' ? crisisEvents(d) : [];
   const n = d >= 5 ? 2 : (crunch ? 5 : 4);
   const used = new Set(), quick = [];
   let r = d * 97 + 13; const rnd = () => (r = (r * 16807) % 2147483647) / 2147483647;
@@ -6244,7 +6369,15 @@ function buildDay(d, dayType) {
       expire: { fx: { rep: -1 }, log: '' }, pro: false, start: 'a',
       nodes: { a: { say: parseLines(open), choices: ch.map(([tt, fx, min, fb]) => ({ t: tt, fx: parseFx(fx), min, fb: parseLines(fb) })) } } });
   }
-  return det.concat(wk, quick).sort((a, b) => a.at - b.at);
+  const all = det.concat(wk, quick, crisis);
+  // Shuffle the order of one-step choices so the best answer is not always the first button.
+  wk.concat(crisis).forEach(e => { let q = (e.id.split('').reduce((h, c) => h * 31 + c.charCodeAt(0) | 0, 7) ^ ((st.week || 1) * 977)) >>> 0; const r = () => (q = (q * 1103515245 + 12345) >>> 0) / 4294967296; const ch = e.nodes.a.choices.slice(); for (let i = ch.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [ch[i], ch[j]] = [ch[j], ch[i]]; } e.nodes = Object.assign({}, e.nodes, { a: Object.assign({}, e.nodes.a, { choices: ch }) }); });
+  all.forEach(e => {
+    if (e.win) e.win = Math.round(e.win * wkMul * (intel && (e.urgent || e.alarm) ? 1.5 : 1));
+    if (e.until !== undefined) e.until = e.at + Math.max(20, Math.round((e.until - e.at) * wkMul));
+    e.known = !e.phone && !e.urgent && !e.alarm && /组会|上课|教学|课|会议|院务|复试|答辩|讲座|开放日|采访|评审会/.test((e.tag || '') + (e.title || ''));
+  });
+  return all.sort((a, b) => a.at - b.at);
 }
 
 Object.assign(CARDS, {
@@ -6374,6 +6507,117 @@ function refreshProCard() {
   $('proNote').textContent = ok ? `进入 Pro 版 ▸（${AI.cfg.provider === 'claude-app' ? 'Claude 应用' : AI.cfg.model}）` : '先在「AI 设置」里填写 API Key ▸';
 }
 /* =========================================================
+   v5 DATA — time blocks, intentions, ranks, NPC memory lines,
+   student-crisis and flag-gated events. Pure data + builders;
+   the rules that use them live in 5_game.js.
+   ========================================================= */
+
+/* The working day in five blocks plus overtime (minutes since midnight). */
+const BLOCKS = [
+  { id: 'b0', name: '早晨', from: hm(8), to: hm(10) },
+  { id: 'b1', name: '上午', from: hm(10), to: hm(12) },
+  { id: 'b2', name: '午间', from: hm(12), to: hm(14) },
+  { id: 'b3', name: '下午', from: hm(14), to: hm(17) },
+  { id: 'b4', name: '傍晚', from: hm(17), to: hm(21) },
+  { id: 'b5', name: '加班', from: hm(21), to: hm(24), overtime: true },
+];
+/* Where minutes go. Order = display order. */
+const CATS = {
+  grant: { n: '基金', c: '#2251FF', i: '书' },
+  paper: { n: '论文', c: '#FFC857', i: '文' },
+  research: { n: '读文献', c: '#7FD1FF', i: '读' },
+  events: { n: '杂事与人', c: '#FF8A5B', i: '人' },
+  teach: { n: '教学', c: '#B78CFF', i: '课' },
+  meet: { n: '开会', c: '#8FA8BA', i: '会' },
+  self: { n: '照顾自己', c: '#3DDC97', i: '息' },
+  sport: { n: '运动', c: '#00E0B0', i: '球' },
+  travel: { n: '走路与电梯', c: '#4A6A80', i: '行' },
+  idle: { n: '发呆', c: '#2A3D4D', i: '·' },
+};
+/* Daily intention chosen in the morning planner. */
+const INTENTS = [
+  { id: 'grant', n: '基金冲刺', d: '写基金书的速度 +20%', ic: '书' },
+  { id: 'paper', n: '论文日', d: '改论文的速度 +20%', ic: '文' },
+  { id: 'students', n: '学生优先', d: '学生信任的提升 ×1.5', ic: '人' },
+  { id: 'self', n: '照顾自己', d: '身心消耗 −40%，开工精力 +8', ic: '息' },
+];
+/* Career track. pts = cumulative career points needed. */
+const RANKS = [
+  { n: '助理教授', en: 'Assistant Professor', pts: 0 },
+  { n: '副教授（长聘）', en: 'Associate Professor, tenured', pts: 8 },
+  { n: '教授', en: 'Full Professor', pts: 18 },
+  { n: '讲席教授 · PI', en: 'Chair Professor & PI', pts: 30 },
+];
+/* XP levels now describe composure, not academic rank. */
+LEVELS.splice(0, LEVELS.length, [0, '手忙脚乱'], [120, '渐入佳境'], [300, '游刃有余'], [540, '从容不迫'], [820, '运筹帷幄'], [1150, '举重若轻'], [1500, '一代宗师']);
+
+/* People whose trust is tracked, with the hotspot where they sit. */
+const STUDENTS = {
+  chen: { n: '小陈', role: '博士二年级', loc: 'bay', he: '他' },
+  zhou: { n: '小周', role: '本科四年级', loc: 'bay3', he: '她' },
+  yu: { n: '小雨', role: '硕士二年级', loc: 'bay2', he: '她' },
+  lin: { n: '小林', role: '硕士一年级', loc: 'detector', he: '他' },
+  zhao: { n: '赵博士', role: '博士后', loc: 'rack', he: '他' },
+};
+
+/* Memory openers: {t} = the earlier event, shortened. */
+const MEMLINES = {
+  chen: { good: ['上次「{t}」那件事，后来我照您说的做了，真的有用。', '老师，「{t}」那次谢谢您，我一直记着。'], bad: ['……上次「{t}」，我其实有点难过。', '老师，「{t}」那件事，我想了很久。'], ignored: ['上次「{t}」我等了您很久……算了，今天这个更急。', '「{t}」那次您没来，我自己硬着头皮弄完了。'] },
+  zhou: { good: ['老师！「{t}」那次多亏您了。', '「{t}」之后我心里踏实多了，谢谢老师。'], bad: ['「{t}」那次……没事，我理解您忙。', '上次「{t}」，我回去哭了一会儿，现在好了。'], ignored: ['「{t}」那天我在门口等到很晚。', '上次「{t}」您没回我，我就自己先交了。'] },
+  yu: { good: ['老师，「{t}」那次您说的话，我抄在本子上了。', '「{t}」之后，我睡得好一点了。'], bad: ['「{t}」那次，我是不是太麻烦您了……', '上次「{t}」，我后来没敢再提。'], ignored: ['「{t}」那次……我以为您会来。', '上次「{t}」没等到您，我就自己扛过去了。'] },
+  lin: { good: ['老师，「{t}」那次学到的，我写进实验记录本了！', '「{t}」之后，我做事都先想安全了。'], bad: ['「{t}」那次，我是不是做错了什么……', '上次「{t}」，我心里一直有点虚。'], ignored: ['「{t}」那次我一个人在实验室，有点慌。', '上次「{t}」没找到您，我只好先停下来。'] },
+  zhao: { good: ['老师，「{t}」那件事处理得漂亮，组里都服气。', '「{t}」那次您的决定是对的。'], bad: ['「{t}」那件事，我觉得我们还可以再聊聊。', '上次「{t}」，说实话我有不同意见。'], ignored: ['「{t}」那次我替您顶上了，下次希望您能在。', '上次「{t}」，我一个人有点撑不住。'] },
+  wang: { good: ['老师，「{t}」那次您签得及时，教务处都夸了。'], bad: ['「{t}」那件事，后来还是我去解释的。'], ignored: ['「{t}」那次我等您签字等到下班。'] },
+  dean: { good: ['上次「{t}」，你做得不错。'], bad: ['「{t}」那件事，学院还记着。'], ignored: ['上次「{t}」，我没等到你。'] },
+};
+
+/* Next-morning conversation when a person's trust has fallen below 30. */
+function crisisEvents(d) {
+  if (typeof S === 'undefined' || !S || !S.crisis) return [];
+  return Object.entries(S.crisis).filter(([id, day]) => day === d && !S.lost.includes(id)).map(([id]) => {
+    const p = STUDENTS[id];
+    const e = mkC(d, '09:20', p.loc, `${p.n} · ${p.role}`, '谈心', `${p.n}想和你单独谈谈`, `${p.n}：老师，有空吗……就十分钟`,
+      `${p.n}站在你面前，手里攥着一张纸，像是写了很久。|${p.n}：老师，我最近觉得……在组里有点待不下去了。我在想要不要换导师，或者干脆休学一段时间。`, [
+        ['放下手头所有的事，关上门，认真听' + p.he + '说完', 'team+4 wellbeing-2 trust+32 @kept_' + id, 45, `${p.n}说了很多，你几乎没插话。最后${p.he}说：“谢谢老师，我想再试试。”`, '45 分钟，最好的选择'],
+        ['先安抚，约好周末细谈', 'team+1 trust+12', 10, `${p.n}点点头：“好……”但眼神没有亮起来。`, '信任仍可能不够'],
+        ['读研都辛苦，自己调整一下', 'team-6 @lose', 3, `${p.n}沉默了一会儿：“我明白了。”下午，${p.he}把转导师申请放在了院办。`],
+      ], { win: 300, mood: 'worried', exp: `team-8|${p.n}没等到你，下午交了转导师申请。`, rubric: `学生正在考虑离开课题组。好的导师会放下手头工作、认真倾听、具体回应困难，不会说教或敷衍。` });
+    e.id = 'crisis_' + id; e.state = 'pending'; e.crisisOf = id; e.expire.lose = true; e.urgent = true;
+    return e;
+  });
+}
+
+/* ---------------- flag-gated events ---------------- */
+// Tennis partner from chemistry becomes an ally → letter of support on Friday.
+C(4, '10:30', 'phone', '陈老师 · 化学系 · 网球搭档', '合作', '陈老师：给你的基金写一段合作意向', '陈老师发来消息',
+  '陈老师：上次打球你说起基金的事，我想了想，我们组的表面分析正好能补你那部分材料表征。要不要我写一段合作意向，今天下午发给你？', [
+    ['太好了，顺便把联合目标写进研究方案', 'gq+12 grant+3 rep+2 @letter', 20, '陈老师：好，我把我们的设备清单也附上。基金书的可行性一节一下子硬了。', '花 20 分钟写进方案'],
+    ['谢谢，发过来我直接附上', 'gq+7 rep+1 @letter', 4, '一页 PDF 附在了附件里。'],
+  ], { id: 'g_letter', req: 'ally_coach', win: 240, exp: 'rep-1|陈老师的消息没回，他大概以为你不需要。' });
+// Reviewer 2 follow-up: reward or second chance.
+C(3, '13:30', 'phone', '合作者 · 邮件', '论文', '合作者：温度分析那段写得好', '合作者邮件',
+  '合作者：看了你们补的效率-温度分析，很扎实。我觉得这一段甚至可以放进正文。', [
+    ['同意，移到正文并加一张图', 'paper+4 research+2', 15, '论文的系统误差部分成了全文最扎实的一节。'],
+    ['先放补充材料', 'paper+1', 2, ''],
+  ], { id: 'g_r2good', req: 'r2_data', win: 180 });
+C(3, '13:30', 'desk', '期刊编辑 · 邮件', '论文', '编辑追问：审稿人 2 坚持要温度数据', '编辑：审稿人 2 不接受“可以忽略”',
+  '编辑：Reviewer 2 indicates that a statement of “negligible” without supporting data is not acceptable. Please provide the analysis.|你想起周二晚上那句轻描淡写的回复。', [
+    ['调出温度日志，今天补做分析', 'paper+6 research+2 energy-5 @r2_data', 50, '比周二多花了一点时间，但结论站住了。'],
+    ['在回复里坚持原来的说法', 'paper-3 integrity-2', 5, '编辑把这条标成了“未解决”。'],
+  ], { id: 'g_r2again', reqNot: 'r2_data', win: 300, exp: 'paper-3|编辑的追问没有回复。' });
+// A recruited undergraduate writes in.
+C(6, '11:00', 'phone', '小吴 · 大二本科生 · 邮件', '招生', '小吴：周三踢球时说的事', '小吴发来邮件',
+  '小吴：老师好，我是那天踢球的小吴。您说可以来组里看看，我想认真申请本科生科研项目，这是我的成绩单和一段 Python 代码。', [
+    ['回信：下周组会来旁听，先跟小林学探测器', 'team+4 teaching+2 @recruit_ok', 6, '小吴秒回：“收到！我一定准时。”'],
+    ['回信：先把基础课学好，大三再来', 'team-1', 2, '小吴：好的老师。'],
+  ], { id: 'g_recruit', req: 'recruit', win: 600 });
+// Students-first week: the group notices.
+C(4, '18:30', 'bay', '小陈 · 博士二年级', '团队', '小陈：组里给你准备了点东西', '小陈：老师，您先别走',
+  '小陈和组里几个人从工位后面拿出一个小蛋糕，上面用巧克力写着“τ = 2.197 μs”。|小陈：这周您陪我们的时间比基金还多……我们知道的。', [
+    ['和大家分着吃，聊聊这学期', 'team+5 wellbeing+6', 20, '那是这周最好的二十分钟。'],
+    ['谢谢，带回办公室吃', 'team+1 wellbeing+2', 3, ''],
+  ], { id: 'g_cake', req: 'students_week', win: 90 });
+/* =========================================================
    GAME — state, clock, activities, dialogue, mini games,
    RPG layer (XP · levels · achievements), HUD, camera
    ========================================================= */
@@ -6383,20 +6627,27 @@ const pad = (n) => String(n).padStart(2, '0');
 const fmt = (t) => { t = Math.min(t, 1439); return pad(Math.floor(t / 60) % 24) + ':' + pad(Math.floor(t % 60)); };
 const esc = (s) => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const KPI = [['research', '科研'], ['teaching', '教学'], ['team', '团队'], ['rep', '声誉'], ['safety', '安全'], ['integrity', '诚信']];
-const FXNAME = { research: '科研', teaching: '教学', team: '团队', rep: '声誉', safety: '安全', integrity: '诚信', energy: '精力', full: '饱腹', bladder: '尿意', grant: '基金书', paper: '论文' };
+const FXNAME = { research: '科研', teaching: '教学', team: '团队', rep: '声誉', safety: '安全', integrity: '诚信', energy: '精力', full: '饱腹', bladder: '尿意', grant: '基金书', paper: '论文', wellbeing: '身心', gq: '基金质量', trust: '信任' };
 
 let S = null;
 const setup = { avatar: 'm', day: 'normal', mode: 'basic' };
 let sampleFn = null;
 
-function newState() {
+function freshCareer() { return { week: 1, pts: 0, rank: 0, history: [], trust: {}, lost: [], flags: {}, wb: 72, k: null }; }
+function newState(career) {
+  career = career || freshCareer();
+  const k0 = { research: 50, teaching: 50, team: 50, rep: 50, safety: 60, integrity: 70 };
+  if (career.k) for (const k in k0) k0[k] = Math.round(k0[k] + (career.k[k] - k0[k]) * 0.5);
+  const trust = {}; Object.keys(STUDENTS).forEach(id => { trust[id] = career.trust[id] !== undefined ? Math.round(60 + (career.trust[id] - 60) * 0.7) : 60; });
   return {
+    week: career.week, career, wb: career.wb, trust, lost: career.lost.slice(), mem: {}, memToday: {}, gq: 40, intel: {}, crisis: {}, intent: null, intents: [],
+    blockUse: [], timeWeek: {}, flow: 0, flowCarry: null, focusBlocks: 0, recruit: false, outcomes: null,
     mode: setup.mode, avatar: setup.avatar, day: setup.day,
     t: hm(8, 0), running: false, paused: false, speed: 1,
     v: { energy: 86, full: 55, bladder: 18 },
-    k: { research: 50, teaching: 50, team: 50, rep: 50, safety: 60, integrity: 70 },
+    k: k0,
     grant: setup.day === 'crunch' ? 8 : 20, submitted: false, paper: 20, paperSubmitted: false, coffees: 0, meals: 0, day: 0, collapses: 0, lastEnd: 'time', dayLogStart: 0, cardStart: 0, kStart: null, totals: { done: 0, missed: 0, all: 0 }, coffeesWeek: 0, mealsWeek: 0,
-    activity: null, events: [], log: [], cards: [], flags: {}, muons: 0,
+    activity: null, events: [], log: [], cards: [], flags: Object.assign({}, career.flags), muons: 0,
     dialog: null, ended: false, path: [], autoTarget: null, warned: {}, moving: false, run: false,
     xp: 0, level: 0, ach: [], rooms: {}, zones: {}, sports: {}, reads: 0, clears: 0, hadQuests: false, autoRoute: null, autoNext: null,
   };
@@ -6457,6 +6708,8 @@ function applyFx(fx) {
     if (k === 'energy' || k === 'full' || k === 'bladder') S.v[k] = clamp(S.v[k] + d);
     else if (k === 'grant') { if (S.submitted || S.day > 4) continue; S.grant = clamp(S.grant + d); }
     else if (k === 'paper') { if (S.paperSubmitted) continue; S.paper = clamp(S.paper + d); }
+    else if (k === 'wellbeing') S.wb = clamp(S.wb + d);
+    else if (k === 'gq') { if (S.submitted) continue; S.gq = clamp(S.gq + d); }
     else if (k in S.k) S.k[k] = clamp(S.k[k] + d);
     else continue;
     out.push([k, d]);
@@ -6485,7 +6738,7 @@ function gainXP(n) {
 function renderXP() {
   const l = S.level, cur = LEVELS[l][0], nxt = LEVELS[l + 1] ? LEVELS[l + 1][0] : cur + 400;
   const pct = clamp((S.xp - cur) / (nxt - cur) * 100);
-  $('pLv').textContent = 'Lv.' + (l + 1); $('pTitle').textContent = `${LEVELS[l][1]} · ${S.xp} XP`;
+  $('pLv').textContent = 'Lv.' + (l + 1); $('pTitle').textContent = `${RANKS[S.career.rank].n} · ${LEVELS[l][1]} · ${S.xp} XP`;
   $('xpBar').style.width = pct + '%'; $('pAvatar').style.setProperty('--xp', pct + '%');
 }
 function unlock(id) {
@@ -6517,6 +6770,12 @@ function minuteTick(dm) {
   v.full = clamp(v.full - 0.085 * dm);
   v.bladder = clamp(v.bladder + 0.068 * dm);
   if (a && a.perMin) a.perMin(dm);
+  trackTime(dm);
+  // Wellbeing: a working day wears you down slowly; evenings and overtime much faster.
+  S.wb = clamp(S.wb - (S.t >= hm(21) ? 0.06 : S.t >= hm(19) ? 0.025 : 0.008) * dm * (S.intent === 'self' ? 0.6 : 1));
+  if (v.full < 15) S.wb = clamp(S.wb - 0.01 * dm);
+  if (S.wb < 20) { v.energy = Math.min(v.energy, 70); if (!S.warned.w) { S.warned.w = 1; toast('身心只剩 20%：你开始烦躁、走神。去六楼植物园走走，或者今天早点回家。', 'bad'); } }
+  if (S.wb > 30) S.warned.w = 0;
   S.muons += 650 * dm;
   S.t += dm;
   if (a) { a.done += dm; if (a.min && a.done >= a.min) finishActivity(true); }
@@ -6545,9 +6804,12 @@ function updateEvents() {
       else if (ev.alarm) { SFX.alarm(); toast('警报：' + ev.title, 'bad'); }
       else { SFX.ping(); toast((ev.urgent ? '紧急：' : '新任务：') + ev.line, ev.urgent ? 'bad' : ''); }
       questsDirty = true;
+      if ((ev.urgent || ev.alarm) && !ev.phone && S.activity && S.activity.deep && !S.dialog) askInterrupt(ev);
     } else if (ev.state === 'active' && S.t > ev.deadline && (!S.dialog || S.dialog.ev !== ev)) {
       ev.state = 'expired'; settleEvent(ev);
       applyFx(ev.expire.fx); if (ev.expire.log) { logIt(ev.expire.log); toast(ev.expire.log, 'bad'); }
+      S.wb = clamp(S.wb - 1.5); remember(ev, 'ignored'); if (ev.npc && S.trust[ev.npc] !== undefined) S.trust[ev.npc] = clamp(S.trust[ev.npc] - 10);
+      if (ev.expire.lose && ev.crisisOf) loseStudent(ev.crisisOf);
       SFX.bad(); questsDirty = true;
     }
   }
@@ -6562,6 +6824,7 @@ function settleEvent(ev) {
 const FOOD = () => S.t < hm(10, 30) ? ['包子和豆浆', '早餐'] : S.t < hm(15) ? ['食堂的红烧肉便当', '午饭'] : S.t < hm(20, 30) ? ['外卖的兰州拉面', '晚饭'] : ['办公室囤的泡面', '宵夜'];
 function startActivity(a) {
   S.path = []; S.autoTarget = null;
+  if (a.deep) { S.flow = S.flowCarry && S.t - S.flowCarry.t <= 5 ? S.flowCarry.v : 0; S.flowCarry = null; }
   S.activity = Object.assign({ done: 0, ff: 8, cancelable: true }, a);
   $('activity').classList.remove('hidden'); $('actIcon').textContent = a.icon || '…';
   renderActivity();
@@ -6576,21 +6839,93 @@ function finishActivity(completed) {
 function renderActivity() {
   const a = S.activity; if (!a) return;
   const pct = a.min ? Math.min(100, a.done / a.min * 100) : S.grant;
-  $('actTitle').innerHTML = `${esc(a.label)} <span>${a.type === 'write' ? Math.floor(S.grant) + '%' : Math.round(pct) + '%'}</span>`;
+  $('actTitle').innerHTML = `${esc(a.label)} <span>${a.type === 'write' ? `${a.kind === 'grant' ? '基金' : '论文'} ${Math.floor(S[a.kind])}% · 专注 ${Math.round(flowMul() * 100)}%` : Math.round(pct) + '%'}</span>`;
   $('actBar').firstElementChild.style.width = pct + '%';
   $('actHint').innerHTML = a.cancelable ? `时间快进中 · 按 <span class="key">E</span> ${esc(a.cancelText || '先不做了')}` : '时间快进中…';
 }
 function grantRate() { const v = S.v; let r = 0.5; if (v.energy < 40) r *= 0.65; if (v.energy < 20) r *= 0.6; if (v.bladder > 85) r *= 0.5; if (v.full < 15) r *= 0.6; return r; }
+/* ---------------- v5: time blocks, focus, wellbeing, trust, memory ---------------- */
+function blockIdx(t) { for (let i = BLOCKS.length - 1; i >= 0; i--) if (t >= BLOCKS[i].from) return i; return 0; }
+// Deep work runs to the end of the current block; < 20 min left rolls over to the next block.
+function commitEnd() { let i = blockIdx(S.t), end = BLOCKS[i].to; if (end - S.t < 20 && i < BLOCKS.length - 1) end = BLOCKS[i + 1].to; return Math.min(end, 1439); }
+// Focus ramps from 15% to 100% over 30 min (40 min when wellbeing is low).
+function flowMul() { const ramp = S.wb < 40 ? 40 : 30; return Math.min(1, 0.15 + 0.85 * S.flow / ramp); }
+function endFocus(completed) {
+  if (S.flow >= 90) { S.focusBlocks++; if (S.focusBlocks === 1) toast('完整的一段专注时间：这才是写东西的节奏。', 'good'); }
+  S.flowCarry = completed ? { t: S.t, v: S.flow } : null; S.flow = 0;
+}
+function breakFocus() { if (S.activity && S.activity.deep && S.flow > 5) toast('专注被打断了：重新进入状态需要时间。', 'bad'); S.flow = 0; S.flowCarry = null; }
+function catNow() {
+  const a = S.activity;
+  if (S.dialog) return 'events';
+  if (S.traveling) return 'travel';
+  if (a) return { write: a.kind, submit: a.kind, read: 'research', lecture: 'teach', meeting: 'meet', multitask: 'meet', sport: 'sport' }[a.type] || 'self';
+  return S.moving ? 'travel' : 'idle';
+}
+function trackTime(dm) {
+  const i = blockIdx(S.t), c = catNow();
+  const u = S.blockUse[i] || (S.blockUse[i] = {}); u[c] = (u[c] || 0) + dm;
+  S.timeWeek[c] = (S.timeWeek[c] || 0) + dm;
+}
+function topCat(u) { let best = null, bv = 0; for (const k in u || {}) if (k !== 'idle' && u[k] > bv) { bv = u[k]; best = k; } return bv >= 15 ? best : null; }
+function trustGain(n) { return Math.round(n * (S.intent === 'students' && n > 0 ? 1.5 : 1)); }
+function shortTitle(t) { const x = String(t).split('：'); return (x.length > 1 ? x.slice(1).join('：') : x[0]).split(' · ')[0].slice(0, 14); }
+function remember(ev, kind) {
+  if (!ev.npc || ev.synthetic) return;
+  const m = S.mem[ev.npc] || (S.mem[ev.npc] = []);
+  m.push({ day: S.day, t: S.t, title: shortTitle(ev.title), kind }); if (m.length > 6) m.shift();
+}
+// One line per NPC per day, recalling the most recent earlier interaction.
+function memoryLine(ev) {
+  const id = ev.npc, m = S.mem[id], lines = MEMLINES[id];
+  if (!m || !lines || S.memToday[id]) return null;
+  const e = [...m].reverse().find(x => x.day < S.day || S.t - x.t > 120); if (!e) return null;
+  S.memToday[id] = 1;
+  const pool = lines[e.kind] || lines.good, tpl = pool[(S.day + m.length) % pool.length];
+  return [Object.keys(SPEAKERS).find(k => SPEAKERS[k] === id) || '', tpl.replace('{t}', e.title)];
+}
+function memorySummary(id) {
+  const m = S.mem[id] || []; if (!m.length) return '';
+  const word = { good: '处理得让你满意', bad: '让你失望', ignored: '教授没有来' };
+  return m.map(x => `${DAYS[x.day].name}「${x.title}」${word[x.kind]}`).join('；');
+}
+function loseStudent(id) {
+  if (S.lost.includes(id)) return;
+  S.lost.push(id); applyFx({ team: -10, rep: -3 }); S.wb = clamp(S.wb - 6);
+  const p = STUDENTS[id]; logIt(`${p.n}离开了课题组。`); toast(`${p.n}提交了转导师申请，离开了课题组。`, 'bad'); SFX.bad();
+  if (NPC[id]) NPC[id].visible = false;
+}
+// Urgent event during deep work: pause and let the player choose.
+function askInterrupt(ev) {
+  const h = HS[ev.loc], zn = (h.zone || 'f5') !== Z.id ? ZONES[h.zone || 'f5'].name.split(' · ')[0] + ' · ' : '';
+  openDialog({ id: 'intr', loc: ev.loc, who: '专注被打断', tag: '决定', title: ev.title, synthetic: true, start: 'a', urgent: true,
+    status: [['正在做', S.activity.label.split(' · ')[0]], ['专注', Math.round(flowMul() * 100) + '%'], ['要你去', zn + h.name]],
+    nodes: { a: { say: [['', `${ev.line}`], ['', '现在过去，专注就断了；不去，这件事可能会过期。']], choices: [
+      { t: '马上过去处理', d: '专注中断', run: () => { if (S.activity) finishActivity(false); routeTo(h.x, h.z, h.zone || 'f5', ev); } },
+      { t: '继续写，等这段写完再说', d: `还剩 ${Math.max(0, Math.round(ev.deadline - S.t))} 分钟会过期` },
+    ] } } });
+}
+function rumour() {
+  const d = S.day + 1; if (d > 6 || S.intel[d]) { if (d <= 6) toast('咖啡师：“今天没听到什么新鲜事。”'); return; }
+  S.intel[d] = true;
+  const peek = buildDay(d, setup.day).filter(e => e.urgent || e.alarm).slice(0, 2);
+  const msg = peek.length ? `邻桌的人在聊：明天${peek.map(e => `${fmt(e.at)}「${shortTitle(e.title)}」`).join('、')}。` : '邻桌的人说明天应该挺平静。';
+  S.rumours = (S.rumours || []).concat([{ day: d, text: msg }]);
+  toast('天台八卦：' + msg + '（明天这些事的处理时间 +50%）', 'good'); logIt('在天台听到的消息：' + msg);
+}
 function pose(state, x, z, ry, seated) { if (x !== undefined) { player.position.x = x; player.position.z = z; } if (ry !== undefined) player.rotation.y = ry; player.userData.state = state; player.userData.seated = !!seated; }
 const PANTRY_SEAT = [28.6 + Math.cos(Math.PI * 2 / 3) * 0.95, 19.6 + Math.sin(Math.PI * 2 / 3) * 0.95];
 const ACT = {
-  write: (kind = 'grant') => { const isG = kind === 'grant'; pose('type', 3, 3.95, Math.PI, true); startActivity({ type: 'write', kind, label: isG ? '写基金申请书' : '改论文修改稿', icon: isG ? '书' : '文', ff: 7, drain: 0.03, cancelText: '先停一下',
-    perMin: (dm) => { const before = Math.floor(S[kind] / 10); S[kind] = clamp(S[kind] + grantRate() * (isG ? 0.7 : 0.9) * dm); if (Math.floor(S[kind] / 10) > before) gainXP(8); if (S[kind] >= 100 && S.activity && S.activity.type === 'write') finishActivity(true); },
-    onDone: () => { pose('idle', 3, 4.75); toast(isG ? '基金申请书写完了！在办公桌按 E 提交。' : '论文修改稿改完了！在办公桌按 E 提交。', 'good'); SFX.good(); }, onCancel: () => pose('idle', 3, 4.75) }); },
+  // Deep work: commits to the rest of the current time block; progress ramps with focus (flow).
+  write: (kind = 'grant') => { const isG = kind === 'grant', end = commitEnd(); pose('type', 3, 3.95, Math.PI, true);
+    startActivity({ type: 'write', kind, deep: true, label: (isG ? '写基金申请书' : '改论文修改稿') + ' · 到 ' + fmt(end), icon: isG ? '书' : '文', min: end - S.t, ff: 7, drain: 0.03, cancelText: '先停一下（专注会中断）',
+    perMin: (dm) => { S.flow += dm; const before = Math.floor(S[kind] / 10); const boost = S.intent === kind ? 1.2 : 1; S[kind] = clamp(S[kind] + grantRate() / 0.5 * (isG ? 0.18 : 0.21) * flowMul() * boost * dm); if (isG) S.gq = clamp(S.gq + 0.004 * dm * flowMul()); if (Math.floor(S[kind] / 10) > before) gainXP(8); if (S[kind] >= 100 && S.activity && S.activity.type === 'write') finishActivity(true); },
+    onDone: () => { pose('idle', 3, 4.75); endFocus(true); if (S[kind] >= 100) { toast(isG ? '基金申请书写完了！在办公桌按 E 提交。' : '论文修改稿改完了！在办公桌按 E 提交。', 'good'); SFX.good(); } else toast(`${BLOCKS[blockIdx(S.t - 1)].name}时段结束：${isG ? '基金' : '论文'} ${Math.floor(S[kind])}%。在办公桌按 E 可以接着写，专注不会断。`); },
+    onCancel: () => { pose('idle', 3, 4.75); endFocus(false); } }); },
   submit: (kind = 'grant') => { const isG = kind === 'grant'; pose('type', 3, 3.95, Math.PI, true); startActivity({ type: 'submit', label: isG ? '上传并提交基金申请书' : '在投稿系统提交修改稿', icon: '交', min: 6, ff: 6, cancelable: false,
-    onDone: () => { if (isG) S.submitted = true; else S.paperSubmitted = true; pose('idle', 3, 4.75); setExpr(player, 'happy'); applyFx({ rep: 4 }); gainXP(80); unlock(isG ? 'grant' : 'paper'); logIt(isG ? '基金申请书提交成功。系统显示：已提交，不可修改。' : '论文修改稿提交成功。'); toast(isG ? '基金提交成功！' : '论文修改稿提交成功！', 'good'); SFX.good(); burst(3, 1.4, 4.5, [0.6, 1.6, 2.2], 60, 2.5); } }); },
+    onDone: () => { if (isG) { S.submitted = true; S.subWb = S.wb; } else S.paperSubmitted = true; pose('idle', 3, 4.75); setExpr(player, 'happy'); applyFx({ rep: 4 }); gainXP(80); unlock(isG ? 'grant' : 'paper'); logIt(isG ? '基金申请书提交成功。系统显示：已提交，不可修改。' : '论文修改稿提交成功。'); toast(isG ? '基金提交成功！' : '论文修改稿提交成功！', 'good'); SFX.good(); burst(3, 1.4, 4.5, [0.6, 1.6, 2.2], 60, 2.5); } }); },
   nap: () => { pose('sit', 1.25, 8, Math.PI / 2, true); setExpr(player, 'sleepy'); setEmote(player, 'zz'); startActivity({ type: 'nap', label: '在沙发上小睡', icon: '眠', min: 25, ff: 12, drain: -0.05, perMin: (dm) => { S.v.energy = clamp(S.v.energy + 1.1 * dm); },
-    onDone: () => { setEmote(player, null); pose('idle', 2.3, 8); toast('睡醒了，精力回来了一些。'); logIt('在办公室沙发上睡了 25 分钟。'); }, onCancel: () => { setEmote(player, null); pose('idle', 2.3, 8); } }); },
+    onDone: () => { setEmote(player, null); pose('idle', 2.3, 8); S.wb = clamp(S.wb + 2); toast('睡醒了，精力回来了一些。'); logIt('在办公室沙发上睡了 25 分钟。'); }, onCancel: () => { setEmote(player, null); pose('idle', 2.3, 8); } }); },
   coffee: () => { const gain = [16, 12, 8, 5, 3][Math.min(4, S.coffees)]; pose('talk', 27.6, 23.9, 0);
     startActivity({ type: 'coffee', label: '冲一杯手冲咖啡', icon: '啡', min: 4, ff: 6, onDone: () => { S.coffees++; S.coffeesWeek++; applyFx({ energy: gain, bladder: 16 }); if (S.coffees >= 4) unlock('caffeine'); if (S.coffees === 4) toast('第四杯了，咖啡因的效果在递减。'); } }); },
   eat: () => { const [food, meal] = FOOD(); pose('sit', PANTRY_SEAT[0], PANTRY_SEAT[1], Math.atan2(28.6 - PANTRY_SEAT[0], 19.6 - PANTRY_SEAT[1]), true); setExpr(player, 'happy');
@@ -6602,17 +6937,20 @@ const ACT = {
   meeting: (min) => { pose('sit', 14.75, 21.05, Math.PI / 2, true); startActivity({ type: 'meeting', label: '开会中', icon: '会', min, ff: 12, drain: 0.03, cancelText: '中途离场',
     onDone: () => pose('idle', 16, 18.4), onCancel: () => { pose('idle', 16, 18.4); applyFx({ rep: -4 }); logIt('会开到一半离场。'); } }); },
   canteen: (min) => { const [food, meal] = FOOD(); pose('sit', 28, 2.1, 0, true); setExpr(player, 'happy'); startActivity({ type: 'eat', label: `食堂 · ${food}`, icon: '饭', min, ff: 8, perMin: (dm) => { S.v.full = clamp(S.v.full + 3.6 * dm); S.v.energy = clamp(S.v.energy + 0.4 * dm); },
-    onDone: () => { S.meals++; S.mealsWeek++; logIt(`在食堂吃了${meal}：${food}。`); pose('idle', 28, 4.5); }, onCancel: () => pose('idle', 28, 4.5), cancelText: '先不吃了' }); },
+    onDone: () => { S.meals++; S.mealsWeek++; applyFx({ wellbeing: 3 }); logIt(`在食堂和同事们一起吃了${meal}：${food}。`); pose('idle', 28, 4.5); }, onCancel: () => pose('idle', 28, 4.5), cancelText: '先不吃了' }); },
   read: (min) => { pose('read', 13, 18.3, 0, true); startActivity({ type: 'read', label: '在图书馆读论文', icon: '读', min, ff: 10, drain: -0.02, perMin: (dm) => { S.paper = S.paperSubmitted ? S.paper : clamp(S.paper + 0.12 * dm); },
-    onDone: () => { applyFx({ research: 2, energy: 4 }); S.reads++; if (S.reads >= 3) unlock('bookworm'); logIt('在图书馆安静地读了半小时论文。'); pose('idle', 13, 17.6); }, onCancel: () => pose('idle', 13, 17.6) }); },
-  tennis: (min) => sport('tennis', min, { x: 12, z: 13, lx: 26, lz: 13, label: '打网球', fx: { energy: 12, full: -10, bladder: 4, rep: 1 }, partner: 'coach', log: '和化学系的陈老师打了一局网球。' }),
-  badminton: (min) => sport('badminton', min, { x: 20, z: 11, lx: 20, lz: 17, label: '打羽毛球', fx: { energy: 11, full: -8, bladder: 3, team: 3 }, partner: 'grad1', log: '和研究生们打了一场羽毛球。' }),
-  soccer: (min) => sport('soccer', min, { x: 58, z: 46, lx: 84, lz: 46, label: '和学生踢球', fx: { energy: 12, full: -14, bladder: 4, team: 4 }, log: '和学生们在足球场踢了一场球。' }),
-  walk: (min) => { pose('walk', undefined, undefined, undefined, false); startActivity({ type: 'walk', label: '在植物园里散步', icon: '花', min, ff: 10, drain: -0.06, perMin: (dm) => { S.v.energy = clamp(S.v.energy + 0.55 * dm); }, cancelText: '走回去',
+    onDone: () => { applyFx({ research: 2, energy: 4 }); S.reads++; if (S.reads <= 4 && !S.submitted) { S.gq = clamp(S.gq + 3); toast('读到一篇好文章，基金书的创新点更清楚了（基金质量 +3）。', 'good'); } if (S.reads >= 3) unlock('bookworm'); logIt('在图书馆安静地读了半小时论文，记下了两个基金书可以用的想法。'); pose('idle', 13, 17.6); }, onCancel: () => pose('idle', 13, 17.6) }); },
+  tennis: (min) => sport('tennis', min, { x: 12, z: 13, lx: 26, lz: 13, label: '和化学系陈老师打网球', fx: { energy: 12, full: -10, bladder: 4, rep: 2, wellbeing: 5 }, partner: 'coach', log: '和化学系的陈老师打了一局网球，聊起了各自的基金。',
+    after: () => { if (!S.flags.ally_coach) { S.flags.ally_coach = 1; toast('陈老师：“你那个基金，我们组的表面分析也许帮得上忙。”（周五前他会联系你）', 'good'); logIt('陈老师成了你的合作伙伴。'); } } }),
+  badminton: (min) => sport('badminton', min, { x: 20, z: 11, lx: 20, lz: 17, label: '和研究生们打羽毛球', fx: { energy: 11, full: -8, bladder: 3, team: 3, wellbeing: 4 }, partner: 'grad1', log: '和研究生们打了一场羽毛球。',
+    after: () => { Object.keys(S.trust).forEach(id => { if (!S.lost.includes(id)) S.trust[id] = clamp(S.trust[id] + trustGain(6)); }); toast(`学生们对你的信任都上升了（+${trustGain(6)}）。球场上的老师，和办公室里的不太一样。`, 'good'); } }),
+  soccer: (min) => sport('soccer', min, { x: 58, z: 46, lx: 84, lz: 46, label: '和本科生踢球', fx: { energy: 12, full: -14, bladder: 4, team: 4, wellbeing: 4 }, log: '和本科生们在足球场踢了一场球。',
+    after: () => { if (!S.recruit) { S.recruit = true; S.flags.recruit = 1; toast('中场休息时，一个大二学生小吴问：“老师，本科生能进您的组吗？”', 'good'); logIt('踢球时认识了大二的小吴，他想进组。'); } } }),
+  walk: (min) => { pose('walk', undefined, undefined, undefined, false); startActivity({ type: 'walk', label: '在植物园里散步 · 身心恢复中', icon: '花', min, ff: 10, drain: -0.06, perMin: (dm) => { S.v.energy = clamp(S.v.energy + 0.55 * dm); S.wb = clamp(S.wb + 0.75 * dm); }, cancelText: '走回去',
     perFrame: (t) => { const a = t * 0.5; player.position.set(20 + Math.cos(a) * 1.6, 0, 13 + Math.sin(a) * 1.0); player.rotation.y = Math.atan2(-Math.sin(a), Math.cos(a)); },
     onDone: () => { logIt('在六楼植物园里走了一圈。'); pose('idle', 20, 13); }, onCancel: () => pose('idle', 20, 13) }); },
   roofcoffee: (min) => { const gain = [14, 12, 10, 8, 6][Math.min(4, S.coffees)]; pose('sit', 14 + 1.0, 11, -Math.PI / 2 - 0 + Math.PI, true); startActivity({ type: 'coffee', label: '天台 · 一杯手冲', icon: '啡', min, ff: 8, drain: -0.04,
-    onDone: () => { S.coffees++; S.coffeesWeek++; applyFx({ energy: gain, bladder: 14 }); if (S.coffees >= 4) unlock('caffeine'); logIt('在天台喝了一杯咖啡，看了一会儿城市。'); pose('idle', 9, 7.8); }, onCancel: () => pose('idle', 9, 7.8) }); },
+    onDone: () => { S.coffees++; S.coffeesWeek++; applyFx({ energy: gain, bladder: 14, wellbeing: 2 }); if (S.coffees >= 4) unlock('caffeine'); logIt('在天台喝了一杯咖啡，看了一会儿城市。'); pose('idle', 9, 7.8); rumour(); }, onCancel: () => pose('idle', 9, 7.8) }); },
   roofeat: (min) => { pose('sit', 15, 11, Math.PI / 2, true); setExpr(player, 'happy'); startActivity({ type: 'eat', label: '天台 · 三明治和拿铁', icon: '饭', min, ff: 8, perMin: (dm) => { S.v.full = clamp(S.v.full + 2.6 * dm); S.v.energy = clamp(S.v.energy + 0.6 * dm); },
     onDone: () => { S.meals++; S.mealsWeek++; S.coffees++; applyFx({ bladder: 10 }); logIt('在天台吃了三明治，喝了拿铁。'); pose('idle', 9, 7.8); }, onCancel: () => pose('idle', 9, 7.8) }); },
   multitask: (min) => { pose('type', 14.75, 21.05, Math.PI / 2, true); startActivity({ type: 'multitask', label: '一边开会一边写基金', icon: '双', min, ff: 12, drain: 0.05,
@@ -6624,7 +6962,7 @@ function sport(kind, min, o) {
   const partner = o.partner && NPC[o.partner]; if (partner) { partner.userData.state = 'play'; setExpr(partner, 'happy'); }
   Z.balls.forEach(b => { b.active = true; });
   startActivity({ type: 'sport', label: o.label, icon: '球', min, ff: 10, drain: 0.02, cancelText: '不打了',
-    onDone: () => { applyFx(o.fx); S.sports[kind] = 1; if (S.sports.tennis && S.sports.badminton && S.sports.soccer) unlock('athlete'); gainXP(20); logIt(o.log); finish(); },
+    onDone: () => { applyFx(o.fx); if (o.after) o.after(); S.sports[kind] = 1; if (S.sports.tennis && S.sports.badminton && S.sports.soccer) unlock('athlete'); gainXP(20); logIt(o.log); finish(); },
     onCancel: finish });
   function finish() { if (partner) { partner.userData.state = partner.userData.baseState || 'idle'; setExpr(partner, 'normal'); } Z.balls.forEach(b => { b.active = b.kind === 'soccer' || (b.kind === 'shuttle' && b.from[0] !== 20); }); pose('idle', o.x, o.z); }
 }
@@ -6633,13 +6971,13 @@ function amenityAt(x, z) {
   const near = (h, r = 1.25) => (HS[h].zone || 'f5') === Z.id && Math.hypot(HS[h].x - x, HS[h].z - z) < r;
   for (const p of Z.portals) if (Math.hypot(p.x - x, p.z - z) < 1.3) return p.kind === 'elevator' ? { label: '乘电梯', code: FLOOR_LABEL[Z.id] || Z.name, act: openElevator } : { label: p.label || '出门', code: '门', act: () => travel(p.to, p) };
   if (near('canteen')) return { label: `食堂打饭：${FOOD()[0]}`, code: '1F', act: () => ACT.canteen(20) };
-  if (near('libdesk', 1.6)) return { label: '在阅览桌读 30 分钟论文', code: '3F', act: () => ACT.read(30) };
-  if (near('tennis', 1.8)) return { label: '打 30 分钟网球', code: '4F', act: () => ACT.tennis(30) };
-  if (near('garden', 1.8)) return { label: '在植物园里走 15 分钟', code: '6F', act: () => ACT.walk(15) };
-  if (near('roofcafe', 1.6)) return { label: `天台咖啡（第 ${S.coffees + 1} 杯）· 或吃点东西`, code: 'R', act: openRoofCafe };
-  if (near('pitch', 2.5)) return { label: '和学生踢 40 分钟球', code: '校园', act: () => ACT.soccer(40) };
-  if (near('courtB', 2.0)) return { label: '打 30 分钟羽毛球', code: '体育馆', act: () => ACT.badminton(30) };
-  if (near('desk')) return { label: `办公桌 · 基金 ${S.submitted ? '已交' : Math.floor(S.grant) + '%'} · 论文 ${S.paperSubmitted ? '已交' : Math.floor(S.paper) + '%'}`, code: '503', act: openDesk };
+  if (near('libdesk', 1.6)) return { label: '读 30 分钟论文 · 论文进度 + 基金创新点', code: '3F', act: () => ACT.read(30) };
+  if (near('tennis', 1.8)) return { label: `和陈老师打 30 分钟网球 · 声誉 + 身心${S.flags.ally_coach ? '' : ' · 也许能谈成合作'}`, code: '4F', act: () => ACT.tennis(30) };
+  if (near('garden', 1.8)) return { label: `在植物园里走 20 分钟 · 身心大幅恢复（${Math.round(S.wb)}）`, code: '6F', act: () => ACT.walk(20) };
+  if (near('roofcafe', 1.6)) return { label: `天台咖啡（第 ${S.coffees + 1} 杯）· 顺便听听明天的八卦`, code: 'R', act: openRoofCafe };
+  if (near('pitch', 2.5)) return { label: `和本科生踢 40 分钟球 · 团队 + 身心${S.recruit ? '' : ' · 也许能招到人'}`, code: '校园', act: () => ACT.soccer(40) };
+  if (near('courtB', 2.0)) return { label: '和研究生打 30 分钟羽毛球 · 所有学生信任 +', code: '体育馆', act: () => ACT.badminton(30) };
+  if (near('desk')) return { label: `办公桌 · 专注写到 ${fmt(commitEnd())} · 基金 ${S.submitted ? '已交' : Math.floor(S.grant) + '%'} · 论文 ${S.paperSubmitted ? '已交' : Math.floor(S.paper) + '%'}`, code: '503', act: openDesk };
   if (near('sofa')) return { label: '在沙发上小睡 25 分钟', code: '503', act: ACT.nap };
   if (near('coffee')) return { label: `冲一杯咖啡（今天第 ${S.coffees + 1} 杯）`, code: '508', act: ACT.coffee };
   if (near('food')) return { label: '吃' + FOOD()[0], code: '508', act: ACT.eat };
@@ -6670,8 +7008,8 @@ function interact() {
 }
 function openDesk() {
   const ch = [];
-  if (!S.submitted && S.day <= 4) ch.push(S.grant >= 100 ? { t: '提交基金申请书', d: '周五 23:59 截止', run: () => ACT.submit('grant') } : { t: `写基金申请书（${Math.floor(S.grant)}%）`, d: '周五 23:59 截止 · 时间快进，按 E 停下', run: () => ACT.write('grant') });
-  if (!S.paperSubmitted) ch.push(S.paper >= 100 ? { t: '提交论文修改稿', d: '周日 23:59 截止', run: () => ACT.submit('paper') } : { t: `改论文修改稿（${Math.floor(S.paper)}%）`, d: '周日 23:59 截止 · 时间快进，按 E 停下', run: () => ACT.write('paper') });
+  if (!S.submitted && S.day <= 4) ch.push(S.grant >= 100 ? { t: '提交基金申请书', d: '周五 23:59 截止', run: () => ACT.submit('grant') } : { t: `写基金申请书到 ${fmt(commitEnd())}（${Math.floor(S.grant)}%）`, d: `一整段专注时间 · 中途停下会打断专注 · 周五 23:59 截止`, run: () => ACT.write('grant') });
+  if (!S.paperSubmitted) ch.push(S.paper >= 100 ? { t: '提交论文修改稿', d: '周日 23:59 截止', run: () => ACT.submit('paper') } : { t: `改论文修改稿到 ${fmt(commitEnd())}（${Math.floor(S.paper)}%）`, d: '一整段专注时间 · 中途停下会打断专注 · 周日 23:59 截止', run: () => ACT.write('paper') });
   ch.push({ t: '只是坐一会儿', d: '回到楼层' });
   openDialog({ id: 'desk', loc: 'desk', who: '503 · 你的办公桌', tag: '办公桌', title: '今天先做哪一件？', synthetic: true, start: 'a',
     status: [['基金申请书', S.submitted ? '已提交' : (S.day > 4 ? '已截止' : Math.floor(S.grant) + '%'), S.submitted ? 'good' : ''], ['论文修改稿', S.paperSubmitted ? '已提交' : Math.floor(S.paper) + '%', S.paperSubmitted ? 'good' : '']],
@@ -6704,7 +7042,7 @@ function travel(zoneId, portal, cb) {
     const sp = (p && p.spawn) || ZONES[zoneId].spawn; player.position.set(sp.x, 0, sp.z);
     if (p && p.spawn) face(player, Z.W / 2, Z.D / 2); else face(player, Z.spawn.x - 2, Z.spawn.z);
     camState.target.copy(player.position); camState.wantAz = camState.az = Math.PI / 4; questsDirty = true;
-    simulate(mins); if (S.ended) return;
+    S.traveling = true; simulate(mins); S.traveling = false; if (S.ended) return;
     if (!S.zones[zoneId]) { S.zones[zoneId] = 1; if (Object.keys(S.zones).length >= Object.keys(ZONES).length) unlock('campus'); }
     toast(`${ZONES[zoneId].name} · ${fmt(S.t)}`);
     if (cb) cb();
@@ -6746,6 +7084,7 @@ function showBust(name, mood) {
   img.style.visibility = 'visible';
 }
 function openDialog(ev) {
+  if (S.activity && S.activity.deep && ev.id !== 'intr') breakFocus();
   document.body.classList.add('talking');
   S.path = []; S.autoTarget = null; S.dialog = { ev, node: null, turns: [], busy: false, ctl: null, typing: [] };
   $('dlg').classList.remove('hidden'); SFX.click();
@@ -6764,6 +7103,8 @@ function openDialog(ev) {
   camState.cine = n ? { x: (n.position.x + player.position.x) / 2, z: (n.position.z + player.position.z) / 2 } : { x: player.position.x, z: player.position.z };
   const first = (ev.nodes[ev.start].say || []).find(l => l[0] && SPEAKERS[l[0]]);
   showBust(first ? first[0] : speakerOf(ev), ev.mood);
+  const ml = !ev.synthetic && ev.npc ? memoryLine(ev) : null;
+  if (ml) { bubble(ml[0], ml[1], 'mem', true); S.dialog.memory = ml[1]; }
   gotoNode(ev.start);
 }
 function bubble(who, text, cls = '', typed = false) {
@@ -6808,7 +7149,12 @@ function pick(c) {
   if (c.run) { closeDialog(); return c.run(); }
   if (d.ev.synthetic && !c.next) { closeDialog(); return; }
   bubble('你', c.t);
+  d.picked = c;
   if (c.flag) S.flags[c.flag] = 1;
+  (c.flags || []).forEach(f => { S.flags[f] = 1; });
+  if (c.fx && c.fx.trust && d.ev.npc && S.trust[d.ev.npc] !== undefined) S.trust[d.ev.npc] = clamp(S.trust[d.ev.npc] + trustGain(c.fx.trust));
+  if ((c.flags || []).includes('lose') && d.ev.crisisOf) loseStudent(d.ev.crisisOf);
+  if ((c.flags || []).some(f => f.startsWith('kept_')) && d.ev.crisisOf) delete S.crisis[d.ev.crisisOf];
   if (c.fx) { const s = Object.values(c.fx).reduce((a, b) => a + b, 0); d.mood = s >= 0 ? 'happy' : 'worried'; const n = d.ev.npc && NPC[d.ev.npc]; if (n) setExpr(n, d.mood); }
   fxLine(applyFx(c.fx));
   sayLines(c.fb);
@@ -6821,6 +7167,15 @@ function pick(c) {
 }
 function resolve(after) {
   const d = S.dialog, ev = d.ev;
+  if (ev.npc && !ev.synthetic && !ev.crisisOf) {
+    const fx = (d.picked && d.picked.fx) || {}, sum = Object.entries(fx).filter(([k]) => k !== 'trust').reduce((a, [, b]) => a + b, 0);
+    remember(ev, sum >= 0 && (fx.team || 0) >= 0 ? 'good' : 'bad');
+    if (S.trust[ev.npc] !== undefined) { const dt = Math.max(-10, Math.min(8, Math.round((fx.team || 0) * 1.1 + (sum >= 0 ? 1 : -3)))); S.trust[ev.npc] = clamp(S.trust[ev.npc] + (dt > 0 ? trustGain(dt) : dt)); }
+  }
+  if (ev.crisisOf && d.picked && !d.picked.t) { // Pro-mode crisis: judge by the AI's verdict
+    const sum = Object.values(d.picked.fx || {}).reduce((a, b) => a + b, 0);
+    if (sum >= 3) { S.trust[ev.crisisOf] = clamp(S.trust[ev.crisisOf] + 30); delete S.crisis[ev.crisisOf]; } else if (sum < 0) loseStudent(ev.crisisOf);
+  }
   ev.state = 'resolved'; settleEvent(ev); questsDirty = true; gainXP(ev.phone ? 20 : 50);
   if (ev.card && CARDS[ev.card] && !S.cards.includes(ev.card)) {
     S.cards.push(ev.card); gainXP(15);
@@ -6850,6 +7205,8 @@ function renderMini(node) {
   const f = $('dlgFoot');
   const done = (r) => { if (!S.dialog) return; S.dialog.mini = null; const o = node.onMini(r); fxLine(applyFx(o.fx)); sayLines(o.fb); SFX.good(); gainXP(30);
     if (r.chi !== undefined && r.chi < 1.15) unlock('fit'); if (r.right === 3) unlock('lecture');
+    if (node.mini === 'fit' && r.chi < 1.4 && !S.flags.fit_ok) { S.flags.fit_ok = 1; applyFx({ paper: 5 }); bubble('', '这张拟合图可以直接放进论文修改稿（论文 +5）。'); }
+    if (node.mini === 'quiz' && r.right >= 2) S.flags.lecture_star = 1;
     logIt(`${S.dialog.ev.title} → 小游戏完成`); if (o.min) simulate(o.min); if (S.ended) return; if (o.next) gotoNode(o.next); else resolve(o.after); };
   if (node.mini === 'fit') S.dialog.mini = miniFit(f, done);
   if (node.mini === 'rhythm') S.dialog.mini = miniRhythm(f, done);
@@ -6972,7 +7329,9 @@ async function proSend() {
   const round = d.turns.filter(x => x.who === '教授').length;
   const prompt = `你在一款中文教育游戏《教授的一天》中扮演一个角色，玩家扮演一位物理系教授。
 角色：${ev.persona}
-情境：${ev.scene}
+情境：${ev.scene}${ev.npc && S.trust[ev.npc] !== undefined ? `
+你对教授的信任：${Math.round(S.trust[ev.npc])}/100（低于 40 时语气更疏远、更防备；高于 75 时更坦诚）。` : ''}${ev.npc && memorySummary(ev.npc) ? `
+你和教授这周的过往：${memorySummary(ev.npc)}。可以自然地提一句，但不要反复纠缠。` : ''}
 评分重点：${ev.rubric}
 规则：用角色的口吻、简体中文口语回复教授最新的一句话，不超过 70 字；不要替教授说话，不要跳出角色，不要提到游戏或 AI。
 如果问题已经被妥善处理、对话自然结束，或这已是第 4 轮（现在是第 ${round} 轮），则 done=true，并给出 fx 和 comment。
@@ -6998,7 +7357,7 @@ ${history}`;
     if (S.ended) return;
     if ((r && r.done) || round >= 4) {
       const fx = {}; for (const [k, v] of Object.entries((r && r.fx) || {})) if (k in S.k) fx[k] = Math.max(-10, Math.min(10, Math.round(+v || 0)));
-      fxLine(applyFx(fx));
+      fxLine(applyFx(fx)); d.picked = { fx };
       if (r && r.comment) bubble('', '点评：' + String(r.comment).slice(0, 120));
       logIt(`${ev.title} → 开放式对话 ${round} 轮`);
       d.busy = false; return resolve(null);
@@ -7038,11 +7397,12 @@ function renderQuests() {
 }
 function renderHUD() {
   $('clock').textContent = fmt(S.t); $('clockMini').textContent = fmt(S.t);
-  $('clockEyebrow').textContent = `第${S.day + 1}天 · ${DAYS[S.day].name}${S.t >= hm(18) ? ' · 加班' : ''}`;
+  $('clockEyebrow').textContent = `W${S.week} · ${DAYS[S.day].name} · ${BLOCKS[blockIdx(S.t)].name}${S.intent ? ' · ' + INTENTS.find(x => x.id === S.intent).n : ''}`;
   if (!S.submitted && S.day <= 4) $('clockSub').innerHTML = `基金 <b>${fmtLeft((4 - S.day) * 1440 + 1440 - S.t)}</b>`;
   else if (!S.paperSubmitted) $('clockSub').innerHTML = `论文 <b>${fmtLeft((6 - S.day) * 1440 + 1440 - S.t)}</b>`;
   else $('clockSub').innerHTML = '截止日 <b style="color:var(--ok)">都搞定了</b>';
   $('dayFill').style.width = clamp((S.t - 480) / 960 * 100) + '%';
+  renderBlocks();
   $('kpis').innerHTML = KPI.map(([k, n]) => { const v = Math.round(S.k[k]), c = v < 35 ? 'var(--danger)' : v < 50 ? 'var(--warn)' : 'var(--cyan)'; return `<div class="kpi"><div class="row1"><span>${n}</span><b>${v}</b></div><div class="bar"><i style="width:${v}%;background:${c};box-shadow:0 0 8px ${c}"></i></div></div>`; }).join('');
   $('grantPct').textContent = S.submitted ? '已提交' : (S.day > 4 ? '已截止' : Math.floor(S.grant) + '%');
   $('grantBar').style.width = S.grant + '%';
@@ -7052,9 +7412,15 @@ function renderHUD() {
   const v = S.v, col = (x, inv) => { const bad = inv ? x > 80 : x < 25, mid = inv ? x > 60 : x < 45; return bad ? 'var(--danger)' : mid ? 'var(--warn)' : null; };
   $('vE').style.width = v.energy + '%'; $('vE').style.background = col(v.energy) || '#3DDC97'; $('vEn').textContent = Math.round(v.energy) + '%';
   $('vH').style.width = v.full + '%'; $('vH').style.background = col(v.full) || '#FFB547'; $('vHn').textContent = v.full < 15 ? '好饿' : Math.round(v.full) + '%';
+  $('vW').style.width = S.wb + '%'; $('vW').style.background = col(S.wb) || '#c58bff'; $('vWn').textContent = Math.round(S.wb) + '';
   $('vB').style.width = v.bladder + '%'; $('vB').style.background = col(v.bladder, true) || '#5cc8ff'; $('vBn').textContent = Math.round(v.bladder) + '%';
   if (questsDirty || Math.floor(S.t) !== lastQuestT) { renderQuests(); questsDirty = false; lastQuestT = Math.floor(S.t); }
   renderActivity();
+}
+function renderBlocks() {
+  const cur = blockIdx(S.t), key = cur + '|' + S.blockUse.map(u => topCat(u)).join(',');
+  if (renderBlocks.key === key) return; renderBlocks.key = key;
+  $('blockStrip').innerHTML = BLOCKS.map((b, i) => { const tc = i < cur ? topCat(S.blockUse[i]) : null; return `<div class="${i === cur ? 'now' : i < cur ? 'past' : ''} ${b.overtime ? 'ot' : ''}" title="${b.name} ${fmt(b.from)}–${b.to >= 1440 ? '24:00' : fmt(b.to)}"><span>${b.name}</span>${tc ? `<i style="background:${CATS[tc].c}">${CATS[tc].i}</i>` : i < cur ? '<i class="z">碎</i>' : ''}</div>`; }).join('');
 }
 (function buildDayLine() {
   const dl = $('dayLine'); [10, 12, 14, 22, 24].forEach(h => { const s = document.createElement('span'); s.style.left = `calc(${((h * 60 - 480) / 960 * 100)}% - 1px)`; if (h === 24) s.className = 'big'; dl.appendChild(s); });
@@ -7125,26 +7491,53 @@ function endDay(reason) {
   for (const ev of activeEvents()) { ev.state = 'expired'; settleEvent(ev); }
   const d = S.day, total = S.events.length, done = S.events.filter(e => e.state === 'resolved').length;
   S.totals.done += done; S.totals.all += total; S.totals.missed += total - done;
-  S.lastEnd = reason === 'home' && S.t >= hm(22) ? 'time' : reason; if (reason === 'collapse') S.collapses++;
+  S.lastEnd = reason === 'home' && S.t >= hm(22) ? 'time' : reason; if (reason === 'collapse') { S.collapses++; S.wb = clamp(S.wb - 15); }
+  S.endT = S.t; S.dayBlocks = S.blockUse.map(u => topCat(u));
+  // Attention is a resource: people you did not help today drift a little.
+  Object.keys(S.trust).forEach(id => { if (!S.lost.includes(id) && !(S.mem[id] || []).some(m => m.day === d && m.kind === 'good')) S.trust[id] = clamp(S.trust[id] - 4); });
+  // v5: students whose trust fell below 30 ask to talk tomorrow; a second slide means they leave.
+  S.crisisSeen = S.crisisSeen || {};
+  Object.keys(S.trust).forEach(id => {
+    if (S.lost.includes(id) || S.trust[id] >= 30) return;
+    if (S.crisisSeen[id] && d < 6) { loseStudent(id); logIt(`${STUDENTS[id].n}的信任跌到了谷底，决定离开课题组。`); }
+    else if (d < 6) { S.crisis[id] = d + 1; S.crisisSeen[id] = 1; logIt(`${STUDENTS[id].n}今天一直没怎么说话。`); }
+  });
+  if (d === 3 && (S.intents.filter(x => x === 'students').length >= 2 || avgTrust() >= 75)) S.flags.students_week = 1;
   if (d === 4 && !S.submitted) { applyFx({ rep: -10, research: -6 }); logIt(`基金申请书没有提交（停在 ${Math.floor(S.grant)}%）。明年再来。`); }
   if (d === 6 && !S.paperSubmitted) { applyFx({ rep: -8, research: -6 }); logIt(`论文修改稿没能按时提交（${Math.floor(S.paper)}%），编辑把稿件标记为撤回。`); }
   S.dayResult = { reason, done, total };
   if (d === 6) return endWeek(reason);
   showDaySummary();
 }
+/* Five-block strip of the day: what each block was mostly spent on. */
+function timeBreakdown(use) {
+  const strip = BLOCKS.map((b, i) => { const u = use[i] || {}, tot = Object.values(u).reduce((a, c) => a + c, 0), tc = topCat(u);
+    return `<div class="tbB ${b.overtime ? 'ot' : ''}"><b>${b.name}</b><div class="tbBar">${Object.keys(CATS).filter(k => u[k]).map(k => `<i title="${CATS[k].n} ${Math.round(u[k])} 分" style="flex:${u[k]};background:${CATS[k].c}"></i>`).join('') || '<i style="flex:1;background:rgba(255,255,255,.05)"></i>'}</div><small>${tc ? CATS[tc].n : tot ? '零碎' : '—'}</small></div>`; }).join('');
+  return `<div class="tbRow">${strip}</div>`;
+}
+function catBars(tw) {
+  const tot = Object.values(tw).reduce((a, c) => a + c, 0) || 1;
+  return Object.keys(CATS).filter(k => tw[k] >= 1).sort((a, b) => tw[b] - tw[a]).map(k => `<div class="cb"><span>${CATS[k].n}</span><div><i style="width:${tw[k] / tot * 100}%;background:${CATS[k].c}"></i></div><b>${Math.floor(tw[k] / 60)}h${pad(Math.round(tw[k] % 60))}</b></div>`).join('');
+}
+function trustRows() {
+  return Object.entries(STUDENTS).map(([id, p]) => { const lost = S.lost.includes(id), v = Math.round(S.trust[id]); return `<div class="tr ${lost ? 'lost' : ''}"><img alt="" src="${portrait(CAST[id], lost ? 'normal' : v < 35 ? 'worried' : v > 75 ? 'happy' : 'normal', 'head')}"><span>${p.n}<small>${p.role}</small></span><div><i style="width:${lost ? 0 : v}%;background:${v < 35 ? 'var(--danger)' : v < 55 ? 'var(--warn)' : 'var(--ok)'}"></i></div><b>${lost ? '已离开' : v}</b></div>`; }).join('');
+}
 function fmtLeft(mins) { mins = Math.max(0, Math.round(mins)); return mins >= 1440 ? `${Math.floor(mins / 1440)}天${Math.floor(mins % 1440 / 60)}小时` : `${Math.floor(mins / 60)}h ${pad(mins % 60)}m`; }
 function showDaySummary() {
   const d = S.day, D = DAYS[d], N = DAYS[d + 1], r = S.dayResult;
-  $('dayEyebrow').textContent = `第 ${d + 1} 天 · ${D.name} ${D.date} · ${fmt(S.t)}`;
+  $('dayEyebrow').textContent = `第 ${S.week} 周 · 第 ${d + 1} 天 · ${D.name} ${dayDate(d)} · ${fmt(S.t)}`;
   $('dayHead').textContent = r.reason === 'collapse' ? `${D.name}：你在办公室睡着了` : r.reason === 'home' ? `${D.name}：提前下班` : `${D.name}结束了`;
   const parts = [`今天冒出 ${r.total} 件事，你亲手处理了 ${r.done} 件。`, `喝了 ${S.coffees} 杯咖啡，吃了 ${S.meals} 顿饭。`];
   if (d < 4) parts.push(S.submitted ? '基金已经提交。' : `基金写到 ${Math.floor(S.grant)}%，周五 23:59 截止。`);
   if (d === 4) parts.push(S.submitted ? '基金赶在截止前交上了！' : '基金没能交上。');
   parts.push(S.paperSubmitted ? '论文修改稿已提交。' : `论文修改稿 ${Math.floor(S.paper)}%，周日 23:59 截止。`);
   parts.push(r.reason === 'collapse' ? '你累倒了，明天会从比较低的精力开始。' : r.reason === 'home' ? '今天早点回家，明天精神会更好。' : '回到家已经过了午夜。');
+  parts.push(`身心 ${Math.round(S.wb)}。${S.endT < hm(21) ? '今晚能好好休息，明天会恢复一些。' : '又是很晚才走。'}`);
   parts.push(`明天是${N.name}：${N.theme}，${N.sub}。`);
   $('daySummary').textContent = parts.join('');
   $('dayKpis').innerHTML = KPI.map(([k, n]) => { const v = Math.round(S.k[k]), dv = v - Math.round(S.kStart[k]); return `<tr><td><span class="dot" style="background:${v < 40 ? 'var(--danger)' : v < 55 ? 'var(--warn)' : 'var(--cyan)'}"></span>${n}</td><td>${v} <span class="delta ${dv >= 0 ? 'p' : 'm'}">${dv >= 0 ? '+' : ''}${dv}</span></td></tr>`; }).join('') + `<tr><td><span class="dot" style="background:var(--gold)"></span>等级</td><td>Lv.${S.level + 1} ${LEVELS[S.level][1]} · ${S.xp} XP</td></tr>`;
+  $('dayTime').innerHTML = timeBreakdown(S.blockUse);
+  $('dayTrust').innerHTML = trustRows();
   $('weekStrip').innerHTML = DAYS.map((x, i) => `<div class="${i <= d ? 'done' : ''} ${i === d + 1 ? 'now' : ''} ${i === 4 || i === 6 ? 'dl' : ''}"><b>${x.name}</b>${i === 4 ? '基金截止' : i === 6 ? '投稿截止' : x.theme}</div>`).join('');
   const logs = S.log.slice(S.dayLogStart);
   $('dayLog').innerHTML = logs.map(l => `<div><span class="t">${fmt(l.t)}</span><span>${esc(l.text)}</span></div>`).join('') || '<div><span class="t">—</span><span>今天风平浪静。</span></div>';
@@ -7154,36 +7547,112 @@ function showDaySummary() {
   S.day = d + 1; saveGame(); S.day = d;
   fadeTo(() => { $('hud').classList.add('hidden'); show('scrDay'); toggleOverview(true); camState.orbit = 0.0001; });
 }
-const SAVE_KEY = 'prof-week-save-v1';
-const PERSIST = ['k', 'xp', 'level', 'ach', 'cards', 'log', 'grant', 'submitted', 'paper', 'paperSubmitted', 'day', 'collapses', 'lastEnd', 'totals', 'muons', 'rooms', 'zones', 'sports', 'reads', 'clears', 'flags', 'coffeesWeek', 'mealsWeek', 'mode', 'avatar'];
-function saveGame() { try { const o = {}; PERSIST.forEach(k => { o[k] = S[k]; }); localStorage.setItem(SAVE_KEY, JSON.stringify({ setup: Object.assign({}, setup), S: o, at: Date.now() })); } catch (e) { /* storage blocked */ } }
-function loadSave() { try { const x = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); return x && x.S && x.S.day >= 0 && x.S.day <= 6 ? x : null; } catch (e) { return null; } }
-function clearSave() { try { localStorage.removeItem(SAVE_KEY); } catch (e) { /* storage blocked */ } }
-function refreshContinue() { const sv = loadSave(); $('contBtn').classList.toggle('hidden', !sv); if (sv) $('contBtn').textContent = `继续：第 ${sv.S.day + 1} 天 · ${DAYS[sv.S.day].name}`; }
+/* ---------------- saves (v2, with v1 migration) + career ---------------- */
+const SAVE_KEY = 'prof-week-save-v2', SAVE_V1 = 'prof-week-save-v1', CAREER_KEY = 'prof-career-v1';
+const PERSIST = ['k', 'xp', 'level', 'ach', 'cards', 'log', 'grant', 'submitted', 'paper', 'paperSubmitted', 'day', 'collapses', 'lastEnd', 'totals', 'muons', 'rooms', 'zones', 'sports', 'reads', 'clears', 'flags', 'coffeesWeek', 'mealsWeek', 'mode', 'avatar',
+  'week', 'career', 'wb', 'trust', 'mem', 'lost', 'gq', 'intel', 'crisis', 'crisisSeen', 'timeWeek', 'focusBlocks', 'recruit', 'intents', 'rumours', 'subWb', 'endT'];
+function saveGame() { try { const o = {}; PERSIST.forEach(k => { o[k] = S[k]; }); localStorage.setItem(SAVE_KEY, JSON.stringify({ v: 2, setup: Object.assign({}, setup), S: o, at: Date.now() })); } catch (e) { /* storage blocked */ } }
+// v1 saves (v3/v4 builds) have no career, trust or wellbeing: start them as week 1 with defaults.
+function migrateSave(x) {
+  if (!x || !x.S) return null;
+  if (!x.v) {
+    const st = x.S, c = freshCareer(); x.v = 2;
+    Object.assign(st, { week: 1, career: c, wb: c.wb, lost: [], mem: {}, gq: 40, intel: {}, crisis: {}, crisisSeen: {}, timeWeek: {}, focusBlocks: 0, recruit: false, intents: [], rumours: [] });
+    st.trust = {}; Object.keys(STUDENTS).forEach(id => { st.trust[id] = 60; });
+  }
+  return x;
+}
+function loadSave() {
+  try {
+    let x = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null');
+    if (!x) { x = migrateSave(JSON.parse(localStorage.getItem(SAVE_V1) || 'null')); if (x) { localStorage.setItem(SAVE_KEY, JSON.stringify(x)); localStorage.removeItem(SAVE_V1); } }
+    return x && x.S && x.S.day >= 0 && x.S.day <= 6 ? x : null;
+  } catch (e) { return null; }
+}
+function clearSave() { try { localStorage.removeItem(SAVE_KEY); localStorage.removeItem(SAVE_V1); } catch (e) { /* storage blocked */ } }
+function loadCareer() { try { const c = JSON.parse(localStorage.getItem(CAREER_KEY) || 'null'); return c && c.week ? c : null; } catch (e) { return null; } }
+function saveCareer(c) { try { localStorage.setItem(CAREER_KEY, JSON.stringify(c)); } catch (e) { /* storage blocked */ } }
+function refreshContinue() {
+  const sv = loadSave(), c = loadCareer(), btn = $('contBtn');
+  if (sv) { btn.classList.remove('hidden'); btn.textContent = `继续：第 ${sv.S.week || 1} 周 · 第 ${sv.S.day + 1} 天 · ${DAYS[sv.S.day].name}`; btn.onclick = continueGame; }
+  else if (c && c.week > 1) { btn.classList.remove('hidden'); btn.textContent = `继续职业生涯：第 ${c.week} 周 · ${RANKS[c.rank].n}`; btn.onclick = nextWeek; }
+  else btn.classList.add('hidden');
+}
+function nextWeek() {
+  const c = loadCareer() || freshCareer();
+  ensureAudio(); if (actx && actx.state === 'suspended') actx.resume();
+  if (c.setup) Object.assign(setup, c.setup);
+  if (S) S.events.forEach(ev => { if (ev.marker) ev.marker.parent.remove(ev.marker); });
+  S = newState(c); startDay(0);
+}
+
+/* Week epilogue: what the week's choices turned into. Each row: [ok|bad|mid, title, detail, points]. */
+function weekOutcomes() {
+  const F = S.flags, out = [];
+  if (!S.submitted) out.push(['bad', '基金：没有提交', `停在 ${Math.floor(S.grant)}%。申报系统周五 23:59 准时关闭。`, 0]);
+  else {
+    const q = Math.round(S.gq + (S.k.research - 50) * 0.3 + (S.k.rep - 50) * 0.15 + ((S.subWb ?? S.wb) >= 50 ? 4 : -4));
+    const why = [F.letter && '化学系陈老师的合作意向', S.reads >= 2 && '图书馆里攒下的创新点', S.focusBlocks >= 3 && '几段完整的专注时间', S.k.research >= 60 && '扎实的前期成果', (S.subWb ?? S.wb) < 40 && '赶工的痕迹（交稿时身心透支）', S.focusBlocks < 2 && '写作时间太碎'].filter(Boolean);
+    out.push(q >= 55 ? ['ok', '基金：获批 · 三个月后', `评审综合分 ${q}（≥ 55 获批）。评审意见里提到：${why.join('、') || '思路清楚'}。`, 4] : ['bad', '基金：未获资助 · 三个月后', `评审综合分 ${q}（≥ 55 获批）。评审意见：${why.join('、') || '创新性和可行性论证不足'}。`, 0]);
+  }
+  if (!S.paperSubmitted) out.push(['bad', '论文：被标记为撤回', '修改稿没能在周日截止前提交。', 0]);
+  else {
+    const q = Math.round(40 + (S.k.research - 50) * 0.4 + (S.k.integrity - 60) * 0.3 + (F.r2_data ? 12 : -4) + (F.fit_ok ? 6 : 0) + (F.resp_full ? 5 : 0) + (F.sys_ok ? 4 : 0) + (F.refs_ok ? 3 : 0) + (F.fig_ok ? 3 : 0) + (F.disc_ok ? 3 : 0));
+    const why = [F.r2_data ? '补了审稿人 2 要的温度分析' : '没有回应审稿人 2 的系统误差问题', F.resp_full && '逐条回复信', F.fit_ok && '小陈那张漂亮的寿命拟合', F.sys_ok && '诚实报告的系统误差检查'].filter(Boolean).join('、');
+    out.push(q >= 70 ? ['ok', '论文：直接接收', `编辑：“All concerns have been addressed.” 关键：${why}。`, 3] : q >= 55 ? ['ok', '论文：小修后接收', `再改两处就能发表。关键：${why}。`, 2] : q >= 40 ? ['mid', '论文：大修', `审稿人还不满意。关键：${why}。`, 1] : ['bad', '论文：拒稿', `编辑认为修改不充分。关键：${why}。`, 0]);
+  }
+  Object.entries(STUDENTS).forEach(([id, p]) => {
+    if (S.lost.includes(id)) return out.push(['bad', `${p.n}：已离开课题组`, '转去了别的导师那里。组里少了一个人，剩下的人都看在眼里。', 0]);
+    const v = Math.round(S.trust[id]);
+    if (v < 30) { S.lost.push(id); return out.push(['bad', `${p.n}：假期后换了导师`, `信任只剩 ${v}。这周${p.he}找过你几次，你都在忙。`, 0]); }
+    out.push(v >= 60 ? ['ok', `${p.n}：留在组里，干劲十足`, `信任 ${v}。`, 1] : ['mid', `${p.n}：留下了，但有点疏远`, `信任 ${v}。下周多花点时间在${p.he}身上。`, 0]);
+  });
+  if (S.recruit) out.push(F.recruit_ok ? ['ok', '新人：大二的小吴下周来旁听组会', '踢一场球换来的。', 1] : ['mid', '新人：小吴还在等你的回信', '踢球时认识的本科生。', 0]);
+  if (F.ally_coach) out.push(['ok', '合作伙伴：化学系陈老师', '网球场上的交情。以后每周五他都可能帮你一把。', 0]);
+  if (S.k.rep >= 70) out.push(['ok', '学院里的口碑不错', `声誉 ${Math.round(S.k.rep)}。`, 1]);
+  out.push(S.collapses ? ['bad', `累倒了 ${S.collapses} 次`, '身体比截止日更难商量。', 0] : ['ok', '一周没有累倒', '', 1]);
+  out.push(S.wb < 30 ? ['bad', `身心透支（${Math.round(S.wb)}）`, '下周会从疲惫开始。', 0] : ['ok', `身心 ${Math.round(S.wb)}`, S.wb >= 60 ? '这周照顾好了自己。' : '还撑得住。', 0]);
+  return out;
+}
 function endWeek(reason) {
   const T = S.totals;
   if (!S.collapses) unlock('week'); if (S.k.team >= 85) unlock('mentor7'); if (S.k.safety >= 80) unlock('safe7'); if (S.cards.length >= 20) unlock('scholar');
+  const outs = weekOutcomes(), pts = outs.reduce((a, o) => a + o[3], 0);
   const avg = KPI.reduce((s, [k]) => s + S.k[k], 0) / KPI.length;
-  const score = avg + (S.submitted ? 8 : -6) + (S.paperSubmitted ? 8 : -6) + (T.done / Math.max(1, T.all)) * 10 - S.collapses * 4;
+  const score = avg + pts * 2.5 + (T.done / Math.max(1, T.all)) * 8 - S.collapses * 4 - 10;
   const G = score >= 82 ? ['S', '院士候选人的一周'] : score >= 70 ? ['A', '稳健的长聘教授'] : score >= 58 ? ['B', '忙而不乱的青年教师'] : score >= 46 ? ['C', '被截止日追着跑的一周'] : ['D', '下周，请先睡一觉'];
-  $('endEyebrow').textContent = '周日 23:59 · 一周结束';
-  $('endHead').textContent = reason === 'collapse' ? '周日晚上，你在办公桌前睡着了' : '这一周结束了';
+  // career
+  const c = S.career, rank0 = c.rank;
+  c.pts += pts; while (c.rank < RANKS.length - 1 && c.pts >= RANKS[c.rank + 1].pts) c.rank++;
+  c.history.push({ week: S.week, grade: G[0], pts, grant: outs[0][1], paper: outs[1][1], lost: S.lost.length });
+  Object.assign(c, { week: S.week + 1, trust: Object.assign({}, S.trust), lost: S.lost.slice(), flags: S.flags.ally_coach ? { ally_coach: 1 } : {}, wb: clamp(S.wb + 8), k: Object.assign({}, S.k), setup: Object.assign({}, setup) });
+  saveCareer(c);
+  const promoted = c.rank > rank0, nxt = RANKS[c.rank + 1];
+  $('endEyebrow').textContent = `第 ${S.week} 周 · 周日 23:59 · 一周结束`;
+  $('endHead').textContent = promoted ? `晋升：${RANKS[c.rank].n}！` : reason === 'collapse' ? '周日晚上，你在办公桌前睡着了' : '这一周结束了';
   $('endGrade').textContent = G[0];
-  $('endImg').src = portrait(PLAYER_LOOK(S.avatar === 'f'), G[0] === 'S' || G[0] === 'A' ? 'happy' : G[0] === 'D' ? 'sleepy' : 'normal');
-  $('endTitle').textContent = G[1] + ` · Lv.${S.level + 1} ${LEVELS[S.level][1]}`;
-  $('endSummary').textContent = [S.submitted ? '基金赶在周五截止前交上了。' : '基金没能交上。', S.paperSubmitted ? '论文修改稿在周日截止前提交了。' : '论文修改稿没能按时提交。', `这一周一共冒出 ${T.all} 件事，你亲手处理了 ${T.done} 件，累倒 ${S.collapses} 次，获得 ${S.xp} 点经验。`, `约有 ${Math.floor(S.muons).toLocaleString('zh-CN')} 个宇宙线缪子在这一周里穿过了你的身体。`].join('');
+  $('endImg').src = portrait(PLAYER_LOOK(S.avatar === 'f'), promoted || G[0] === 'S' || G[0] === 'A' ? 'happy' : G[0] === 'D' ? 'sleepy' : 'normal');
+  $('endTitle').textContent = G[1] + ` · ${RANKS[c.rank].n}`;
+  $('endSummary').textContent = [`这一周一共冒出 ${T.all} 件事，你亲手处理了 ${T.done} 件，累倒 ${S.collapses} 次。`, `完整的专注时段 ${S.focusBlocks} 段。`, `约有 ${Math.floor(S.muons).toLocaleString('zh-CN')} 个宇宙线缪子在这一周里穿过了你的身体。`].join('');
+  $('endOutcomes').innerHTML = outs.map(([k, t, d, p]) => `<div class="oc ${k}"><span class="m">${k === 'ok' ? '✓' : k === 'bad' ? '✕' : '~'}</span><div><b>${esc(t)}</b><small>${esc(d)}</small></div><em>${p ? '+' + p : ''}</em></div>`).join('');
+  const pct = nxt ? clamp((c.pts - RANKS[c.rank].pts) / (nxt.pts - RANKS[c.rank].pts) * 100) : 100;
+  $('endCareer').innerHTML = `<div class="crTop"><b>${RANKS[c.rank].n}</b><span>${RANKS[c.rank].en}</span></div><div class="crBar"><i style="width:${pct}%"></i></div><div class="crSub">本周 +${pts} 分 · 职业生涯累计 ${c.pts} 分${nxt ? ` · 距离「${nxt.n}」还差 ${nxt.pts - c.pts} 分` : ' · 已到顶'}</div><div class="crHist">${c.history.slice(-8).map(h => `<span title="${esc(h.grant + ' / ' + h.paper)}">W${h.week} <b>${h.grade}</b> +${h.pts}</span>`).join('')}</div>`;
+  const tw = S.timeWeek, totMin = Object.values(tw).reduce((a, b) => a + b, 0) || 1, waste = ((tw.travel || 0) + (tw.idle || 0)) / totMin;
+  $('endTime').innerHTML = catBars(tw);
+  $('endMetrics').innerHTML = [['过期事件比例', Math.round(T.missed / Math.max(1, T.all) * 100) + '%', '目标 20–35%：说明你在取舍'], ['完整专注时段', S.focusBlocks + ' 段', '≥ 90 分钟不被打断'], ['时间利用率', Math.round((1 - waste) * 100) + '%', '走路、等电梯和发呆以外的时间'], ['平均学生信任', Math.round(avgTrust()), '']].map(([a, b, c2]) => `<tr><td>${a}<br><span class="note">${c2}</span></td><td>${b}</td></tr>`).join('');
   $('endKpis').innerHTML = KPI.map(([k, n]) => `<tr><td><span class="dot" style="background:${S.k[k] < 40 ? 'var(--danger)' : S.k[k] < 55 ? 'var(--warn)' : 'var(--cyan)'}"></span>${n}</td><td>${Math.round(S.k[k])}</td></tr>`).join('') + `<tr><td><span class="dot" style="background:var(--gold)"></span>综合得分</td><td>${Math.round(score)}</td></tr>`;
   $('endAch').innerHTML = Object.entries(ACHIEVEMENTS).map(([id, [n, d]]) => `<div class="${S.ach.includes(id) ? '' : 'off'}"><span class="medal">★</span><span><b>${esc(n)}</b><small>${esc(d)}</small></span></div>`).join('');
   $('endLog').innerHTML = S.log.map(l => `<div><span class="t">${DAYS[l.day || 0].name.slice(1)} ${fmt(l.t)}</span><span>${esc(l.text)}</span></div>`).join('');
   $('cardsHead').textContent = `本周收集的科普卡 · ${S.cards.length} / ${Object.keys(CARDS).length}`;
-  $('endCards').innerHTML = S.cards.map(c => `<div class="card"><h4>${esc(CARDS[c].t)}</h4><p>${esc(CARDS[c].b)}</p></div>`).join('');
+  $('endCards').innerHTML = S.cards.map(c2 => `<div class="card"><h4>${esc(CARDS[c2].t)}</h4><p>${esc(CARDS[c2].b)}</p></div>`).join('');
+  $('againBtn').textContent = `开始第 ${c.week} 周 ▶`;
   clearSave(); refreshContinue();
+  if (promoted) setTimeout(() => { SFX.level(); }, 700);
   try { const best = +localStorage.getItem('prof-day-best') || 0; if (score > best) localStorage.setItem('prof-day-best', String(Math.round(score))); } catch (e) { /* storage unavailable */ }
   fadeTo(() => { $('hud').classList.add('hidden'); show('scrEnd'); toggleOverview(true); camState.orbit = 0.0001; });
 }
-
 /* ---------------- screens ---------------- */
-function show(id) { ['scrTitle', 'scrSetup', 'scrHand', 'scrEnd', 'scrDay'].forEach(s => $(s).classList.toggle('hidden', s !== id)); }
+function show(id) { ['scrTitle', 'scrSetup', 'scrHand', 'scrEnd', 'scrDay', 'scrPlan'].forEach(s => $(s).classList.toggle('hidden', s !== id)); }
 function fadeTo(fn) { $('fade').classList.add('on'); setTimeout(() => { fn(); setTimeout(() => $('fade').classList.remove('on'), 80); }, 460); }
 function renderSetup() {
   const sel = (a, b, on) => { a.classList.toggle('on', on); b.classList.toggle('on', !on); a.setAttribute('aria-pressed', on); b.setAttribute('aria-pressed', !on); SFX.click(); };
@@ -7206,10 +7675,11 @@ function renderHandover() {
     ['周日', '论文修改稿截止 23:59', '修改稿目前 20%，审稿意见 23 条。'],
   ];
   $('sheetTable').innerHTML = rows.map(r => `<tr><td>${r[0]}</td><td><b>${esc(r[1])}</b><br><span class="note">${esc(r[2])}</span></td></tr>`).join('');
-  $('handMe').innerHTML = `<h4>你</h4><img class="me" alt="" src="${portrait(PLAYER_LOOK(setup.avatar === 'f'), 'normal')}"><div style="margin-top:10px;font:900 15px var(--serif-cn)">值班教授 · Lv.1 讲师</div><div style="font-size:11px;color:var(--muted);margin-top:4px">${setup.mode === 'pro' ? '学者 Pro 版 · AI 开放式对话' : '一般民众体验版'} · ${crunch ? '大爆周' : '普通的一周'}</div>`;
+  $('handMe').innerHTML = `<h4>你</h4><img class="me" alt="" src="${portrait(PLAYER_LOOK(setup.avatar === 'f'), 'normal')}"><div style="margin-top:10px;font:900 15px var(--serif-cn)">助理教授 · 第 1 周</div><div style="font-size:11px;color:var(--muted);margin-top:4px">${setup.mode === 'pro' ? '学者 Pro 版 · AI 开放式对话' : '一般民众体验版'} · ${crunch ? '大爆周' : '普通的一周'}</div>`;
+  const oc = loadCareer(); $('handCareer').textContent = oc && oc.week > 1 ? `注意：这会开始一段新的职业生涯（当前存档：第 ${oc.week} 周 · ${RANKS[oc.rank].n}）。想继续，请回首页点「继续职业生涯」。` : '';
   $('teamRow').innerHTML = [['wang', '王老师', '院办秘书'], ['zhao', '赵博士', '博士后'], ['lin', '小林', '硕士 · 实验室']].map(([id, n, r]) => `<div><img alt="" src="${portrait(CAST[id], 'normal', 'head')}">${n}<br><span style="color:var(--muted)">${r}</span></div>`).join('');
 }
-function startGame() { ensureAudio(); if (actx && actx.state === 'suspended') actx.resume(); if (S) S.events.forEach(ev => { if (ev.marker) ev.marker.parent.remove(ev.marker); }); S = newState(); startDay(0); }
+function startGame() { ensureAudio(); if (actx && actx.state === 'suspended') actx.resume(); if (S) S.events.forEach(ev => { if (ev.marker) ev.marker.parent.remove(ev.marker); }); clearSave(); try { localStorage.removeItem(CAREER_KEY); } catch (e) { /* storage blocked */ } S = newState(freshCareer()); startDay(0); }
 function continueGame() {
   const sv = loadSave(); if (!sv) return;
   ensureAudio(); if (actx && actx.state === 'suspended') actx.resume();
@@ -7222,7 +7692,10 @@ function startDay(d) {
     Object.values(NPC).forEach(n => { setEmote(n, null); n.userData.state = n.userData.baseState || 'idle'; setExpr(n, 'normal'); });
     S.day = d; S.t = hm(8); S.ended = false; S.running = true; S.paused = false; S.activity = null; S.dialog = null; S.path = []; S.autoTarget = null; S.warned = {};
     S.v = { energy: S.lastEnd === 'collapse' ? 55 : S.lastEnd === 'home' ? 92 : 78, full: 50, bladder: 15 };
+    if (d > 0 && S.endT !== undefined) S.wb = clamp(S.wb + (S.lastEnd === 'collapse' ? 0 : S.endT < hm(19) ? 14 : S.endT < hm(21) ? 9 : S.endT < hm(23) ? 4 : 1));
     S.coffees = 0; S.meals = 0; S.hadQuests = false; S.flags = S.flags || {};
+    S.blockUse = []; S.memToday = {}; S.intent = null; S.flow = 0; S.flowCarry = null; S.endT = undefined;
+    Object.keys(STUDENTS).forEach(id => { if (NPC[id]) NPC[id].visible = !S.lost.includes(id); });
     S.events = buildDay(d, setup.day); S.dayLogStart = S.log.length; S.cardStart = S.cards.length; S.kStart = Object.assign({}, S.k);
     saveGame();
     setZone('f5'); S.autoRoute = null; S.autoNext = null; S.zones.f5 = 1;
@@ -7231,19 +7704,53 @@ function startDay(d) {
     camState.orbit = 0; camState.wantAz = camState.az = Math.PI / 4; toggleOverview(false); camState.target.copy(player.position);
     show(null); $('hud').classList.remove('hidden');
     questsDirty = true; renderXP(); renderHUD();
-    $('intro').classList.remove('hidden');
-    $('introD').textContent = `DAY ${d + 1} · ${DAYS[d].date} · PHYSICS 5F`; $('introB').textContent = `${DAYS[d].name} · ${DAYS[d].theme}`; $('introSub').textContent = DAYS[d].sub;
-    const el = $('intro').firstElementChild; el.style.animation = 'none'; void el.offsetWidth; el.style.animation = '';
-    S.paused = true; setTimeout(() => { $('intro').classList.add('hidden'); if (S && !S.ended) S.paused = false; toast(`${DAYS[d].name} 08:00 到岗。今天有 ${S.events.length} 件事在等你。`); }, 3000);
+    S.paused = true; S.planning = true; $('hud').classList.add('hidden'); showPlanner(d);
   });
 }
-function togglePause(force) { if (!S || !S.running) return; S.paused = force === undefined ? !S.paused : force; $('pauseVeil').classList.toggle('hidden', !S.paused); }
+function avgTrust() { const ids = Object.keys(S.trust).filter(id => !S.lost.includes(id)); return ids.length ? ids.reduce((a, id) => a + S.trust[id], 0) / ids.length : 0; }
+function dayDate(d) { const t = new Date(2026, 9, 19 + d + 7 * ((S && S.week || 1) - 1)); return `${t.getMonth() + 1}/${t.getDate()}`; }
+/* Morning planner: fixed commitments per block, deadline arithmetic, trust, rumours, one intention. */
+function showPlanner(d) {
+  const D = DAYS[d], evs = S.events;
+  $('planEyebrow').textContent = `第 ${S.week} 周 · 第 ${d + 1} 天 · ${D.name} ${dayDate(d)} · 07:45`;
+  $('planHead').textContent = `${D.name}：${D.theme}`;
+  $('planSub').textContent = `${D.sub}。今天一共会冒出大约 ${evs.length} 件事，你不可能全都亲手处理。`;
+  const fixed = (i) => evs.filter(e => blockIdx(e.at) === i && (e.known || (S.intel[d] && (e.urgent || e.alarm))));
+  $('planBlocks').innerHTML = BLOCKS.map((b, i) => {
+    const f = fixed(i), busy = f.length > 0;
+    return `<div class="pb ${b.overtime ? 'ot' : ''} ${busy ? 'busy' : ''}"><div class="pbH"><b>${b.name}</b><span>${fmt(b.from)}–${b.to >= 1440 ? '24:00' : fmt(b.to)}</span></div>${f.map(e => `<div class="pbE ${e.urgent || e.alarm ? 'u' : ''}">${fmt(e.at)} ${esc(shortTitle(e.title))}${e.urgent || e.alarm ? ' <em>传闻</em>' : ''}</div>`).join('') || `<div class="pbFree">${b.overtime ? '加班会消耗身心' : '空档 · 可以专注'}</div>`}</div>`;
+  }).join('');
+  const perBlock = 20, gLeft = Math.max(0, 100 - S.grant), pLeft = Math.max(0, 100 - S.paper);
+  const freeBlocks = (lastDay) => { let n = 0; for (let x = d; x <= lastDay; x++) n += 5; return n - BLOCKS.slice(0, 5).filter((b, i) => fixed(i).some(e => e.known)).length; };
+  const rows = [];
+  if (!S.submitted && d <= 4) rows.push(`<div><b>基金书 ${Math.floor(S.grant)}%</b>还需要约 <em>${Math.ceil(gLeft / perBlock)}</em> 段完整的专注时段；距周五截止还有约 ${freeBlocks(4)} 个时段（不算被会议和课占掉的）。基金质量 ${Math.round(S.gq)}。</div>`);
+  if (!S.paperSubmitted) rows.push(`<div><b>论文修改稿 ${Math.floor(S.paper)}%</b>还需要约 <em>${Math.ceil(pLeft / 23)}</em> 段专注时段，周日 23:59 截止。</div>`);
+  rows.push(`<div><b>身心 ${Math.round(S.wb)}</b>${S.wb < 40 ? '偏低：专注会更难进入状态。六楼植物园是唯一能好好恢复的地方。' : '还撑得住。加班会慢慢磨掉它。'}</div>`);
+  (S.rumours || []).filter(r => r.day === d).forEach(r => rows.push(`<div><b>天台八卦</b>${esc(r.text)}</div>`));
+  Object.keys(S.crisis).filter(id => S.crisis[id] === d).forEach(id => rows.push(`<div class="bad"><b>${STUDENTS[id].n}</b>昨天一整天都没怎么说话，今天早上想找你谈谈。</div>`));
+  $('planNotes').innerHTML = rows.join('');
+  $('planTrust').innerHTML = Object.entries(STUDENTS).map(([id, p]) => { const lost = S.lost.includes(id), v = Math.round(S.trust[id]); return `<div class="${lost ? 'lost' : ''}"><img alt="" src="${portrait(CAST[id], lost ? 'normal' : v < 35 ? 'worried' : v > 75 ? 'happy' : 'normal', 'head')}"><span>${p.n}</span><i style="--v:${lost ? 0 : v}%;--c:${v < 35 ? 'var(--danger)' : v < 55 ? 'var(--warn)' : 'var(--ok)'}"></i><small>${lost ? '已离开' : '信任 ' + v}</small></div>`; }).join('');
+  $('planIntents').innerHTML = INTENTS.map(x => `<button type="button" class="intent" data-id="${x.id}"><span class="ic">${x.ic}</span><b>${x.n}</b><small>${x.d}</small></button>`).join('');
+  $('planIntents').querySelectorAll('.intent').forEach(b => { b.onclick = () => beginDay(d, b.dataset.id); b.onmouseenter = SFX.click; });
+  show('scrPlan');
+}
+function beginDay(d, intent) {
+  SFX.click(); S.planning = false; S.intent = intent; S.intents.push(intent); if (intent === 'self') S.v.energy = clamp(S.v.energy + 8);
+  logIt(`今天的打算：${INTENTS.find(x => x.id === intent).n}。`); saveGame();
+  show(null); $('hud').classList.remove('hidden'); renderHUD();
+  $('intro').classList.remove('hidden');
+  $('introD').textContent = `WEEK ${S.week} · DAY ${d + 1} · ${dayDate(d)}`; $('introB').textContent = `${DAYS[d].name} · ${DAYS[d].theme}`; $('introSub').textContent = `今天的打算：${INTENTS.find(x => x.id === intent).n}`;
+  const el = $('intro').firstElementChild; el.style.animation = 'none'; void el.offsetWidth; el.style.animation = '';
+  setTimeout(() => { $('intro').classList.add('hidden'); if (S && !S.ended) S.paused = false; toast(`${DAYS[d].name} 08:00 到岗。专注时段要自己守住。`); }, 2600);
+}
+function togglePause(force) { if (!S || !S.running || S.planning) return; S.paused = force === undefined ? !S.paused : force; $('pauseVeil').classList.toggle('hidden', !S.paused); }
 
 /* ---------------- input ---------------- */
 addEventListener('keydown', (e) => {
   if (e.target && (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT')) return;
   keys[e.code] = true;
   if (!S || !S.running) { if (e.key === 'Enter' && !$('scrHand').classList.contains('hidden')) startGame(); return; }
+  if (S.planning) { if (/^Digit[1-4]$/.test(e.code)) beginDay(S.day, INTENTS[+e.code.slice(5) - 1].id); return; }
   if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) e.preventDefault();
   if (e.code === 'KeyP') return togglePause();
   if (S.paused) return;
@@ -7312,14 +7819,13 @@ $('modeBasic').onclick = () => { setup.mode = 'basic'; ensureAudio(); renderSetu
 $('modePro').onclick = () => { if (!AI.ready()) return openAI('先选择服务商并填写 API Key，保存后再点「学者 Pro 版」。'); setup.mode = 'pro'; ensureAudio(); renderSetup(); show('scrSetup'); };
 $('aiBtnTitle').onclick = () => openAI();
 $('bAI').onclick = () => openAI();
-$('contBtn').onclick = continueGame;
 $('nextDayBtn').onclick = () => { SFX.click(); startDay(S.day + 1); };
 $('dayHomeBtn').onclick = () => { show('scrTitle'); refreshContinue(); };
 $('setupBack').onclick = () => { SFX.click(); show('scrTitle'); };
 $('setupNext').onclick = () => { SFX.click(); renderHandover(); show('scrHand'); };
 $('handBack').onclick = () => { SFX.click(); show('scrSetup'); };
 $('startBtn').onclick = startGame;
-$('againBtn').onclick = () => { renderHandover(); show('scrHand'); };
+$('againBtn').onclick = () => { SFX.click(); nextWeek(); };
 $('homeBtn').onclick = () => { show('scrTitle'); refreshContinue(); };
 setTimeout(refreshContinue, 0);
 initAI();
@@ -7380,7 +7886,7 @@ function frame(now) {
   if (S && S.running && !S.paused && !S.dialog && !S.ended) {
     const mult = S.activity ? S.activity.ff * S.speed : S.speed;
     let dm = dt * mult;
-    while (dm > 0 && S.running && !S.ended) { const d = Math.min(1, dm); minuteTick(d); dm -= d; }
+    while (dm > 0 && S.running && !S.ended && !S.dialog) { const d = Math.min(1, dm); minuteTick(d); dm -= d; }
   }
   if (S && S.running) movePlayer(dt);
   musicTick(dt);
