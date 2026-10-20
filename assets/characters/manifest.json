@@ -1,0 +1,989 @@
+{
+ "player_m": {
+  "url": "assets/characters/glb/player_m.glb",
+  "scale": 1.0,
+  "clips": {
+   "idle": "Idle",
+   "walk": "Walk",
+   "run": "Run",
+   "sit": "Sit",
+   "sittalk": "SitTalk",
+   "type": "Typing",
+   "talk": "Talk",
+   "panic": "Panic",
+   "think": "Think",
+   "point": "Point",
+   "celebrate": "Celebrate",
+   "disappointed": "Disappointed",
+   "raise_hand": "RaiseHand",
+   "read": "Read",
+   "play": "Play",
+   "present": "Present"
+  },
+  "speed": {
+   "walk": 1.2,
+   "run": 1.15
+  },
+  "tris": 12204,
+  "portrait": {
+   "url": "assets/characters/portraits/player_m.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    25,
+    -18,
+    350,
+    350
+   ]
+  }
+ },
+ "player_f": {
+  "url": "assets/characters/glb/player_f.glb",
+  "scale": 1.0,
+  "clips": {
+   "idle": "Idle",
+   "walk": "Walk",
+   "run": "Run",
+   "sit": "Sit",
+   "sittalk": "SitTalk",
+   "type": "Typing",
+   "talk": "Talk",
+   "panic": "Panic",
+   "think": "Think",
+   "point": "Point",
+   "celebrate": "Celebrate",
+   "disappointed": "Disappointed",
+   "raise_hand": "RaiseHand",
+   "read": "Read",
+   "play": "Play",
+   "present": "Present"
+  },
+  "speed": {
+   "walk": 1.2,
+   "run": 1.15
+  },
+  "tris": 14652,
+  "portrait": {
+   "url": "assets/characters/portraits/player_f.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    22,
+    -22,
+    355,
+    355
+   ]
+  }
+ },
+ "wang": {
+  "url": "assets/characters/glb/wang.glb",
+  "scale": 1.0,
+  "clips": {
+   "idle": "Idle",
+   "walk": "Walk",
+   "run": "Run",
+   "sit": "Sit",
+   "sittalk": "SitTalk",
+   "type": "Typing",
+   "talk": "Talk",
+   "panic": "Panic",
+   "think": "Think",
+   "point": "Point",
+   "celebrate": "Celebrate",
+   "disappointed": "Disappointed",
+   "raise_hand": "RaiseHand",
+   "read": "Read",
+   "play": "Play",
+   "present": "Present"
+  },
+  "speed": {
+   "walk": 1.2,
+   "run": 1.15
+  },
+  "tris": 10944,
+  "portrait": {
+   "url": "assets/characters/portraits/wang.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    22,
+    -22,
+    355,
+    355
+   ]
+  }
+ },
+ "chen": {
+  "url": "assets/characters/glb/chen.glb",
+  "scale": 1.0,
+  "clips": {
+   "idle": "Idle",
+   "walk": "Walk",
+   "run": "Run",
+   "sit": "Sit",
+   "sittalk": "SitTalk",
+   "type": "Typing",
+   "talk": "Talk",
+   "panic": "Panic",
+   "think": "Think",
+   "point": "Point",
+   "celebrate": "Celebrate",
+   "disappointed": "Disappointed",
+   "raise_hand": "RaiseHand",
+   "read": "Read",
+   "play": "Play",
+   "present": "Present"
+  },
+  "speed": {
+   "walk": 1.2,
+   "run": 1.15
+  },
+  "tris": 10408,
+  "portrait": {
+   "url": "assets/characters/portraits/chen.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    25,
+    -18,
+    350,
+    350
+   ]
+  }
+ },
+ "zhou": {
+  "url": "assets/characters/glb/zhou.glb",
+  "scale": 1.0,
+  "clips": {
+   "idle": "Idle",
+   "walk": "Walk",
+   "run": "Run",
+   "sit": "Sit",
+   "sittalk": "SitTalk",
+   "type": "Typing",
+   "talk": "Talk",
+   "panic": "Panic",
+   "think": "Think",
+   "point": "Point",
+   "celebrate": "Celebrate",
+   "disappointed": "Disappointed",
+   "raise_hand": "RaiseHand",
+   "read": "Read",
+   "play": "Play",
+   "present": "Present"
+  },
+  "speed": {
+   "walk": 1.2,
+   "run": 1.15
+  },
+  "tris": 10524,
+  "portrait": {
+   "url": "assets/characters/portraits/zhou.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    22,
+    -22,
+    355,
+    355
+   ]
+  }
+ },
+ "yu": {
+  "url": "assets/characters/glb/yu.glb",
+  "scale": 1.0,
+  "clips": {
+   "idle": "Idle",
+   "walk": "Walk",
+   "run": "Run",
+   "sit": "Sit",
+   "sittalk": "SitTalk",
+   "type": "Typing",
+   "talk": "Talk",
+   "panic": "Panic",
+   "think": "Think",
+   "point": "Point",
+   "celebrate": "Celebrate",
+   "disappointed": "Disappointed",
+   "raise_hand": "RaiseHand",
+   "read": "Read",
+   "play": "Play",
+   "present": "Present"
+  },
+  "speed": {
+   "walk": 1.2,
+   "run": 1.15
+  },
+  "tris": 12156,
+  "portrait": {
+   "url": "assets/characters/portraits/yu.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    22,
+    -22,
+    355,
+    355
+   ]
+  }
+ },
+ "lin": {
+  "url": "assets/characters/glb/lin.glb",
+  "scale": 1.0,
+  "clips": {
+   "idle": "Idle",
+   "walk": "Walk",
+   "run": "Run",
+   "sit": "Sit",
+   "sittalk": "SitTalk",
+   "type": "Typing",
+   "talk": "Talk",
+   "panic": "Panic",
+   "think": "Think",
+   "point": "Point",
+   "celebrate": "Celebrate",
+   "disappointed": "Disappointed",
+   "raise_hand": "RaiseHand",
+   "read": "Read",
+   "play": "Play",
+   "present": "Present"
+  },
+  "speed": {
+   "walk": 1.2,
+   "run": 1.15
+  },
+  "tris": 11924,
+  "portrait": {
+   "url": "assets/characters/portraits/lin.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    25,
+    -18,
+    350,
+    350
+   ]
+  }
+ },
+ "zhao": {
+  "url": "assets/characters/glb/zhao.glb",
+  "scale": 1.0,
+  "clips": {
+   "idle": "Idle",
+   "walk": "Walk",
+   "run": "Run",
+   "sit": "Sit",
+   "sittalk": "SitTalk",
+   "type": "Typing",
+   "talk": "Talk",
+   "panic": "Panic",
+   "think": "Think",
+   "point": "Point",
+   "celebrate": "Celebrate",
+   "disappointed": "Disappointed",
+   "raise_hand": "RaiseHand",
+   "read": "Read",
+   "play": "Play",
+   "present": "Present"
+  },
+  "speed": {
+   "walk": 1.2,
+   "run": 1.15
+  },
+  "tris": 10624,
+  "portrait": {
+   "url": "assets/characters/portraits/zhao.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    25,
+    -18,
+    350,
+    350
+   ]
+  }
+ },
+ "dean": {
+  "url": "assets/characters/glb/dean.glb",
+  "scale": 1.0,
+  "clips": {
+   "idle": "Idle",
+   "walk": "Walk",
+   "run": "Run",
+   "sit": "Sit",
+   "sittalk": "SitTalk",
+   "type": "Typing",
+   "talk": "Talk",
+   "panic": "Panic",
+   "think": "Think",
+   "point": "Point",
+   "celebrate": "Celebrate",
+   "disappointed": "Disappointed",
+   "raise_hand": "RaiseHand",
+   "read": "Read",
+   "play": "Play",
+   "present": "Present"
+  },
+  "speed": {
+   "walk": 1.2,
+   "run": 1.15
+  },
+  "tris": 10888,
+  "portrait": {
+   "url": "assets/characters/portraits/dean.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    25,
+    -18,
+    350,
+    350
+   ]
+  }
+ },
+ "rep": {
+  "url": "assets/characters/glb/rep.glb",
+  "scale": 1.0,
+  "clips": {
+   "idle": "Idle",
+   "walk": "Walk",
+   "run": "Run",
+   "sit": "Sit",
+   "sittalk": "SitTalk",
+   "type": "Typing",
+   "talk": "Talk",
+   "panic": "Panic",
+   "think": "Think",
+   "point": "Point",
+   "celebrate": "Celebrate",
+   "disappointed": "Disappointed",
+   "raise_hand": "RaiseHand",
+   "read": "Read",
+   "play": "Play",
+   "present": "Present"
+  },
+  "speed": {
+   "walk": 1.2,
+   "run": 1.15
+  },
+  "tris": 13480,
+  "portrait": {
+   "url": "assets/characters/portraits/rep.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    22,
+    -22,
+    355,
+    355
+   ]
+  }
+ },
+ "s1": {
+  "url": "assets/characters/glb/s1.glb",
+  "scale": 1.0,
+  "clips": {
+   "idle": "Idle",
+   "walk": "Walk",
+   "run": "Run",
+   "sit": "Sit",
+   "sittalk": "SitTalk",
+   "type": "Typing",
+   "talk": "Talk",
+   "panic": "Panic",
+   "think": "Think",
+   "point": "Point",
+   "celebrate": "Celebrate",
+   "disappointed": "Disappointed",
+   "raise_hand": "RaiseHand",
+   "read": "Read",
+   "play": "Play",
+   "present": "Present"
+  },
+  "speed": {
+   "walk": 1.2,
+   "run": 1.15
+  },
+  "tris": 10648,
+  "portrait": {
+   "url": "assets/characters/portraits/s1.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    25,
+    -18,
+    350,
+    350
+   ]
+  }
+ },
+ "s2": {
+  "url": "assets/characters/glb/s2.glb",
+  "scale": 1.0,
+  "clips": {
+   "idle": "Idle",
+   "walk": "Walk",
+   "run": "Run",
+   "sit": "Sit",
+   "sittalk": "SitTalk",
+   "type": "Typing",
+   "talk": "Talk",
+   "panic": "Panic",
+   "think": "Think",
+   "point": "Point",
+   "celebrate": "Celebrate",
+   "disappointed": "Disappointed",
+   "raise_hand": "RaiseHand",
+   "read": "Read",
+   "play": "Play",
+   "present": "Present"
+  },
+  "speed": {
+   "walk": 1.2,
+   "run": 1.15
+  },
+  "tris": 10524,
+  "portrait": {
+   "url": "assets/characters/portraits/s2.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    22,
+    -22,
+    355,
+    355
+   ]
+  }
+ },
+ "guard": {
+  "url": "assets/characters/glb/guard.glb",
+  "scale": 1.0,
+  "clips": {
+   "idle": "Idle",
+   "walk": "Walk",
+   "run": "Run",
+   "sit": "Sit",
+   "sittalk": "SitTalk",
+   "type": "Typing",
+   "talk": "Talk",
+   "panic": "Panic",
+   "think": "Think",
+   "point": "Point",
+   "celebrate": "Celebrate",
+   "disappointed": "Disappointed",
+   "raise_hand": "RaiseHand",
+   "read": "Read",
+   "play": "Play",
+   "present": "Present"
+  },
+  "speed": {
+   "walk": 1.2,
+   "run": 1.15
+  },
+  "tris": 11104,
+  "portrait": {
+   "url": "assets/characters/portraits/guard.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    25,
+    -18,
+    350,
+    350
+   ]
+  }
+ },
+ "cook": {
+  "url": "assets/characters/glb/cook.glb",
+  "scale": 1.0,
+  "clips": {
+   "idle": "Idle",
+   "walk": "Walk",
+   "run": "Run",
+   "sit": "Sit",
+   "sittalk": "SitTalk",
+   "type": "Typing",
+   "talk": "Talk",
+   "panic": "Panic",
+   "think": "Think",
+   "point": "Point",
+   "celebrate": "Celebrate",
+   "disappointed": "Disappointed",
+   "raise_hand": "RaiseHand",
+   "read": "Read",
+   "play": "Play",
+   "present": "Present"
+  },
+  "speed": {
+   "walk": 1.2,
+   "run": 1.15
+  },
+  "tris": 11226,
+  "portrait": {
+   "url": "assets/characters/portraits/cook.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    25,
+    -18,
+    350,
+    350
+   ]
+  }
+ },
+ "librarian": {
+  "url": "assets/characters/glb/librarian.glb",
+  "scale": 1.0,
+  "clips": {
+   "idle": "Idle",
+   "walk": "Walk",
+   "run": "Run",
+   "sit": "Sit",
+   "sittalk": "SitTalk",
+   "type": "Typing",
+   "talk": "Talk",
+   "panic": "Panic",
+   "think": "Think",
+   "point": "Point",
+   "celebrate": "Celebrate",
+   "disappointed": "Disappointed",
+   "raise_hand": "RaiseHand",
+   "read": "Read",
+   "play": "Play",
+   "present": "Present"
+  },
+  "speed": {
+   "walk": 1.2,
+   "run": 1.15
+  },
+  "tris": 11236,
+  "portrait": {
+   "url": "assets/characters/portraits/librarian.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    22,
+    -22,
+    355,
+    355
+   ]
+  }
+ },
+ "coach": {
+  "url": "assets/characters/glb/coach.glb",
+  "scale": 1.0,
+  "clips": {
+   "idle": "Idle",
+   "walk": "Walk",
+   "run": "Run",
+   "sit": "Sit",
+   "sittalk": "SitTalk",
+   "type": "Typing",
+   "talk": "Talk",
+   "panic": "Panic",
+   "think": "Think",
+   "point": "Point",
+   "celebrate": "Celebrate",
+   "disappointed": "Disappointed",
+   "raise_hand": "RaiseHand",
+   "read": "Read",
+   "play": "Play",
+   "present": "Present"
+  },
+  "speed": {
+   "walk": 1.2,
+   "run": 1.15
+  },
+  "tris": 11136,
+  "portrait": {
+   "url": "assets/characters/portraits/coach.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    22,
+    -22,
+    355,
+    355
+   ]
+  }
+ },
+ "oldprof": {
+  "url": "assets/characters/glb/oldprof.glb",
+  "scale": 1.0,
+  "clips": {
+   "idle": "Idle",
+   "walk": "Walk",
+   "run": "Run",
+   "sit": "Sit",
+   "sittalk": "SitTalk",
+   "type": "Typing",
+   "talk": "Talk",
+   "panic": "Panic",
+   "think": "Think",
+   "point": "Point",
+   "celebrate": "Celebrate",
+   "disappointed": "Disappointed",
+   "raise_hand": "RaiseHand",
+   "read": "Read",
+   "play": "Play",
+   "present": "Present"
+  },
+  "speed": {
+   "walk": 1.2,
+   "run": 1.15
+  },
+  "tris": 10944,
+  "portrait": {
+   "url": "assets/characters/portraits/oldprof.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    25,
+    -18,
+    350,
+    350
+   ]
+  }
+ },
+ "barista": {
+  "url": "assets/characters/glb/barista.glb",
+  "scale": 1.0,
+  "clips": {
+   "idle": "Idle",
+   "walk": "Walk",
+   "run": "Run",
+   "sit": "Sit",
+   "sittalk": "SitTalk",
+   "type": "Typing",
+   "talk": "Talk",
+   "panic": "Panic",
+   "think": "Think",
+   "point": "Point",
+   "celebrate": "Celebrate",
+   "disappointed": "Disappointed",
+   "raise_hand": "RaiseHand",
+   "read": "Read",
+   "play": "Play",
+   "present": "Present"
+  },
+  "speed": {
+   "walk": 1.2,
+   "run": 1.15
+  },
+  "tris": 10860,
+  "portrait": {
+   "url": "assets/characters/portraits/barista.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    22,
+    -22,
+    355,
+    355
+   ]
+  }
+ },
+ "grad1": {
+  "url": "assets/characters/glb/grad1.glb",
+  "scale": 1.0,
+  "clips": {
+   "idle": "Idle",
+   "walk": "Walk",
+   "run": "Run",
+   "sit": "Sit",
+   "sittalk": "SitTalk",
+   "type": "Typing",
+   "talk": "Talk",
+   "panic": "Panic",
+   "think": "Think",
+   "point": "Point",
+   "celebrate": "Celebrate",
+   "disappointed": "Disappointed",
+   "raise_hand": "RaiseHand",
+   "read": "Read",
+   "play": "Play",
+   "present": "Present"
+  },
+  "speed": {
+   "walk": 1.2,
+   "run": 1.15
+  },
+  "tris": 10248,
+  "portrait": {
+   "url": "assets/characters/portraits/grad1.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    25,
+    -18,
+    350,
+    350
+   ]
+  }
+ },
+ "partner_ling": {
+  "url": "assets/characters/glb/partner_ling.glb",
+  "scale": 1.0,
+  "clips": {
+   "idle": "Idle",
+   "walk": "Walk",
+   "run": "Run",
+   "sit": "Sit",
+   "sittalk": "SitTalk",
+   "type": "Typing",
+   "talk": "Talk",
+   "panic": "Panic",
+   "think": "Think",
+   "point": "Point",
+   "celebrate": "Celebrate",
+   "disappointed": "Disappointed",
+   "raise_hand": "RaiseHand",
+   "read": "Read",
+   "play": "Play",
+   "present": "Present"
+  },
+  "speed": {
+   "walk": 1.2,
+   "run": 1.15
+  },
+  "tris": 13328,
+  "portrait": {
+   "url": "assets/characters/portraits/partner_ling.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    22,
+    -22,
+    355,
+    355
+   ]
+  }
+ },
+ "child_xiaoyu": {
+  "url": "assets/characters/glb/child_xiaoyu.glb",
+  "scale": 1.0,
+  "clips": {
+   "idle": "Idle",
+   "walk": "Walk",
+   "run": "Run",
+   "sit": "Sit",
+   "sittalk": "SitTalk",
+   "type": "Typing",
+   "talk": "Talk",
+   "panic": "Panic",
+   "think": "Think",
+   "point": "Point",
+   "celebrate": "Celebrate",
+   "disappointed": "Disappointed",
+   "raise_hand": "RaiseHand",
+   "read": "Read",
+   "play": "Play",
+   "present": "Present"
+  },
+  "speed": {
+   "walk": 1.2,
+   "run": 1.15
+  },
+  "tris": 10756,
+  "portrait": {
+   "url": "assets/characters/portraits/child_xiaoyu.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    4,
+    -52,
+    393,
+    393
+   ]
+  }
+ }
+}
