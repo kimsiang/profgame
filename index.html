@@ -105,6 +105,32 @@ svg.ic{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;str
 #mapCard{left:max(14px,env(safe-area-inset-left,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));padding:8px;width:236px}
 #mapCard canvas{display:block;width:220px;height:150px}
 #roomName{font:700 11px var(--tech);letter-spacing:.14em;color:var(--ice);margin:2px 2px 6px;display:flex;justify-content:space-between}
+/* ---- global navigator: "you are here" chip + whole-campus sheet ---- */
+#navChip{top:calc(96px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:6px 12px;font:600 12px var(--body);color:var(--ice);cursor:pointer;max-width:min(520px,calc(100vw - 32px));white-space:nowrap;border:1px solid var(--line2)}
+#navChip:hover{border-color:var(--cyan)}
+#navChip .pin{width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan);flex:none}
+#navChip .path{overflow:hidden;text-overflow:ellipsis}
+#navChip .path b{color:#fff}
+#navChip .sep{color:var(--muted);margin:0 4px}
+#navChip .off{font:700 10px var(--mono);color:var(--warn);flex:none}
+#navChip .k{font:700 10px var(--mono);color:var(--muted);border:1px solid var(--line);padding:1px 5px;flex:none}
+#navSheet{position:fixed;inset:0;z-index:30;display:grid;place-items:center;background:rgba(2,10,18,.6);padding:16px}
+#navBox{width:min(440px,100%);max-height:calc(100vh - 32px);overflow:auto;padding:16px 16px 12px}
+#navBox h3{margin:2px 0 2px;font:900 18px var(--serif-cn)}
+#navBox .sub{font-size:11px;color:var(--muted);margin-bottom:10px}
+.navBld{border-left:2px solid var(--line2);margin:6px 0 10px 4px;padding-left:8px}
+.navBld .cap{font:700 10px var(--tech);letter-spacing:.16em;color:var(--muted);margin:0 0 4px}
+.navRow{display:grid;grid-template-columns:30px 1fr auto auto;gap:8px;align-items:center;padding:7px 8px;margin:2px 0;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);font-size:12px}
+.navRow .fl{font:700 12px var(--mono);color:var(--ice);text-align:center}
+.navRow .nm small{display:block;color:var(--muted);font-size:10px;margin-top:1px}
+.navRow .ev{font:700 10px var(--mono);color:var(--warn);white-space:nowrap}
+.navRow .ev.u{color:var(--danger)}
+.navRow button{border:1px solid var(--line2);background:rgba(34,81,255,.3);color:var(--ice);padding:5px 8px;font:700 11px var(--tech);cursor:pointer}
+.navRow button:hover{background:var(--blue)}
+.navRow.here{border-color:var(--cyan);background:rgba(0,169,244,.14)}
+.navRow.here .fl{color:var(--cyan)}
+.navRow .you{font:700 10px var(--tech);letter-spacing:.1em;color:var(--cyan)}
+#navBox .foot{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:11px;color:var(--muted)}
 /* ---- prompt / activity ---- */
 #prompt{left:50%;transform:translateX(-50%);bottom:calc(30px + env(safe-area-inset-bottom,0px));padding:10px 18px;font-size:13px;display:flex;gap:10px;align-items:center;white-space:nowrap;max-width:calc(100vw - 32px);overflow:hidden;text-overflow:ellipsis}
 #prompt .tag{font:700 10px var(--mono);color:var(--warn)}
@@ -117,7 +143,7 @@ svg.ic{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;str
 #actBar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--cyan));box-shadow:0 0 10px var(--cyan)}
 #actHint{font-size:11px;color:var(--muted)}
 /* ---- toasts / fx / achievements ---- */
-#toasts{top:calc(104px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:6px;align-items:center;width:min(480px,calc(100vw - 32px))}
+#toasts{top:calc(136px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:6px;align-items:center;width:min(480px,calc(100vw - 32px))}
 .toast{padding:9px 16px;font-size:12.5px;animation:tin .3s ease-out;max-width:100%;background:rgba(5,28,44,.9);border:1px solid var(--line);border-left:3px solid var(--cyan)}
 .toast.bad{border-left-color:var(--danger)}
 .toast.good{border-left-color:var(--ok)}
@@ -317,6 +343,9 @@ h2.sec{font:900 clamp(28px,4vw,44px)/1.15 var(--serif-cn);margin:8px 0 0;text-wr
   #activity{bottom:calc(196px + env(safe-area-inset-bottom,0px))}
   .ib .lbl{display:none}
   #clockMini{display:block!important}
+  #navChip{top:auto;bottom:calc(30px + env(safe-area-inset-bottom,0px));max-width:calc(100vw - 292px);min-width:96px;justify-content:center;font-size:11px;padding:6px 8px;gap:6px}
+  #navChip .off{display:none}
+  #navChip .k{display:none}
   .side img.me{max-height:240px;object-fit:contain}
 }
 #clockMini{display:none}
@@ -334,7 +363,7 @@ h2.sec{font:900 clamp(28px,4vw,44px)/1.15 var(--serif-cn);margin:8px 0 0;text-wr
 .weekStrip div.dl b{color:var(--warn)}
 .delta.p{color:var(--ok)}.delta.m{color:var(--danger)}
 @media (max-height:780px) and (min-width:901px){#mapCard{display:none}}
-body.talking #mapCard,body.talking #kpiCard,body.talking #prompt{display:none}
+body.talking #mapCard,body.talking #kpiCard,body.talking #prompt,body.talking #navChip{display:none}
 body.talking #quests{opacity:.35}
 #lbT,#lbB{position:fixed;left:0;right:0;height:0;background:#02070c;z-index:19;pointer-events:none;transition:height .55s cubic-bezier(.2,.9,.3,1)}
 #lbT{top:0}#lbB{bottom:0}
@@ -522,6 +551,7 @@ body.talking #lbT,body.talking #lbB{height:7vh}
     <div id="roomName"><span id="roomLbl">电梯厅</span><span class="mono" id="roomSub" style="color:var(--muted)">5F</span></div>
     <canvas id="minimap" width="440" height="300"></canvas>
   </div>
+  <div id="navChip" class="hud panel" title="我在哪？(N)"><span class="pin"></span><span class="path" id="navPath">物理楼 5F</span><span class="off" id="navOff"></span><span class="k">N</span></div>
   <div id="prompt" class="hud panel hidden"></div>
   <div id="activity" class="hud panel hidden">
     <div id="actIcon">书</div>
@@ -541,6 +571,7 @@ body.talking #lbT,body.talking #lbB{height:7vh}
 <div id="ach"></div>
 <div id="lvlUp"></div>
 <div id="tut" class="hidden" role="status"></div>
+<div id="navSheet" class="hidden"><div id="navBox" class="panel"></div></div>
 <div id="pauseVeil" class="hidden"><div>暂停中<small>按 P 或点任意处继续</small></div></div>
 
 <!-- dialogue -->
@@ -4474,6 +4505,7 @@ function travel(zoneId, portal, cb) {
     const sp = (p && p.spawn) || ZONES[zoneId].spawn; player.position.set(sp.x, 0, sp.z);
     if (p && p.spawn) face(player, Z.W / 2, Z.D / 2); else face(player, Z.spawn.x - 2, Z.spawn.z);
     camState.target.copy(player.position); camState.wantAz = camState.az = Math.PI / 4; questsDirty = true;
+    renderNavChip();
     S.traveling = true; simulate(mins); S.traveling = false; if (S.ended) return;
     if (!S.zones[zoneId]) { S.zones[zoneId] = 1; if (Object.keys(S.zones).length >= Object.keys(ZONES).length) unlock('campus'); }
     toast(`${ZONES[zoneId].name} · ${fmt(S.t)}`);
@@ -4920,6 +4952,63 @@ function drawMinimap() {
   const off = S ? activeEvents().filter(e => !e.phone && (HS[e.loc].zone || 'f5') !== Z.id).length : 0; $('roomSub').textContent = off ? `其他楼层还有 ${off} 件事` : (FLOOR_LABEL[Z.id] || '');
 }
 
+/* ---------------- global navigator ----------------
+   The minimap shows one floor and rotates with the camera; this answers "where am I in the whole campus?".
+   NAV lists every place in walking order. a = hotspot the "go" button walks to. */
+const NAV = [
+  { cap: '物理楼 · Physics Building', zones: [['roof', '天台咖啡馆'], ['f6', '植物园'], ['f5', '缪子物理组 · 503 办公室'], ['f4', '网球馆'], ['f3', '图书馆'], ['f2', '教室'], ['f1', '大厅 · 食堂']] },
+  { cap: '校园 · Campus', zones: [['campus', '广场 · 足球场'], ['gym', '体育馆 · 羽毛球']] },
+];
+const NAV_ANCHOR = { roof: 'roofcafe', f6: 'garden', f5: 'desk', f4: 'tennis', f3: 'libdesk', f2: 'classroom', f1: 'lobby1', campus: 'plaza', gym: 'courtB' };
+const placeName = (id) => FLOOR_IDS.includes(id) ? '物理楼 ' + FLOOR_LABEL[id] : id === 'campus' ? '校园' : id === 'gym' ? '体育馆' : id;
+// Pending tasks per zone (phone calls follow you, so they are not on any floor).
+function navEvents() {
+  const by = {}; if (!S) return by;
+  activeEvents().forEach(e => { if (e.phone) return; const z = (HS[e.loc] && HS[e.loc].zone) || 'f5'; const o = by[z] = by[z] || { n: 0, u: 0 }; o.n++; if (e.urgent || e.alarm) o.u++; });
+  return by;
+}
+// Minutes to walk there, counting elevator rides and doors along the way.
+function navMinutes(to) {
+  const hops = zoneHops(Z.id, to); if (!hops) return null;
+  let m = 0; for (let i = 1; i < hops.length; i++) m += travelMinutes(hops[i - 1], hops[i]);
+  return Math.round(m);
+}
+let navSig = '';
+function renderNavChip() {
+  if (!Z) return;
+  const cur = player ? roomAt(player.position.x, player.position.z) : '';
+  const room = cur && Z.rooms[cur] ? Z.rooms[cur].name : (Z.outdoor ? '' : (Z.name.split(' · ')[1] || '走廊'));
+  const by = navEvents(), off = Object.entries(by).filter(([z]) => z !== Z.id).reduce((a, [, o]) => a + o.n, 0);
+  const sig = Z.id + room + off + innerWidth; if (sig === navSig) return; navSig = sig;
+  const narrow = innerWidth <= 900, where = narrow ? (FLOOR_LABEL[Z.id] || placeName(Z.id)) : placeName(Z.id);
+  $('navPath').innerHTML = `<b>${esc(where)}</b>${room ? `<span class="sep">›</span>${esc(room)}` : ''}`;
+  $('navOff').textContent = off ? `别处 ${off} 件` : '';
+}
+function renderNavSheet() {
+  const by = navEvents(), busy = S && (S.dialog || S.ended);
+  $('navBox').innerHTML = `<div class="eyebrow">Navigator · 我在哪</div><h3>你在：${esc(placeName(Z.id))}${Z.id === 'f5' ? ' · 503 所在层' : ''}</h3>
+    <div class="sub">点「去这里」会自动走过去，坐电梯也算时间。打电话的事不在地图上，走到哪里都能接。</div>` +
+    NAV.map(b => `<div class="navBld"><div class="cap">${esc(b.cap)}</div>${b.zones.map(([id, label]) => {
+      const here = id === Z.id, ev = by[id], mins = here ? 0 : navMinutes(id);
+      return `<div class="navRow ${here ? 'here' : ''}"><span class="fl">${esc(FLOOR_LABEL[id] || (id === 'campus' ? '外' : '馆'))}</span>
+        <span class="nm">${esc(label)}<small>${here ? '你在这里' : mins !== null ? `约 ${mins} 分钟` : ''}</small></span>
+        <span class="ev ${ev && ev.u ? 'u' : ''}">${ev ? `${ev.u ? '紧急 ' : ''}${ev.n} 件事` : ''}</span>
+        ${here ? '<span class="you">● HERE</span>' : `<button type="button" data-go="${id}" ${busy ? 'disabled' : ''}>去这里</button>`}</div>`;
+    }).join('')}</div>`).join('') +
+    `<div class="foot"><span>下班回家：电梯按 B1，或右上角「下班」。</span><button class="ib" type="button" id="navClose">关闭</button></div>`;
+  $('navBox').querySelectorAll('[data-go]').forEach(b => b.onclick = () => { const id = b.dataset.go, h = HS[NAV_ANCHOR[id]]; toggleNav(false); if (S.activity) { if (!S.activity.cancelable) return toast('现在走不开。'); finishActivity(false); } routeTo(h.x, h.z, id); });
+  $('navClose').onclick = () => toggleNav(false);
+}
+let navWasPaused = false;
+function toggleNav(open) {
+  if (!S || !S.running || S.planning) return;
+  const sheet = $('navSheet'); open = open === undefined ? sheet.classList.contains('hidden') : open;
+  if (open) { navWasPaused = S.paused; S.paused = true; renderNavSheet(); sheet.classList.remove('hidden'); SFX.click(); }
+  else { sheet.classList.add('hidden'); S.paused = navWasPaused; }
+}
+$('navChip').onclick = () => toggleNav(true);
+$('navSheet').onclick = (e) => { if (e.target.id === 'navSheet') toggleNav(false); };
+
 /* ---------------- movement + camera control ---------------- */
 const keys = {};
 const joy = { x: 0, y: 0 };
@@ -5331,6 +5420,7 @@ addEventListener('keydown', (e) => {
   if (!S || !S.running) { if (e.key === 'Enter' && !$('scrHand').classList.contains('hidden')) startGame(); return; }
   if (S.planning) { if (/^Digit[1-4]$/.test(e.code)) beginDay(S.day, INTENTS[+e.code.slice(5) - 1].id); return; }
   if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) e.preventDefault();
+  if (!$('navSheet').classList.contains('hidden')) { if (e.code === 'KeyN' || e.code === 'Escape') toggleNav(false); return; }
   if (e.code === 'KeyP') return togglePause();
   if (S.paused) return;
   const d = S.dialog;
@@ -5343,6 +5433,7 @@ addEventListener('keydown', (e) => {
   }
   if (e.code === 'KeyE' || e.code === 'Space') interact();
   if (e.code === 'KeyM') toggleOverview();
+  if (e.code === 'KeyN') toggleNav(true);
   if (e.code === 'KeyF') cycleSpeed();
   if (e.code === 'KeyQ') rotateView(-1);
   if (e.code === 'KeyR') rotateView(1);
@@ -5529,7 +5620,7 @@ function frame(now) {
   resize(); placeCamera();
   if (S && S.running) {
     clock.hud += dt; if (clock.hud > 0.12) { clock.hud = 0; renderHUD(); } updatePrompt();
-    clock.map += dt; if (clock.map > 0.1) { clock.map = 0; drawMinimap(); }
+    clock.map += dt; if (clock.map > 0.1) { clock.map = 0; drawMinimap(); renderNavChip(); }
     if (!clock.fpsChecked && QUALITY === 'high' && !S.paused) { clock.fps.push(dt); if (clock.fps.length > 240) { clock.fpsChecked = true; const avg = clock.fps.reduce((a, b) => a + b, 0) / clock.fps.length; if (avg > 1 / 26) toast('画面有点卡？右上角可以把画质调成「中」。'); } }
   }
   const tilt = camState.cine ? (post.bokeh ? 1.1 : 2.2) : (camState.overview || !S || !S.running ? 0.8 : 1.3);
