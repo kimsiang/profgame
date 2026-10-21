@@ -52,6 +52,25 @@ svg.ic{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;str
 .vit .bar i{display:block;height:100%;transition:width .4s,background .4s;box-shadow:0 0 10px currentColor}
 .vit .bar:after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 9%,rgba(5,28,44,.7) 9% 10%)}
 .vit .v{text-align:right;color:var(--muted);font-size:10px}
+.pMoneyRow{display:grid;grid-template-columns:18px 1fr;gap:6px;align-items:center;margin-top:7px;padding-top:7px;border-top:1px solid var(--line)}
+.pMoneyRow .yen{font:700 12px var(--mono);text-align:center;color:var(--gold)}
+#pMoney{display:flex;justify-content:space-between;align-items:baseline;gap:6px;font:700 12px var(--mono);color:var(--gold)}
+#pMoney .neg{color:var(--danger)}
+#pMoney small{font:500 10px var(--body);color:var(--muted)}
+/* ---- v9 money: setup pairs, planner levers, monthly statement ---- */
+.optPair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.optPair .dayopt{margin-bottom:8px;padding:10px 12px}
+.optPair .dayopt b{font-size:14px}
+.mrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.mbtn{border:1px solid var(--line2);background:rgba(255,200,87,.08);color:var(--ice);padding:5px 9px;font:600 11.5px var(--body);cursor:pointer}
+.mbtn:hover{border-color:var(--gold)}
+.mbtn.on{background:rgba(255,200,87,.22);border-color:var(--gold);color:#fff}
+.money{margin-top:18px;padding-top:12px;border-top:1px solid var(--line)}
+.money .crTop b{color:var(--gold)}
+.mtab{width:100%;margin:8px 0}
+.mtab td:last-child{text-align:right;font-family:var(--mono);white-space:nowrap}
+.mtab td.p{color:var(--ok)}.mtab td.m{color:#ffb3bd}
+.mwarn{margin-top:6px;font-size:12px;color:var(--danger)}
 /* ---- kpi ---- */
 #kpiCard{top:calc(206px + env(safe-area-inset-top,0px));left:max(14px,env(safe-area-inset-left,0px));width:268px;padding:12px 14px}
 #kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;margin-top:8px}
@@ -322,6 +341,7 @@ h2.sec{font:900 clamp(28px,4vw,44px)/1.15 var(--serif-cn);margin:8px 0 0;text-wr
 @media (max-width:900px){
   .handover{grid-template-columns:1fr}
   .setup,.endGrid{grid-template-columns:1fr}
+  .optPair{grid-template-columns:1fr}
   #kpiCard,#mapCard{display:none}
   #pCard{width:min(214px,52vw);padding:9px 10px}
   .pTop{grid-template-columns:44px 1fr;gap:8px}.pAvatar{width:44px;height:44px}.pName{font-size:13px}
@@ -438,6 +458,8 @@ body.talking #lbT,body.talking #lbB{height:7vh}
 .famRow>div small{color:var(--muted);font-size:10.5px}
 #tut{position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:1000;max-width:min(560px,92vw);background:rgba(5,28,44,.92);border:1px solid var(--cyan);border-radius:10px;padding:10px 14px;font-size:13px;line-height:1.55;color:#eaf4fb;display:flex;gap:12px;align-items:center;box-shadow:0 10px 40px rgba(0,0,0,.4)}
 #tut b{color:var(--cyan);font-size:11px;letter-spacing:.08em;white-space:nowrap}
+/* Phones: the hint text gets its own line instead of a one-character-wide column beside the buttons. */
+@media (max-width:600px){#tut{flex-wrap:wrap;width:92vw;gap:8px}#tut>span{flex:1 1 calc(100% - 70px)}#tut button{margin-left:0}}
 #tut button{margin-left:auto;background:none;border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;white-space:nowrap}
 .offer{margin-top:14px;padding:12px 0;border-top:1px solid rgba(255,255,255,.12)}
 .offer b{display:block;font-size:14px;color:var(--text)}
@@ -511,6 +533,7 @@ body.talking #lbT,body.talking #lbB{height:7vh}
       <div class="vit" style="color:#c58bff" title="身心：慢慢消耗，回家、植物园和运动能补回来"><svg class="ic"><use href="#i-quest"/></svg><span style="color:var(--ice)">身心</span><div class="bar"><i id="vW"></i></div><span class="v mono" id="vWn">72</span></div>
       <div class="vit" style="color:#5cc8ff"><svg class="ic"><use href="#i-drop"/></svg><span style="color:var(--ice)">尿意</span><div class="bar"><i id="vB"></i></div><span class="v mono" id="vBn">18%</span></div>
     </div>
+    <div class="pMoneyRow" title="你自己的钱 · 课题经费只能用于科研"><span class="yen">¥</span><span id="pMoney"></span></div>
   </div>
   <div id="kpiCard" class="hud panel">
     <div class="eyebrow">Performance · 今日表现</div>
@@ -638,6 +661,15 @@ body.talking #lbT,body.talking #lbB{height:7vh}
       <div>
         <button class="dayopt on" id="dayN" type="button" aria-pressed="true"><b>普通工作日</b><small>基金书已经写了 40%。节奏紧，但还算可控。适合第一次玩。</small></button>
         <button class="dayopt" id="dayC" type="button" aria-pressed="false"><b>截止日 · 大爆班</b><small>基金书只写了 15%，电话多一倍，每件事能等的时间更短。</small></button>
+        <div class="eyebrow" style="margin-top:14px">Household · 家里的账</div>
+        <div class="optPair">
+          <button class="dayopt on" id="houseB" type="button" aria-pressed="true"><b>买房 · 房贷 ¥350万</b><small>¥500万的房子，月供约 ¥1.5万，公积金抵一部分。结余很薄，一次意外就是一个月的结余。</small></button>
+          <button class="dayopt" id="houseR" type="button" aria-pressed="false"><b>租人才公寓 · ¥4,500/月</b><small>宽松得多。但第 12 周租期到了，要决定买不买。</small></button>
+        </div>
+        <div class="optPair">
+          <button class="dayopt on" id="carY" type="button" aria-pressed="true"><b>开车 · 车贷 ¥15万</b><small>每月 ¥4,400，36 期。08:00 准时到岗。</small></button>
+          <button class="dayopt" id="carN" type="button" aria-pressed="false"><b>坐地铁</b><small>08:20 才到，但路上能读文献：每两天 +1 颗创新点星。急的时候可以打车。</small></button>
+        </div>
         <p style="font-size:12px;color:var(--muted);line-height:1.7">内容包含实验室事故与学生心理困扰的情境，处理方式仅作科普；真实紧急情况请联系单位安全部门或拨打急救电话。</p>
         <div class="row" style="margin-top:14px">
           <button class="btn ghost" id="setupBack" type="button">← 上一步</button>
@@ -722,6 +754,7 @@ body.talking #lbT,body.talking #lbB{height:7vh}
         <div class="eyebrow" style="margin-top:18px">Career · 晋升之路</div>
         <div class="career" id="endCareer"></div>
         <div id="endOffer"></div>
+        <div id="endMoney"></div>
         <div class="row" style="margin-top:18px">
           <button class="btn gold" id="againBtn" type="button">开始下一周 ▶</button>
           <button class="btn ghost" id="homeBtn" type="button">回到首页</button>
@@ -3571,7 +3604,7 @@ function buildDay(d, dayType) {
   const wkMul = Math.max(0.8, 1 - 0.04 * ((st.week || 1) - 1)), intel = !!(st.intel && st.intel[d]);
   const det = buildEvents(dayType).filter(e => e.day === d && okReq(e));
   const wk = WEEK.filter(e => e.day === d && okReq(e)).map(e => Object.assign({}, e, { state: 'pending', win: crunch ? Math.round(e.win * 0.85) : e.win }));
-  const crisis = (typeof crisisEvents === 'function' ? crisisEvents(d) : []).concat(typeof dataEvents === 'function' ? dataEvents(d) : [], typeof familyEvents === 'function' ? familyEvents(d) : [], typeof careerEvents === 'function' ? careerEvents(d) : []);
+  const crisis = (typeof crisisEvents === 'function' ? crisisEvents(d) : []).concat(typeof dataEvents === 'function' ? dataEvents(d) : [], typeof familyEvents === 'function' ? familyEvents(d) : [], typeof careerEvents === 'function' ? careerEvents(d) : [], typeof financeEvents === 'function' ? financeEvents(d) : []);
   const n = d >= 5 ? 2 : (crunch ? 5 : 4);
   const used = new Set(), quick = [];
   let r = d * 97 + 13; const rnd = () => (r = (r * 16807) % 2147483647) / 2147483647;
@@ -3622,6 +3655,7 @@ Object.assign(ACHIEVEMENTS, {
   athlete: ['运动健将', '网球、羽毛球、足球都玩过'],
   bookworm: ['书虫', '在图书馆读了三次论文'],
   academician: ['院士', '在增选中当选'],
+  carfree: ['最后一期车贷', '把车贷还完了'],
 });
 /* =========================================================
    学者 Pro 版 · AI 设置
@@ -3883,6 +3917,229 @@ const TUTORIAL = [
   { id: 'home', text: '晚上有三种过法：加班、去植物园，或者回家。家里的人也在等你——电梯按 B1，或右上角「下班」。', when: () => S.t >= hm(20, 30) },
 ];
 
+
+/* =========================================================
+   v9 DATA — "Money" / 钱：工资、房贷与时间
+   One game week = one financial month. Money only matters where it buys time or family meters,
+   or costs time to earn. Amounts in yuan. These tables are content; the ledger below only reads them.
+   ========================================================= */
+const FIN = {
+  // Net = gross − 17.5% personal 社保+公积金 (base capped ¥36,921) − 个税. gjj = both sides of 公积金, mortgage only.
+  salary: [
+    { gross: 300000, net: 18910, gjj: 3500 },   // 助理教授
+    { gross: 350000, net: 21660, gjj: 4100 },   // 副教授
+    { gross: 400000, net: 24410, gjj: 4700 },   // 教授
+    { gross: 450000, net: 27190, gjj: 5200 },   // 特聘教授
+    { gross: 500000, net: 30310, gjj: 5200 },   // 讲席教授
+  ],
+  post: { vice_dean: 3000, dean: 6000 },        // deliberately small: nobody becomes dean for the money
+  partner: 12000,                               // 阿玲's take-home
+  bonusEvery: 4, bonusMax: 30000,               // 绩效奖, from the week's KPI average
+  settle: 500000,                               // 特聘教授 安家费, once — a housing subsidy: it prepays the mortgage (renters: kept for the down payment)
+  fixed: [['living', '家用（吃饭、水电、话费）', 8000], ['school', '小宇的学校', 3000], ['parents', '给父母', 2000]],
+  tutor: 2500, help: 2500,                      // 补习班 / 请阿姨, monthly toggles
+  savings: 80000,
+  mortgage: { price: 5000000, loan: 3500000, rate: 0.031, months: 360 },
+  car: { price: 200000, loan: 150000, rate: 0.035, months: 36, dep: 0.015 },   // a ¥20万 car on a ¥15万 loan; resale loses ~1.5% a month
+  rent: { amount: 4500, lease: 12, rise: 0.15, down: 1500000 },
+  credit: 50000,                                // 信用卡 + 借呗: below −¥5万 the mortgage bounces
+  bankLine: -30000, debtRate: 0.01,             // interest per month on a negative balance
+  fund: { start: 300000, stipends: 15000, award: 400000 },   // 课题经费: pays 劳务费, never the mortgage
+  taxi: 120, takeout: 45, gift: 300,
+  metroLate: 20,                                // minutes later to the office by metro (but you read)
+  audit: 0.15,
+};
+// Monthly payment of an amortised loan.
+const pmt = (P, rate, n) => { const r = rate / 12; return r ? P * r / (1 - Math.pow(1 + r, -n)) : P / n; };
+const fmtY = (n) => { n = Math.round(n); const a = Math.abs(n), s = n < 0 ? '−' : ''; return a >= 10000 ? `${s}¥${(a / 10000).toFixed(a >= 1e6 ? 0 : 1)}万` : `${s}¥${a.toLocaleString('zh-CN')}`; };
+// Seeded, but hashed first: Park–Miller's first draw moves almost linearly with the seed, so week-by-week seeds would correlate.
+function finRng(n) { let h = Math.imul((n >>> 0) ^ 0x9e3779b9, 2654435761) >>> 0; h = (h ^ (h >>> 16)) >>> 0; h = Math.imul(h, 2246822507) >>> 0; h = (h ^ (h >>> 13)) >>> 0; const r = rng(h % 2147483646 + 1); r(); r(); return r; }
+function newLoan(o) { return { bal: o.loan, rate: o.rate, left: o.months, pay: Math.round(pmt(o.loan, o.rate, o.months)) }; }
+function freshFin(house = 'buy', commute = 'car') {
+  return { fv: 1, house, commute, cash: FIN.savings, fund: FIN.fund.start,
+    mortgage: house === 'buy' ? newLoan(FIN.mortgage) : null, car: commute === 'car' ? newLoan(FIN.car) : null,
+    rent: house === 'rent' ? { amount: FIN.rent.amount, until: 1 + FIN.rent.lease } : null,
+    help: false, tutor: false, settled: false, missed: 0, reimb: [], consult: 0, bookDone: false, metroReads: 0,
+    next: {}, wk: { earn: 0, spend: 0, items: [] }, log: [] };
+}
+
+/* Money events. Same shape as C(): [text, fx, minutes, feedback]. fx "cash±n" moves your own money; @fin_* flags
+   are read by finFlag(). Every income costs time; every saving costs a meter or a risk. */
+const FIN_EVENTS = {
+  consultOffer: { day: 0, time: '11:30', loc: 'phone', who: '一家做探测器的企业 · 电话', tag: '横向', title: '企业：想请你做一个横向课题', line: '企业来电：横向课题，这个月 ¥2万',
+    open: '对方是做工业 CT 的：想用缪子成像查大型铸件的缺陷，请你做技术顾问，这个月 ¥2 万。|对方：每周四下午开两小时会，报告我们自己写，主要是借您的名字和判断。',
+    ch: [['接下来：这个月 ¥2万，周四下午开会', '@fin_consult', 10, '合同发到了邮箱。科研时间会被吃掉一些，你心里有数。'], ['婉拒：这学期顾不过来', 'research+1', 3, '对方说：“那下学期再聊。”'], ['推荐给赵博士，自己把关', 'team+3 research+1', 8, '赵博士眼睛一亮：“老师，我能行。”']] },
+  consultMeet: { day: 3, time: '14:30', loc: 'meeting', who: '企业 · 视频会议', tag: '横向', title: '横向课题：企业的周会', line: '企业周会五分钟后开始',
+    open: '企业的项目经理已经在线上了：铸件的三维重建结果，客户想要“一周出图”。', ch: [['开满两小时，把能做到的和做不到的讲清楚', 'integrity+2 rep+1 energy-6', 120, '你给他们画了一张“缪子成像能看到什么”的图。项目经理截图了。'], ['开半小时，剩下的让他们发邮件', 'energy-2 @fin_consult_half', 30, '对方有点不高兴：顾问费要按出勤算。']] },
+  consultCoi: { day: 2, time: '10:10', loc: 'admin', who: '院办 · 王老师', tag: '院长', title: '王老师：那家企业申请进学院合作平台', line: '王老师：有份合作协议要您签',
+    open: '王老师：那家工业 CT 企业申请进入学院的产学研平台，审批人是您。|王老师：您这个月在给他们做顾问吧？', ch: [['申请回避，请另一位院领导审', 'integrity+4 rep+1', 5, '流程干干净净。企业那边也说理解。'], ['签了，平台确实需要企业', 'integrity-6 rep+1', 3, '审批记录上，顾问和审批人是同一个名字。']] },
+  review: { day: 1, time: '13:35', loc: 'phone', who: '市科委 · 邮件', tag: '评审', title: '市科委：今天下午的项目会评，缺一位专家', line: '会评邀请：今天下午，评审费 ¥3,000',
+    open: '市科委：今天 14:00–17:00 的项目会评缺一位专家，评审费 ¥3,000。|下午那段专注时段就没了。', ch: [['去：下午三小时，¥3,000', 'cash+3000 rep+2 energy-6', 180, '你在会评现场坐到五点。有一份申请写得比你的还好。'], ['婉拒：下午要写基金', 'rep-1', 2, '对方说：“理解，下次再请您。”']] },
+  talk: { day: 3, time: '17:20', loc: 'phone', who: '一家科技公司 · 电话', tag: '讲座', title: '企业讲座：今晚七点，“AI 与物理”', line: '企业讲座邀请：今晚，讲课费 ¥5,000',
+    open: '对方：今晚七点给我们的工程师讲一小时“AI 与物理”，讲课费 ¥5,000，车接车送。|今晚就回不了家吃饭了。', ch: [['去：今晚 ¥5,000', 'cash+5000 rep+2 energy-8 partner-6 child-4', 180, '讲完已经九点半。工程师们问的问题比学生还尖锐。'], ['婉拒：今晚答应了家里', 'partner+2', 2, '你把手机扣在桌上。阿玲后来知道了，什么也没说，给你夹了块肉。']] },
+  book: { day: 5, time: '10:00', loc: 'phone', who: '出版社编辑 · 邮件', tag: '科普', title: '出版社：想请你写一本缪子科普书', line: '出版社：科普书预付稿费 ¥3万',
+    open: '编辑：看了您的科普视频，想约一本写给中学生的缪子科普书，预付稿费 ¥3 万。|编辑：今天先把提纲和样章的思路聊定，大概要一上午。', ch: [['签：今天一上午把提纲定下来', 'cash+30000 rep+4 teaching+2 energy-8 @fin_book', 240, '提纲的第一章叫“每秒钟穿过你手掌的那两个缪子”。'], ['先放一放，等基金写完', '', 2, '编辑说书稿不急，邮件她会再发一次。']] },
+  reimb: { day: 2, time: '19:10', loc: 'phone', who: '小陈 · 消息', tag: '报销', title: '小陈：组里聚餐的发票怎么处理？', line: '小陈：聚餐发票 ¥800，走课题吗？',
+    open: '小陈：老师，上周组里庆祝探测器出数据的那顿饭，发票 ¥800。|小陈：要不要我开成“会议餐费”走课题报销？财务一般不细看。', ch: [['我自己请，发票不用报', 'cash-800 team+3 integrity+2', 2, '小陈：谢谢老师！组里群里刷了一排“老板大气”。'], ['开成会议餐费，走课题', 'team+3 @fin_reimb', 2, '小陈：好的。财务那边应该没问题。（应该。）'], ['大家 AA 吧', 'team-2', 2, '群里安静了一会儿，然后有人发了一个“好的”。']] },
+  stipend: { day: 0, time: '09:30', loc: 'admin', who: '院办 · 财务', tag: '经费', title: '财务：课题经费不够发这个月的劳务费', line: '财务：劳务费发不出来了',
+    open: '财务老师：您课题上的余额不够发这个月学生的劳务费了，一共 ¥1.5 万。|财务：要么先停发，要么您想别的办法。', ch: [['自己先垫上 ¥1.5万', 'cash-15000 team+6', 10, '学生们不知道这笔钱是你垫的。小陈后来猜到了。'], ['停发一个月，跟大家说明情况', 'team-8 integrity+1', 20, '组会上你说完，没人说话。小雨低头记了什么。']] },
+  bank: { day: 0, time: '10:20', loc: 'phone', who: '银行 · 电话', tag: '催款', title: '银行：您的房贷本月没有扣款成功', line: '银行：房贷扣款失败',
+    open: '银行：许先生/女士，您的房贷本月扣款失败，逾期会影响征信。|阿玲的手机也收到了短信。', ch: [['跟阿玲说实话，晚上一起把账算清', 'partner-4 wellbeing-3 house+6', 15, '阿玲：“你早说啊。”她把记账本翻了出来。'], ['自己扛，先别让她担心', 'partner-10 wellbeing-6', 5, '可是短信她已经看到了。']] },
+  forced: { day: 0, time: '09:00', loc: 'phone', who: '阿玲 · 消息', tag: '家', title: '阿玲：连着两个月还不上了，得想办法', line: '阿玲：我们得想办法了',
+    open: '阿玲：房贷连着两个月没扣上。我算了一下，再这样下去不行。|阿玲：要么把车卖了，要么你接个横向。你选。', ch: [['把车卖了：还清车贷后大约 +¥5万，以后坐地铁', 'partner+6 @fin_sellcar', 30, '二手车商开走车的时候，小宇在窗口挥了挥手。'], ['接一个横向课题：这个月 ¥2万', 'partner+2 @fin_consult', 10, '你给上次那家企业回了电话。']] },
+  forcedNoCar: { day: 0, time: '09:00', loc: 'phone', who: '阿玲 · 消息', tag: '家', title: '阿玲：连着两个月还不上了，得想办法', line: '阿玲：我们得想办法了',
+    open: '阿玲：房贷连着两个月没扣上。车已经没了。|阿玲：要么你接个横向，要么……我去问问我爸妈。', ch: [['接一个横向课题：这个月 ¥2万', 'partner+2 @fin_consult', 10, '你给上次那家企业回了电话。'], ['让阿玲问她爸妈借 ¥5万', 'cash+50000 partner-8 wellbeing-6', 20, '电话那头沉默了很久，然后说：“钱的事你们别担心。”']] },
+  lease: { day: 0, time: '09:00', loc: 'phone', who: '人才公寓 · 物业', tag: '住房', title: '人才公寓：租期到了', line: '物业：人才公寓租期到了，续不续？',
+    open: '物业：您的人才公寓三年租期到了。续租要涨 15%，或者您考虑买房？|阿玲：小宇明年上初中，学区的事也得想了。', ch: [['买房：¥500万，首付 ¥150万，不够的找父母', '@fin_buy', 60, '签完合同，你和阿玲在新家的毛坯房里站了很久。'], ['续租一期，房租涨 15%', '@fin_renew', 10, '物业说：“好的，合同下周发您。”']] },
+  shocks: [
+    { id: 'heater', need: 'any', day: 1, time: '07:50', loc: 'phone', who: '阿玲 · 消息', tag: '意外', title: '阿玲：热水器彻底坏了', line: '阿玲：热水器坏了，换还是修？',
+      open: '阿玲：热水器彻底不出热水了。师傅说修 ¥600 能撑几个月，换新的 ¥3,500。', ch: [['换新的：¥3,500', 'cash-3500 house+8', 5, '新热水器装上了。小宇洗了半小时澡。'], ['先修：¥600', 'cash-600 house-4', 5, '能用。滴水声又回来了，小一点。']] },
+    { id: 'braces', need: 'any', day: 2, time: '12:30', loc: 'phone', who: '口腔医院 · 电话', tag: '意外', title: '口腔医院：小宇需要做牙齿矫正', line: '口腔医院：矫正费用 ¥1.5万',
+      open: '医生：小宇的牙需要矫正，现在做效果最好，一共 ¥1.5 万。也可以再观察半年。', ch: [['现在做：¥1.5万', 'cash-15000 child+8 partner+3', 5, '小宇照镜子看了半天牙套：“像变形金刚。”'], ['再观察半年', 'child-4 partner-4', 3, '阿玲：“医生说现在做最好。”']] },
+    { id: 'scrape', need: 'car', day: 3, time: '08:40', loc: 'phone', who: '物业 · 电话', tag: '意外', title: '物业：您的车在车库被刮了', line: '物业：您的车被刮了',
+      open: '物业：您的车停在 B1，被隔壁倒车刮了一道。对方不承认。修车 ¥2,000，走保险要花一上午去定损。', ch: [['自己修：¥2,000', 'cash-2000', 3, '修好了。你决定以后停远一点。'], ['走保险：一上午去定损', 'energy-6', 150, '定损员看了二十分钟。你在 4S 店里回了三十封邮件。']] },
+    { id: 'hospital', need: 'any', day: 4, time: '11:20', loc: 'phone', who: '老家 · 电话', tag: '意外', title: '老家：父亲住院了，要交押金', line: '老家来电：住院押金 ¥2万',
+      open: '老家：你爸血压高住院观察几天，医院要交 ¥2 万押金。你弟说他先垫一半。', ch: [['全部你来：¥2万', 'cash-20000 wellbeing+2 partner+2', 5, '你弟发来一个“谢谢哥”。你给你爸打了视频，他说没事。'], ['和你弟一人一半：¥1万', 'cash-10000', 5, '你弟说：“行，你那边也不容易。”'], ['请你弟先垫，下个月还他', 'wellbeing-6 partner-3', 3, '你弟说好。你一晚上都在想这件事。']] },
+    { id: 'rentup', need: 'rent', day: 1, time: '19:30', loc: 'phone', who: '人才公寓 · 物业', tag: '意外', title: '物业：人才公寓物业费上调', line: '物业：物业费下月上调',
+      open: '物业：人才公寓的物业费和停车费下月起上调，每月多 ¥600。可以申请换到小一点的户型。', ch: [['接受：每月多 ¥600', 'cash-600', 2, '你在家用里又划掉了一项。'], ['换小户型，周末搬家', 'cash+600 house-10 child-4 energy-6', 30, '搬完家，小宇的乐高只剩一个箱子能放。']] },
+  ],
+};
+
+/* ---------------- v9: money logic ---------------- */
+// Week's cash movement from events, gifts and daily spends, so the statement can say where it went.
+function finMove(d, label) {
+  const F = S && S.fin; if (!F || !d) return;
+  F.cash += d; if (d > 0) F.wk.earn += d; else F.wk.spend -= d;
+  if (label) F.wk.items.push([label, d]);
+}
+function finSpend(n, label, fx) {
+  finMove(-n, label); toast(`${label} ${fmtY(-n)} · 余额 ${fmtY(S.fin.cash)}`, S.fin.cash < 0 ? 'bad' : '');
+  if (fx) applyFx(fx); SFX.click(); renderMoney();
+}
+// @fin_* flags from choices. They act on the ledger and are removed so they never gate other events.
+function finFlag(f) {
+  const F = S.fin; delete S.flags[f];
+  if (f === 'fin_consult') { F.consult = S.week; F.consultHalf = false; F.log.push([S.week, '接了一个横向课题']); }
+  else if (f === 'fin_consult_half') F.consultHalf = true;
+  else if (f === 'fin_reimb') F.reimb.push({ week: S.week, amt: 800 });
+  else if (f === 'fin_book') F.bookDone = true;
+  else if (f === 'fin_sellcar' && F.car) { const value = FIN.car.price * Math.pow(1 - FIN.car.dep, FIN.car.months - F.car.left), gain = value - F.car.bal; F.car = null; F.commute = 'metro'; finMove(Math.round(gain), '卖车（还清车贷后）'); F.log.push([S.week, '卖了车']); }
+  else if (f === 'fin_buy') {
+    const down = FIN.rent.down, hf = Math.min(down, F.houseFund || 0), own = Math.max(0, Math.min(F.cash - 20000, down - hf)), parents = down - hf - own;
+    F.houseFund = (F.houseFund || 0) - hf; finMove(-own, '首付（自己）'); F.rent = null; F.house = 'buy'; F.mortgage = newLoan(FIN.mortgage);
+    if (parents > 0) { applyFx({ partner: -8, wellbeing: -4 }); F.log.push([S.week, `买房，父母支援首付 ${fmtY(parents)}`]); } else F.log.push([S.week, '买房']);
+  } else if (f === 'fin_renew') { F.rent.amount = Math.round(F.rent.amount * (1 + FIN.rent.rise)); F.rent.until = S.week + FIN.rent.lease; }
+}
+// Events money brings into a day. Seeded by week and day so a reload cannot reroll them.
+function financeEvents(d) {
+  if (typeof S === 'undefined' || !S || !S.fin) return [];
+  const F = S.fin, c = S.career, out = [], R = finRng(S.week * 6151 + 29);
+  const add = (e, id, extra = {}) => { const ev = mkC(d, e.time, e.loc, e.who, e.tag, e.title, e.line, e.open, e.ch, Object.assign({ id, win: e.loc === 'phone' ? 90 : 120, pro: false }, extra)); ev.state = 'pending'; out.push(ev); };
+  const E = FIN_EVENTS, nx = F.next || {};
+  if (d === 0 && nx.forced) add(F.car ? E.forced : E.forcedNoCar, 'fin_forced', { u: true, win: 240, exp: 'partner-10|阿玲的消息你一直没回。' });
+  else if (d === 0 && nx.bank) add(E.bank, 'fin_bank', { u: true, win: 60, exp: 'partner-8|银行的电话没接。阿玲替你接了。' });
+  if (d === 0 && nx.stipend) add(E.stipend, 'fin_stipend', { win: 240, exp: 'team-10|劳务费停发了，学生们是从财务那里知道的。' });
+  if (d === 0 && nx.lease) add(E.lease, 'fin_lease', { win: 600, exp: '|物业按续租处理了。' });
+  const rolls = [R(), R(), R(), R(), R(), R()];
+  if (d === 0 && !nx.forced && F.consult !== S.week && rolls[0] < 0.45) add(E.consultOffer, 'fin_consultOffer');
+  if (d === E.consultMeet.day && F.consult === S.week) add(E.consultMeet, 'fin_consultMeet', { u: true, win: 30, exp: 'rep-1|企业周会你没出现。顾问费减半。' });
+  if (d === E.consultCoi.day && F.consult === S.week && c.post) add(E.consultCoi, 'fin_coi');
+  if (d === E.review.day && rolls[1] < 0.6) add(E.review, 'fin_review', { win: 25 });
+  if (d === E.talk.day && rolls[2] < 0.55) add(E.talk, 'fin_talk');
+  if (d === E.book.day && !F.bookDone && c.rank >= 1 && rolls[3] < 0.5) add(E.book, 'fin_book', { win: 300 });
+  if (d === E.reimb.day && rolls[4] < 0.5) add(E.reimb, 'fin_reimb');
+  // One household shock in most months, from those that fit this household.
+  const pool = E.shocks.filter(x => x.need === 'any' || (x.need === 'car' && F.car) || (x.need === 'rent' && F.rent));
+  const sh = rolls[5] < 0.75 ? pool[Math.floor(R() * pool.length)] : null;
+  if (sh && sh.day === d) add(sh, 'fin_shock_' + sh.id, { win: 180, exp: 'house-4|' + sh.title + '：拖着没处理。' });
+  return out;
+}
+// The monthly statement, run at Sunday 23:59. Mutates S.fin and returns the lines the end screen shows.
+// ctx: rank and post held during the week, KPI average, whether this week's grant was funded.
+function finSettle(ctx) {
+  const F = S.fin, L = [], add = (t, v, note = '') => { L.push([t, v, note]); return v; };
+  const sal = FIN.salary[ctx.rank] || FIN.salary[0];
+  let cash = F.cash;
+  const wkSpend = F.wk.spend, wkEarn = F.wk.earn;
+  add(`工资（${RANKS[ctx.rank].n}，年薪 ${fmtY(sal.gross)}，到手）`, sal.net);
+  if (ctx.post) add(`${POSTS[ctx.post].n}岗位津贴`, FIN.post[ctx.post]);
+  add('阿玲的工资', FIN.partner);
+  if (S.week % FIN.bonusEvery === 0) add('季度绩效奖', Math.round(clamp((ctx.avg - 50) / 40, 0, 1) * FIN.bonusMax / 500) * 500, `本周表现平均 ${Math.round(ctx.avg)}`);
+  if (F.consult === S.week) add(F.consultHalf ? '横向课题顾问费（缺席周会，减半）' : '横向课题顾问费', F.consultHalf ? 10000 : 20000);
+  let inflow = L.reduce((a, x) => a + x[1], 0);
+  if (ctx.settle) {
+    if (F.mortgage) { const M = F.mortgage, cut = Math.min(M.bal, FIN.settle), was = M.pay; M.bal -= cut; M.pay = Math.round(pmt(M.bal, M.rate, M.left)); L.push(['特聘教授安家费：只能用于住房，提前还房贷', 0, `还掉 ${fmtY(cut)}，月供从 ${fmtY(was)} 降到 ${fmtY(M.pay)}`]); }
+    else { F.houseFund = (F.houseFund || 0) + FIN.settle; L.push(['特聘教授安家费：只能用于住房，存作首付', 0, `${fmtY(FIN.settle)}，买房时先用这笔`]); }
+    F.log.push([S.week, '拿到安家费']);
+  }
+  cash += inflow;
+  if (wkEarn) L.push(['本周外快（评审、讲座、稿费……）', wkEarn, '已经到账']);
+  // Outgoings. The mortgage goes last: if the card is maxed it is the one that bounces.
+  const out = [];
+  const pay = (t, v, note = '') => { out.push([t, -v, note]); cash -= v; return v; };
+  FIN.fixed.forEach(([, t, v]) => pay(t, v));
+  if (F.tutor) pay('补习班', FIN.tutor);
+  if (F.help) pay('阿姨（每周三次）', FIN.help);
+  if (F.rent) pay('人才公寓房租', F.rent.amount);
+  if (F.car) { const it = F.car.bal * F.car.rate / 12; pay(`车贷（还剩 ${F.car.left} 期）`, F.car.pay); F.car.bal = Math.max(0, F.car.bal - (F.car.pay - it)); F.car.left--; if (F.car.left <= 0) { F.car = null; F.log.push([S.week, '最后一期车贷']); out.push(['车贷还清了！', 0, '']); if (typeof unlock === 'function') unlock('carfree'); } }
+  let missed = false;
+  if (F.mortgage) {
+    const M = F.mortgage, own = M.pay - Math.min(M.pay, sal.gjj);
+    if (cash - own < -FIN.credit) { missed = true; out.push(['房贷：扣款失败', 0, `需要 ${fmtY(own)}，信用卡也刷不出来了`]); }
+    else { const it = M.bal * M.rate / 12; pay('房贷（公积金之外的部分）', own, `月供 ${fmtY(M.pay)}，公积金抵 ${fmtY(Math.min(M.pay, sal.gjj))}`); M.bal = Math.max(0, M.bal - (M.pay - it)); M.left--; }
+  }
+  if (cash < 0) pay('信用卡与借呗利息', Math.round(-cash * FIN.debtRate));
+  // Grant money: a separate wallet. It pays stipends and can never touch the mortgage.
+  if (ctx.grantOk) { F.fund += FIN.fund.award; out.push(['课题经费：新基金拨款到账', 0, `+${fmtY(FIN.fund.award)}（只能用于科研）`]); }
+  let stipendGap = false;
+  if (F.fund >= FIN.fund.stipends) F.fund -= FIN.fund.stipends; else stipendGap = true;
+  // Audit: each dinner booked to the grant may surface later. 15% a month, gone after six months.
+  const aud = [];
+  F.reimb = F.reimb.filter(r => { if (r.week === S.week) return true; if (finRng(r.week * 389 + S.week * 7 + 1)() < FIN.audit) { aud.push(r); return false; } return S.week - r.week < 6; });
+  aud.forEach(r => { pay(`审计：第 ${r.week} 周的“会议餐费”退回并罚款`, r.amt * 2, '诚信 −8'); S.k.integrity = clamp(S.k.integrity - 8); });
+  // Next week's consequences.
+  F.missed = missed ? F.missed + 1 : 0;
+  F.next = { bank: missed || cash < FIN.bankLine, forced: F.missed >= 2, stipend: stipendGap, lease: !!(F.rent && S.week + 1 >= F.rent.until) };
+  const net = Math.round(cash - F.cash + wkEarn - wkSpend);   // the whole month, including what moved during the week
+  F.cash = Math.round(cash); F.lastNet = net;
+  F.wk = { earn: 0, spend: 0, items: [] }; F.consultHalf = false;
+  return { inc: L, out, wkSpend, net, missed, aud: aud.length, stipendGap };
+}
+function finStatementHTML(st) {
+  const F = S.fin, row = ([t, v, n]) => `<tr><td>${esc(t)}${n ? `<br><span class="note">${esc(n)}</span>` : ''}</td><td class="${v > 0 ? 'p' : v < 0 ? 'm' : ''}">${v ? (v > 0 ? '+' : '') + fmtY(v).replace('−', '−') : ''}</td></tr>`;
+  const debts = [F.mortgage && `房贷还剩 ${fmtY(F.mortgage.bal)}（${F.mortgage.left} 期）`, F.car && `车贷还剩 ${fmtY(F.car.bal)}（${F.car.left} 期）`, F.rent && `人才公寓租到第 ${F.rent.until} 周`].filter(Boolean).join(' · ');
+  const warn = [st.missed && '房贷这个月没扣上：下周一银行会来电话。', F.next.forced && '连着两个月没还上：阿玲周一要和你商量卖车还是接横向。', !st.missed && F.cash < FIN.bankLine && '余额低于 −¥3万：信用卡快刷爆了，银行会来电话。', st.stipendGap && '课题经费不够发下个月的劳务费。', F.next.lease && '人才公寓下周到期：续租还是买房？'].filter(Boolean);
+  return `<div class="money"><div class="crTop"><b>${fmtY(F.cash)}</b><span>本月账单 · 第 ${S.week} 周 = 一个月 · 净 ${st.net >= 0 ? '+' : ''}${fmtY(st.net)}</span></div>
+    <table class="endKpis mtab">${st.inc.map(row).join('')}${st.wkSpend ? row(['本周零花（打车、外卖、礼物、意外……）', -st.wkSpend, '已经付了']) : ''}${st.out.map(row).join('')}</table>
+    <div class="crSub">${esc(debts)} · 课题经费 ${fmtY(F.fund)}（只能用于科研）${F.reimb.length ? ` · 还有 ${F.reimb.length} 张“会议餐费”可能被审计` : ''}</div>
+    ${warn.map(w => `<div class="mwarn">${esc(w)}</div>`).join('')}</div>`;
+}
+// HUD line under the vitals: your money, and the grant money you cannot spend on yourself.
+function renderMoney() {
+  if (!S || !S.fin || !$('pMoney')) return;
+  const F = S.fin, k = Math.round(F.cash) + '|' + F.fund;
+  if (renderMoney.k === k) return; renderMoney.k = k;
+  $('pMoney').innerHTML = `<span class="${F.cash < 0 ? 'neg' : ''}">${fmtY(F.cash)}</span><small>课题经费 ${fmtY(F.fund)}</small>`;
+}
+// Monthly levers and today's commute, shown in the morning planner. Toggles only on Monday (月初).
+function finPlannerRow(d) {
+  const F = S.fin, sal = FIN.salary[S.career.rank], btn = (id, t, on) => `<button type="button" class="mbtn ${on ? 'on' : ''}" data-fin="${id}">${t}</button>`;
+  const monthly = (F.mortgage ? F.mortgage.pay - Math.min(F.mortgage.pay, sal.gjj) : 0) + (F.car ? F.car.pay : 0) + (F.rent ? F.rent.amount : 0) + FIN.fixed.reduce((a, x) => a + x[2], 0) + (F.tutor ? FIN.tutor : 0) + (F.help ? FIN.help : 0);
+  const inc = sal.net + FIN.partner + (S.career.post ? FIN.post[S.career.post] : 0);
+  const commute = F.commute === 'metro' ? (F.taxiToday === d ? '今天打车：08:00 到岗。' : `坐地铁：08:${FIN.metroLate} 到岗，路上能读一篇文献（每两天 +1 颗创新点星）。`) : '开车：08:00 到岗。';
+  return `<div class="${F.cash < 0 ? 'bad' : ''}"><b>钱 · 余额 ${fmtY(F.cash)} · 课题经费 ${fmtY(F.fund)}</b>每月到手约 ${fmtY(inc)}，固定支出约 ${fmtY(monthly)}，结余约 ${fmtY(inc - monthly)}（意外和零花另算）。${commute}
+    <div class="mrow">${F.commute === 'metro' && F.taxiToday !== d ? btn('taxi', `今天打车 · ${fmtY(FIN.taxi)}`, false) : ''}${d === 0 ? btn('help', `请阿姨 · ${fmtY(FIN.help)}/月${F.help ? ' ✓' : ''}`, F.help) + btn('tutor', `补习班 · ${fmtY(FIN.tutor)}/月${F.tutor ? ' ✓' : ''}`, F.tutor) : `<span class="note">阿姨 ${F.help ? '有' : '无'} · 补习班 ${F.tutor ? '有' : '无'}（周一可以改）</span>`}</div></div>`;
+}
+function finPlannerBind(d) {
+  document.querySelectorAll('[data-fin]').forEach(b => b.onclick = () => {
+    const F = S.fin, k = b.dataset.fin;
+    if (k === 'taxi') { F.taxiToday = d; }
+    else if (k === 'help') F.help = !F.help;
+    else if (k === 'tutor') F.tutor = !F.tutor;
+    SFX.click(); showPlanner(d);
+  });
+}
+
 /* ---------------- v8: career logic ---------------- */
 // Record across finished weeks. Old history rows (v7) only kept titles, so fall back to reading them.
 function careerStats(c) {
@@ -4072,15 +4329,17 @@ const pad = (n) => String(n).padStart(2, '0');
 const fmt = (t) => { t = Math.min(t, 1439); return pad(Math.floor(t / 60) % 24) + ':' + pad(Math.floor(t % 60)); };
 const esc = (s) => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const KPI = [['research', '科研'], ['teaching', '教学'], ['team', '团队'], ['rep', '声誉'], ['safety', '安全'], ['integrity', '诚信']];
-const FXNAME = { research: '科研', teaching: '教学', team: '团队', rep: '声誉', safety: '安全', integrity: '诚信', energy: '精力', full: '饱腹', bladder: '尿意', grant: '基金书', paper: '论文', wellbeing: '身心', gq: '基金质量', trust: '信任', partner: '伴侣', child: '孩子', house: '家务' };
+const FXNAME = { research: '科研', teaching: '教学', team: '团队', rep: '声誉', safety: '安全', integrity: '诚信', cash: '¥', energy: '精力', full: '饱腹', bladder: '尿意', grant: '基金书', paper: '论文', wellbeing: '身心', gq: '基金质量', trust: '信任', partner: '伴侣', child: '孩子', house: '家务' };
 
 let S = null;
-const setup = { avatar: 'm', day: 'normal', mode: 'basic' };
+const setup = { avatar: 'm', day: 'normal', mode: 'basic', house: 'buy', commute: 'car' };
 let sampleFn = null;
 
-function freshCareer() { return { cv: 2, week: 1, pts: 0, rank: 0, history: [], trust: {}, lost: [], flags: {}, wb: 72, k: null, fam: null, dos: null, post: null, postWeeks: 0, postCool: 0, acadNext: 0, acadTries: 0, rankLog: [], postLog: [], done: false }; }
+function freshCareer() { return { cv: 3, fin: freshFin(setup.house, setup.commute), week: 1, pts: 0, rank: 0, history: [], trust: {}, lost: [], flags: {}, wb: 72, k: null, fam: null, dos: null, post: null, postWeeks: 0, postCool: 0, acadNext: 0, acadTries: 0, rankLog: [], postLog: [], done: false }; }
 // v7 careers: the old top rank (讲席教授·PI at 30 points) maps to 教授; points are kept and re-earn the new titles.
-function migrateCareer(c) { if (c && !c.cv) { if (c.rank >= 3) c.rank = 2; Object.assign(c, { cv: 2, post: null, postWeeks: 0, postCool: 0, acadNext: 0, acadTries: 0, rankLog: [], postLog: [], done: false }); } return c; }
+// v8 careers: no money yet. Start them on the default household with the loans already partly paid.
+function migrateFin(c) { if (c && !c.fin) { const f = freshFin('buy', 'car'), w = Math.max(0, (c.week || 1) - 1); for (const k of ['mortgage', 'car']) { const L = f[k]; for (let i = 0; i < w && L && L.left > 0; i++) { L.bal -= L.pay - L.bal * L.rate / 12; L.left--; } } if (f.car && f.car.left <= 0) f.car = null; if (c.rank >= 3) f.settled = true; c.fin = f; c.cv = 3; } return c; }
+function migrateCareer(c) { if (c && c.cv === 2) migrateFin(c); if (c && !c.cv) { if (c.rank >= 3) c.rank = 2; Object.assign(c, { cv: 2, post: null, postWeeks: 0, postCool: 0, acadNext: 0, acadTries: 0, rankLog: [], postLog: [], done: false }); migrateFin(c); } return c; }
 /* v6: fresh dossier (all components at 0 stars) and family meters. */
 function freshDossier() { const o = {}; for (const p in DOSSIER) { o[p] = {}; DOSSIER[p].comps.forEach(c => { o[p][c.id] = 0; }); } return o; }
 function freshFamily() { return { partner: 70, child: 70, house: 70 }; }
@@ -4095,6 +4354,8 @@ function newState(career) {
     // v6: dossier stars carry over (ideas go stale, see nextWeek); family meters carry over; tutorial progress is per browser.
     dos: career.dos ? JSON.parse(JSON.stringify(career.dos)) : freshDossier(), dataReq: null,
     fam: career.fam ? Object.assign({}, career.fam) : freshFamily(), homeNights: 0, famSkip: 0, homeToday: false, famEvents: {},
+    // v9: the household ledger carries over in the career; one game week = one financial month.
+    fin: JSON.parse(JSON.stringify(career.fin || freshFin(setup.house, setup.commute))),
     mode: setup.mode, avatar: setup.avatar, day: setup.day,
     t: hm(8, 0), running: false, paused: false, speed: 1,
     v: { energy: 86, full: 55, bladder: 18 },
@@ -4164,14 +4425,16 @@ function applyFx(fx) {
     else if (k === 'wellbeing') S.wb = clamp(S.wb + d);
     else if (k === 'partner' || k === 'child' || k === 'house') S.fam[k] = clamp(S.fam[k] + d);
     else if (k === 'gq') { if (S.submitted) continue; S.gq = clamp(S.gq + d); }
+    else if (k === 'cash') { if (!S.fin) continue; finMove(d, applyFx.label); renderMoney(); }
     else if (k in S.k) S.k[k] = clamp(S.k[k] + d);
     else continue;
     out.push([k, d]);
     const el = document.createElement('div');
     const good = k === 'bladder' ? d < 0 : d > 0;
-    el.className = 'fx ' + (good ? 'p' : 'm'); el.textContent = `${d > 0 ? '+' : ''}${d} ${FXNAME[k]}`;
+    el.className = 'fx ' + (good ? 'p' : 'm'); el.textContent = k === 'cash' ? `${d > 0 ? '+' : ''}${fmtY(d)}` : `${d > 0 ? '+' : ''}${d} ${FXNAME[k]}`;
     $('fxStream').appendChild(el); setTimeout(() => el.remove(), 2500);
     if (k in S.k && d > 0) gainXP(d * 3);
+    if (k === 'cash') continue;
   }
   return out;
 }
@@ -4265,6 +4528,8 @@ function updateEvents() {
       applyFx(ev.expire.fx); if (ev.expire.log) { logIt(ev.expire.log); toast(ev.expire.log, 'bad'); }
       S.wb = clamp(S.wb - 1.5); remember(ev, 'ignored'); if (ev.npc && S.trust[ev.npc] !== undefined) S.trust[ev.npc] = clamp(S.trust[ev.npc] - 10);
       if (ev.expire.lose && ev.crisisOf) loseStudent(ev.crisisOf);
+      if (ev.id === 'fin_consultMeet' && S.fin) S.fin.consultHalf = true;
+      if (ev.id === 'fin_lease' && S.fin) finFlag('fin_renew');
       SFX.bad(); questsDirty = true;
     }
   }
@@ -4469,6 +4734,7 @@ function openDesk() {
   if (!S.submitted && S.day <= 4) ch.push(S.grant >= 100 ? (gs < 58 && S.day < 4 ? { t: '提交基金申请书', d: `评审预估只有 ${gs} 分 · 周五前还能补`, next: 'warn' } : { t: '提交基金申请书', d: `评审预估 ${gs} 分 · 周五 23:59 截止`, run: () => ACT.submit('grant') }) : { t: `写基金申请书到 ${fmt(commitEnd())}（${Math.floor(S.grant)}%）`, d: `一整段专注时间 · 中途停下会打断专注 · 周五 23:59 截止`, run: () => ACT.write('grant') });
   if (!S.submitted && S.day <= 3 && !S.dataReq && !S.lost.includes('chen')) ch.push({ t: `请小陈整理预实验数据（信任 ${Math.round(S.trust.chen)}）`, d: S.trust.chen >= 80 ? '他会做得很漂亮，明天给你' : S.trust.chen >= 60 ? '明天给你' : '他最近和你不太亲近：会晚一天，而且只是一张表', run: () => requestData('chen') });
   if (!S.paperSubmitted) ch.push(S.paper >= 100 ? { t: '提交论文修改稿', d: `审稿预估 ${ps} 分 · 周日 23:59 截止`, run: () => ACT.submit('paper') } : { t: `改论文修改稿到 ${fmt(commitEnd())}（${Math.floor(S.paper)}%）`, d: '一整段专注时间 · 中途停下会打断专注 · 周日 23:59 截止', run: () => ACT.write('paper') });
+  if (S.fin && S.v.full < 70 && S.t >= hm(11) && S.t < hm(21)) ch.push({ t: `点外卖到办公室（${fmtY(FIN.takeout)}）`, d: '不用下楼，10 分钟吃完 · 身心 −2', run: () => { finSpend(FIN.takeout, '外卖', { full: 45, wellbeing: -2 }); S.meals++; S.mealsWeek++; simulate(10); logIt(`在办公桌上吃了外卖（${fmtY(FIN.takeout)}）。`); } });
   ch.push({ t: '看看两份清单', d: '每颗星从哪里来', next: 'dos' });
   ch.push({ t: '只是坐一会儿', d: '回到楼层' });
   const starLine = (p) => DOSSIER[p].comps.map(c => `${c.n} ${STAR(S.dos[p][c.id])}`).join(' · ');
@@ -4531,7 +4797,9 @@ function confirmHome() {
     id: 'home', loc: 'elevator', who: '电梯 · B1 停车场', tag: '下班', title: '现在就下班吗？', status: [['基金', S.submitted ? '已提交' : Math.floor(S.grant) + '%', S.submitted ? 'good' : 'bad'], ['还有待办', activeEvents().length + ' 件', activeEvents().length ? 'bad' : 'good'], ['家里', `${FAMILY[low[0]].n} ${Math.round(low[1])}`, low[1] < 40 ? 'bad' : '']],
     card: null, synthetic: true, start: 'a',
     nodes: { a: { say: [['', S.submitted ? '电梯门开了。整层楼的灯在你身后一盏盏熄灭。' : '基金还没提交。现在走，今晚就不会再回来了。'], ['', late ? '已经过了十一点，家里的灯应该都黑了。' : S.famSkip >= 2 ? `你已经 ${S.famSkip} 个晚上没在家吃饭了。` : '家里的人在等你。']], choices: [
-      { t: late ? '回家 · 轻手轻脚' : '回家', d: late ? '家人都睡了，明天再说' : `今晚在家 · 身心 +${FAM_HOME_WB}`, run: goHome }, { t: '再待一会儿', d: '回到楼层' },
+      { t: late ? '回家 · 轻手轻脚' : '回家', d: late ? '家人都睡了，明天再说' : `今晚在家 · 身心 +${FAM_HOME_WB}`, run: goHome },
+      ...(S.fin && !late && S.fin.giftWeek !== S.week ? [{ t: `回家，路上给阿玲带束花（${fmtY(FIN.gift)}）`, d: '阿玲 +4 · 每周只有第一次管用', run: () => { S.fin.giftWeek = S.week; finSpend(FIN.gift, '给阿玲的花', { partner: 4 }); goHome(); } }] : []),
+      { t: '再待一会儿', d: '回到楼层' },
     ] } },
   });
 }
@@ -4662,7 +4930,8 @@ function pick(c) {
   if ((c.flags || []).includes('lose') && d.ev.crisisOf) loseStudent(d.ev.crisisOf);
   if ((c.flags || []).some(f => f.startsWith('kept_')) && d.ev.crisisOf) delete S.crisis[d.ev.crisisOf];
   if (c.fx) { const s = Object.values(c.fx).reduce((a, b) => a + b, 0); d.mood = s >= 0 ? 'happy' : 'worried'; const n = d.ev.npc && NPC[d.ev.npc]; if (n) setExpr(n, d.mood); }
-  fxLine(applyFx(c.fx));
+  applyFx.label = shortTitle(d.ev.title); fxLine(applyFx(c.fx)); applyFx.label = null;
+  (c.flags || []).filter(f => f.startsWith('fin_')).forEach(finFlag);
   sayLines(c.fb);
   if (c.ach) unlock(c.ach);
   if (c.fx) { const s = Object.values(c.fx).reduce((a, b) => a + b, 0); (s >= 0 ? SFX.good : SFX.bad)(); }
@@ -4923,7 +5192,7 @@ function renderHUD() {
   $('vW').style.width = S.wb + '%'; $('vW').style.background = col(S.wb) || '#c58bff'; $('vWn').textContent = Math.round(S.wb) + '';
   $('vB').style.width = v.bladder + '%'; $('vB').style.background = col(v.bladder, true) || '#5cc8ff'; $('vBn').textContent = Math.round(v.bladder) + '%';
   if (questsDirty || Math.floor(S.t) !== lastQuestT) { renderQuests(); questsDirty = false; lastQuestT = Math.floor(S.t); }
-  renderActivity(); tutTick();
+  renderActivity(); tutTick(); renderMoney();
 }
 function renderBlocks() {
   const cur = blockIdx(S.t), key = cur + '|' + S.blockUse.map(u => topCat(u)).join(',');
@@ -5059,7 +5328,7 @@ function endDay(reason) {
   S.lastEnd = reason === 'home' && S.t >= hm(22) ? 'time' : reason; if (reason === 'collapse') { S.collapses++; S.wb = clamp(S.wb - 15); }
   S.endT = S.t; S.dayBlocks = S.blockUse.map(u => topCat(u));
   // v6: the family drifts on nights you are not home; weekends count double.
-  if (!S.homeToday) { const k = d >= 5 ? 2 : 1; Object.keys(S.fam).forEach(f => { S.fam[f] = clamp(S.fam[f] - FAM_DRIFT * k); }); S.famSkip++; logIt(d >= 5 ? '周末也没回家。' : '又是一个没回家的晚上。'); } else S.famSkip = 0;
+  if (!S.homeToday) { const k = d >= 5 ? 2 : 1; Object.keys(S.fam).forEach(f => { const m = S.fin && ((f === 'house' && S.fin.help) ? 0 : (f === 'child' && S.fin.tutor) ? 0.5 : 1); S.fam[f] = clamp(S.fam[f] - FAM_DRIFT * k * (m ?? 1)); }); S.famSkip++; logIt(d >= 5 ? '周末也没回家。' : '又是一个没回家的晚上。'); } else S.famSkip = 0;
   S.atHome = false;
   // Attention is a resource: people you did not help today drift a little.
   Object.keys(S.trust).forEach(id => { if (!S.lost.includes(id) && !(S.mem[id] || []).some(m => m.day === d && m.kind === 'good')) S.trust[id] = clamp(S.trust[id] - 4); });
@@ -5123,8 +5392,8 @@ function showDaySummary() {
 const SAVE_KEY = 'prof-week-save-v2', SAVE_V1 = 'prof-week-save-v1', CAREER_KEY = 'prof-career-v1';
 const PERSIST = ['k', 'xp', 'level', 'ach', 'cards', 'log', 'grant', 'submitted', 'paper', 'paperSubmitted', 'day', 'collapses', 'lastEnd', 'totals', 'muons', 'rooms', 'zones', 'sports', 'reads', 'clears', 'flags', 'coffeesWeek', 'mealsWeek', 'mode', 'avatar',
   'week', 'career', 'wb', 'trust', 'mem', 'lost', 'gq', 'intel', 'crisis', 'crisisSeen', 'timeWeek', 'focusBlocks', 'recruit', 'intents', 'rumours', 'subWb', 'endT',
-  'dos', 'dataReq', 'fam', 'homeNights', 'famSkip', 'famEvents'];
-function saveGame() { try { const o = {}; PERSIST.forEach(k => { o[k] = S[k]; }); localStorage.setItem(SAVE_KEY, JSON.stringify({ v: 4, setup: Object.assign({}, setup), S: o, at: Date.now() })); } catch (e) { /* storage blocked */ } }
+  'dos', 'dataReq', 'fam', 'homeNights', 'famSkip', 'famEvents', 'fin'];
+function saveGame() { try { const o = {}; PERSIST.forEach(k => { o[k] = S[k]; }); localStorage.setItem(SAVE_KEY, JSON.stringify({ v: 5, setup: Object.assign({}, setup), S: o, at: Date.now() })); } catch (e) { /* storage blocked */ } }
 // v1 saves (v3/v4 builds) have no career, trust or wellbeing: start them as week 1 with defaults.
 function migrateSave(x) {
   if (!x || !x.S) return null;
@@ -5142,6 +5411,8 @@ function migrateSave(x) {
   }
   // v3 → v4 (v8 build): career gains posts and the academy; old top rank remapped.
   if (x.v === 3) { if (x.S.career) migrateCareer(x.S.career); x.v = 4; }
+  // v4 → v5 (v9 build): money. The week in progress takes the career's ledger.
+  if (x.v === 4) { if (x.S.career) { migrateCareer(x.S.career); migrateFin(x.S.career); } if (!x.S.fin) x.S.fin = JSON.parse(JSON.stringify((x.S.career && x.S.career.fin) || freshFin())); x.v = 5; }
   return x;
 }
 function loadSave() {
@@ -5223,7 +5494,7 @@ function careerEpilogue(c) {
   const st = careerStats(c), grades = c.history.map(h => h.grade).join('');
   const path = [{ week: 1, n: '助理教授' }].concat(c.rankLog || [], c.postLog || []).sort((a, b) => a.week - b.week).concat([{ week: c.academician, n: '院士' }]);
   const fam = S.fam ? Object.entries(FAMILY).map(([k, f]) => `${f.n} ${Math.round(S.fam[k])}`).join(' · ') : '';
-  return `<div class="epi"><b>职业生涯 · ${c.academician} 周</b><div class="epiPath">${path.map(x => `<span><em>W${x.week}</em>${esc(x.n)}</span>`).join('')}</div><small>基金获批 ${st.grants} 次 · 论文直接接收 ${st.accepts} 篇 · 走掉的学生 ${c.lost.length} 人 · 每周评级 ${grades}${fam ? ' · 家里：' + fam : ''}</small><small>增选了 ${c.acadTries} 次。电话是王老师打来的，她比你先知道。</small></div>`;
+  return `<div class="epi"><b>职业生涯 · ${c.academician} 周</b><div class="epiPath">${path.map(x => `<span><em>W${x.week}</em>${esc(x.n)}</span>`).join('')}</div><small>基金获批 ${st.grants} 次 · 论文直接接收 ${st.accepts} 篇 · 走掉的学生 ${c.lost.length} 人 · 每周评级 ${grades}${fam ? ' · 家里：' + fam : ''}</small><small>增选了 ${c.acadTries} 次。电话是王老师打来的，她比你先知道。</small>${S.fin ? `<small>财务：余额 ${fmtY(S.fin.cash)}${S.fin.mortgage ? ` · 房贷还剩 ${fmtY(S.fin.mortgage.bal)}` : ''}${S.fin.car ? ` · 车贷还剩 ${S.fin.car.left} 期` : (c.setup && c.setup.commute === 'car' && S.fin.commute === 'car' ? ' · 车贷还清了' : '')}${(S.fin.log || []).length ? ' · ' + S.fin.log.map(([w, t]) => `W${w} ${t}`).join('、') : ''}</small>` : ''}</div>`;
 }
 function endWeek(reason) {
   const T = S.totals;
@@ -5236,7 +5507,7 @@ function endWeek(reason) {
   const homeCap = S.homeNights < 2; if (homeCap) score = Math.min(score, 69);
   const G = score >= 82 ? ['S', '院士候选人的一周'] : score >= 70 ? ['A', '稳健的长聘教授'] : score >= 58 ? ['B', '忙而不乱的青年教师'] : score >= 46 ? ['C', '被截止日追着跑的一周'] : ['D', '下周，请先睡一觉'];
   // career
-  const c = S.career, rank0 = c.rank;
+  const c = S.career, rank0 = c.rank, post0 = c.post;
   c.pts += pts;
   c.history.push({ week: S.week, grade: G[0], pts, grant: outs[0][1], paper: outs[1][1], lost: S.lost.length, grantOk: outs[0][0] === 'ok', accept: /直接接收/.test(outs[1][1]), trust: Math.round(avgTrust()) });
   // v8: titles need points and a record; posts are offered; 院士 is voted on every 4 weeks from 讲席教授.
@@ -5260,8 +5531,19 @@ function endWeek(reason) {
   if (vote) outs.unshift(vote.elected ? ['ok', '院士增选：当选！', `当选把握约 ${vote.p}%：${vote.parts.map(([t, v]) => `${t}（${v >= 0 ? '+' : ''}${Math.round(v)}）`).join('、')}。`, 0]
     : ['bad', '院士增选：这一轮没有当选', `当选把握约 ${vote.p}%：${vote.parts.map(([t, v]) => `${t}（${v >= 0 ? '+' : ''}${Math.round(v)}）`).join('、')}。下一轮：第 ${c.acadNext} 周。`, 0]);
   if (blocked) outs.push(['mid', `「${RANKS[c.rank + 1].n}」：积分够了，还差记录`, `还需要：${blocked.join('、')}。`, 0]);
+  // v9: the monthly statement. Salary follows the title held this week; the 安家费 arrives with 特聘教授.
+  let money = null;
+  if (S.fin) {
+    const settle = c.rank >= 3 && !S.fin.settled; if (settle) S.fin.settled = true;
+    if (S.fin.consult === S.week) { S.k.research = clamp(S.k.research - 2); c.k = Object.assign({}, S.k); }
+    if (S.fin.tutor) S.fam.child = clamp(S.fam.child - 3);
+    money = finSettle({ rank: rank0, post: post0, avg, grantOk: outs.some(o => /^基金：(获批|优先资助)/.test(o[1])), settle });
+    const F = S.fin;
+    outs.push(F.cash < 0 ? ['bad', `钱：余额 ${fmtY(F.cash)}`, `${money.missed ? '房贷这个月没扣上。' : '靠信用卡撑着，每月 1% 的利息。'}${F.consult === S.week ? '横向课题：科研 −2。' : ''}`, 0]
+      : ['ok', `钱：余额 ${fmtY(F.cash)} · 本月 ${money.net >= 0 ? '+' : ''}${fmtY(money.net)}`, `${F.mortgage ? `房贷还剩 ${fmtY(F.mortgage.bal)}。` : ''}${F.consult === S.week ? '这个月接了横向：科研 −2。' : ''}${money.aud ? '有一张“会议餐费”被审计了。' : ''}`, 0]);
+  }
   const carry = freshDossier(); carry.grant.letter = S.dos.grant.letter; carry.grant.idea = Math.max(0, S.dos.grant.idea - 1); carry.grant.data = Math.max(0, S.dos.grant.data - 1);
-  Object.assign(c, { week: S.week + 1, trust: Object.assign({}, S.trust), lost: S.lost.slice(), flags: S.flags.ally_coach ? { ally_coach: 1 } : {}, wb: clamp(S.wb + 8), k: Object.assign({}, S.k), setup: Object.assign({}, setup), fam: Object.assign({}, S.fam), dos: carry });
+  Object.assign(c, { week: S.week + 1, trust: Object.assign({}, S.trust), lost: S.lost.slice(), flags: S.flags.ally_coach ? { ally_coach: 1 } : {}, wb: clamp(S.wb + 8), k: Object.assign({}, S.k), setup: Object.assign({}, setup), fam: Object.assign({}, S.fam), dos: carry, fin: S.fin ? JSON.parse(JSON.stringify(S.fin)) : c.fin });
   saveCareer(c);
   const promoted = c.rank > rank0, nxt = RANKS[c.rank + 1], elected = !!(vote && vote.elected);
   if (elected) unlock('academician');
@@ -5287,6 +5569,7 @@ function endWeek(reason) {
   $('againBtn').textContent = elected ? '开始新的职业生涯 ▶' : `开始第 ${c.week} 周 ▶`;
   if (elected) $('endOffer').innerHTML = ''; else renderOffer(offer, c);
   if (elected) $('endCareer').innerHTML += careerEpilogue(c);
+  $('endMoney').innerHTML = money ? finStatementHTML(money) : '';
   clearSave(); refreshContinue();
   if (promoted) setTimeout(() => { SFX.level(); }, 700);
   try { const best = +localStorage.getItem('prof-day-best') || 0; if (score > best) localStorage.setItem('prof-day-best', String(Math.round(score))); } catch (e) { /* storage unavailable */ }
@@ -5303,6 +5586,10 @@ function renderSetup() {
   $('avF').onclick = () => { setup.avatar = 'f'; sel($('avM'), $('avF'), false); };
   $('dayN').onclick = () => { setup.day = 'normal'; sel($('dayN'), $('dayC'), true); };
   $('dayC').onclick = () => { setup.day = 'crunch'; sel($('dayN'), $('dayC'), false); };
+  $('houseB').onclick = () => { setup.house = 'buy'; sel($('houseB'), $('houseR'), true); };
+  $('houseR').onclick = () => { setup.house = 'rent'; sel($('houseB'), $('houseR'), false); };
+  $('carY').onclick = () => { setup.commute = 'car'; sel($('carY'), $('carN'), true); };
+  $('carN').onclick = () => { setup.commute = 'metro'; sel($('carY'), $('carN'), false); };
 }
 function renderHandover() {
   const crunch = setup.day === 'crunch';
@@ -5378,7 +5665,8 @@ function showPlanner(d) {
     if (c.rank >= ACADEMY.rank && c.acadNext) bits.push(c.acadNext === S.week ? '本周是院士增选周：周一定稿提名材料，周三学部答辩，周日出结果。' : `下一次院士增选：第 ${c.acadNext} 周。`);
     const nx = RANKS[c.rank + 1]; if (nx) { const un = reqUnmet(nx, c); bits.push(`下一个职称「${nx.n}」：还差 ${Math.max(0, nx.pts - c.pts)} 分${un.length ? '，以及' + un.join('、') : ''}。`); }
     rows.push(`<div class="${c.acadNext === S.week && c.rank >= ACADEMY.rank ? 'bad' : ''}"><b>职业生涯 · ${RANKS[c.rank].n}${postLabel(c)}</b>${bits.join('')}</div>`); }
-  $('planNotes').innerHTML = rows.join('');
+  if (S.fin) rows.push(finPlannerRow(d));
+  $('planNotes').innerHTML = rows.join(''); finPlannerBind(d);
   $('planTrust').innerHTML = Object.entries(STUDENTS).map(([id, p]) => { const lost = S.lost.includes(id), v = Math.round(S.trust[id]); return `<div class="${lost ? 'lost' : ''}"><img alt="" src="${portrait(CAST[id], lost ? 'normal' : v < 35 ? 'worried' : v > 75 ? 'happy' : 'normal', 'head')}"><span>${p.n}</span><i style="--v:${lost ? 0 : v}%;--c:${v < 35 ? 'var(--danger)' : v < 55 ? 'var(--warn)' : 'var(--ok)'}"></i><small>${lost ? '已离开' : '信任 ' + v}</small></div>`; }).join('');
   $('planIntents').innerHTML = INTENTS.map(x => `<button type="button" class="intent" data-id="${x.id}"><span class="ic">${x.ic}</span><b>${x.n}</b><small>${x.d}</small></button>`).join('');
   $('planIntents').querySelectorAll('.intent').forEach(b => { b.onclick = () => beginDay(d, b.dataset.id); b.onmouseenter = SFX.click; });
@@ -5386,7 +5674,13 @@ function showPlanner(d) {
 }
 function beginDay(d, intent) {
   SFX.click(); tutHide(); S.planning = false; S.intent = intent; S.intents.push(intent); if (intent === 'self') S.v.energy = clamp(S.v.energy + 8);
-  logIt(`今天的打算：${INTENTS.find(x => x.id === intent).n}。`); saveGame();
+  logIt(`今天的打算：${INTENTS.find(x => x.id === intent).n}。`);
+  if (S.fin && S.fin.commute === 'metro') {
+    if (S.fin.taxiToday === d) { finMove(-FIN.taxi, '打车上下班'); logIt(`打车上班，${fmtY(FIN.taxi)}。`); }
+    else { S.t += FIN.metroLate; S.fin.metroReads = (S.fin.metroReads || 0) + 1; logIt(`坐地铁，${fmt(S.t)} 到岗。路上读了一篇文献。`);
+      if (S.fin.metroReads % 2 === 0 && !S.submitted && d <= 4) setTimeout(() => { if (S && !S.ended) addStar('grant', 'idea', 1); }, 2800); }
+  }
+  saveGame();
   show(null); $('hud').classList.remove('hidden'); renderHUD();
   $('intro').classList.remove('hidden');
   $('introD').textContent = `WEEK ${S.week} · DAY ${d + 1} · ${dayDate(d)}`; $('introB').textContent = `${DAYS[d].name} · ${DAYS[d].theme}`; $('introSub').textContent = `今天的打算：${INTENTS.find(x => x.id === intent).n}`;
