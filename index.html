@@ -2007,7 +2007,8 @@ function makeMarker(x, z, urgent, zoneId) {
 }
 const ripples = [];
 function ripple(x, z, color = '#00A9F4') {
-  const m = new THREE.Mesh(new THREE.RingGeometry(0.2, 0.28, 32), glow(color, 2.5, 1)); m.rotation.x = -Math.PI / 2; m.position.set(x, 0.03, z); Z.group.add(m); ripples.push({ m, t: 0 });
+  const mt = glow(color, 2.5, 1); mt.transparent = true; mt.depthWrite = false;   // must be transparent, or the fade below never shows
+  const m = new THREE.Mesh(new THREE.RingGeometry(0.2, 0.28, 32), mt); m.rotation.x = -Math.PI / 2; m.position.set(x, 0.03, z); Z.group.add(m); ripples.push({ m, t: 0 });
 }
 const muonPool = [];
 for (let i = 0; i < 16; i++) {
@@ -5884,7 +5885,7 @@ function frame(now) {
     w.p.rotation.y = Math.atan2(tg.x - w.p.position.x, tg.z - w.p.position.z); u.state = 'walk'; animChar(w.p, tsec, dt);
   });
   if (S) S.events.forEach(ev => { if (ev.marker) { const u = ev.marker.userData; u.gem.rotation.y += dt * 2; u.gem.position.y = 2.55 + Math.sin(tsec * 3) * 0.1; const k = 1 + (tsec * 1.2 % 1) * 0.9; u.ring.scale.set(k, k, k); u.ring.material.opacity = 1 - (tsec * 1.2 % 1); u.beam.material.opacity = 0.4 + Math.sin(tsec * 4) * 0.12; } });
-  for (let i = ripples.length - 1; i >= 0; i--) { const r = ripples[i]; r.t += dt; const k = 1 + r.t * 5; r.m.scale.set(k, k, k); r.m.material.opacity = Math.max(0, 1 - r.t * 1.6); if (r.t > 0.7) { scene.remove(r.m); ripples.splice(i, 1); } }
+  for (let i = ripples.length - 1; i >= 0; i--) { const r = ripples[i]; r.t += dt; const k = 1 + r.t * 5; r.m.scale.set(k, k, k); r.m.material.opacity = Math.max(0, 1 - r.t * 1.6); if (r.t > 0.7) { if (r.m.parent) r.m.parent.remove(r.m); r.m.geometry.dispose(); r.m.material.dispose(); ripples.splice(i, 1); } }   // the ring lives in its floor's group, not the scene root
   clock.led += dt;
   if (clock.led > 0.18 && Z.id === 'f5') { clock.led = 0; drawLeds(); if (Math.random() < 0.5) drawRack(); drawScope(tsec); drawHolo(tsec); }
   clock.muon += dt; if (clock.muon > 0.08) { clock.muon = 0; spawnMuon(); }

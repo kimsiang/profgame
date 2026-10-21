@@ -1,5 +1,8 @@
 # Changelog
 
+## v9.0.1 — Fix (2026-10-22)
+- The ring that marks where you clicked now fades and disappears. It was attached to the floor but removed from the scene root (a no-op), and its material was not transparent, so the fade never showed and the ring stayed on the floor.
+
 ## v9.0 — Money / 钱：工资、房贷与时间 (2026-10-22)
 - One game week = one financial month. Sunday's review adds a **monthly statement**: salary by title (¥30/35/40/45/50万 a year, shown as take-home), post allowance, 阿玲's pay, quarterly bonus, side income; then household costs, mortgage (net of 公积金), car loan, rent, interest.
 - **Setup** gains two choices: buy (¥500万 flat, ¥350万 mortgage) or rent a talent flat (lease ends week 12 → buy or renew); drive (car loan) or metro (08:20 start, but every two days of reading on the train adds an Idea star; taxi ¥120 when you need 08:00).
