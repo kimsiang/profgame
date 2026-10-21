@@ -410,6 +410,15 @@ body.talking #lbT,body.talking #lbB{height:7vh}
 #tut{position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:1000;max-width:min(560px,92vw);background:rgba(5,28,44,.92);border:1px solid var(--cyan);border-radius:10px;padding:10px 14px;font-size:13px;line-height:1.55;color:#eaf4fb;display:flex;gap:12px;align-items:center;box-shadow:0 10px 40px rgba(0,0,0,.4)}
 #tut b{color:var(--cyan);font-size:11px;letter-spacing:.08em;white-space:nowrap}
 #tut button{margin-left:auto;background:none;border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;white-space:nowrap}
+.offer{margin-top:14px;padding:12px 0;border-top:1px solid rgba(255,255,255,.12)}
+.offer b{display:block;font-size:14px;color:var(--text)}
+.offer small{display:block;font-size:12px;color:var(--muted);line-height:1.6;margin:4px 0 10px}
+.offerDone{margin-top:14px;font-size:13px;color:var(--cyan)}
+.epi{margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.12)}
+.epi b{display:block;font-size:14px;color:var(--gold)}
+.epi small{display:block;font-size:12px;color:var(--muted);line-height:1.6;margin-top:6px}
+.epiPath{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:8px;font-size:12.5px;color:var(--text)}
+.epiPath em{font-style:normal;font:11px var(--mono);color:var(--cyan);margin-right:4px}
 .outcomes{display:grid;gap:2px;margin-top:8px}
 .oc{display:grid;grid-template-columns:22px 1fr 30px;gap:10px;align-items:start;padding:8px 0;border-top:1px solid rgba(255,255,255,.1)}
 .oc .m{font-weight:800;color:var(--ok)}
@@ -681,6 +690,7 @@ body.talking #lbT,body.talking #lbB{height:7vh}
         <div class="outcomes" id="endOutcomes"></div>
         <div class="eyebrow" style="margin-top:18px">Career · 晋升之路</div>
         <div class="career" id="endCareer"></div>
+        <div id="endOffer"></div>
         <div class="row" style="margin-top:18px">
           <button class="btn gold" id="againBtn" type="button">开始下一周 ▶</button>
           <button class="btn ghost" id="homeBtn" type="button">回到首页</button>
@@ -3530,7 +3540,7 @@ function buildDay(d, dayType) {
   const wkMul = Math.max(0.8, 1 - 0.04 * ((st.week || 1) - 1)), intel = !!(st.intel && st.intel[d]);
   const det = buildEvents(dayType).filter(e => e.day === d && okReq(e));
   const wk = WEEK.filter(e => e.day === d && okReq(e)).map(e => Object.assign({}, e, { state: 'pending', win: crunch ? Math.round(e.win * 0.85) : e.win }));
-  const crisis = (typeof crisisEvents === 'function' ? crisisEvents(d) : []).concat(typeof dataEvents === 'function' ? dataEvents(d) : [], typeof familyEvents === 'function' ? familyEvents(d) : []);
+  const crisis = (typeof crisisEvents === 'function' ? crisisEvents(d) : []).concat(typeof dataEvents === 'function' ? dataEvents(d) : [], typeof familyEvents === 'function' ? familyEvents(d) : [], typeof careerEvents === 'function' ? careerEvents(d) : []);
   const n = d >= 5 ? 2 : (crunch ? 5 : 4);
   const used = new Set(), quick = [];
   let r = d * 97 + 13; const rnd = () => (r = (r * 16807) % 2147483647) / 2147483647;
@@ -3580,6 +3590,7 @@ Object.assign(ACHIEVEMENTS, {
   campus: ['走遍校园', '去过楼里楼外的每一个地方'],
   athlete: ['运动健将', '网球、羽毛球、足球都玩过'],
   bookworm: ['书虫', '在图书馆读了三次论文'],
+  academician: ['院士', '在增选中当选'],
 });
 /* =========================================================
    学者 Pro 版 · AI 设置
@@ -3716,12 +3727,51 @@ const INTENTS = [
   { id: 'self', n: '照顾自己', d: '身心消耗 −40%，开工精力 +8', ic: '息' },
 ];
 /* Career track. pts = cumulative career points needed. */
+/* v8: titles (职称) rise on points AND a record; posts (职务) are offered and run in parallel; 院士 is an election. */
 const RANKS = [
   { n: '助理教授', en: 'Assistant Professor', pts: 0 },
   { n: '副教授（长聘）', en: 'Associate Professor, tenured', pts: 8 },
   { n: '教授', en: 'Full Professor', pts: 18 },
-  { n: '讲席教授 · PI', en: 'Chair Professor & PI', pts: 30 },
+  { n: '特聘教授', en: 'Distinguished Professor', pts: 70, req: [{ k: 'grants', n: 3, t: '基金获批', en: 'funded grants' }] },
+  { n: '讲席教授', en: 'Chair Professor', pts: 110, req: [{ k: 'accepts', n: 2, t: '论文直接接收', en: 'papers accepted as is' }, { k: 'trust', n: 70, t: '学生平均信任', en: 'average student trust' }] },
 ];
+const POSTS = {
+  vice_dean: { n: '副院长', en: 'Vice Dean', perDay: [3, 4], weekend: 1 },
+  dean: { n: '院长', en: 'Dean', perDay: [6, 7], weekend: 2 },
+};
+const ACADEMY = { rank: 4, every: 4 };   // eligible from 讲席教授; one election every 4 weeks
+/* Administrative work that comes with a post. post: 'any' | 'dean'. Same shape as C(): [text, fx, minutes, feedback]. */
+const ADMIN_EVENTS = [
+  { post: 'any', loc: 'meeting', who: '学院 · 院务会', tag: '行政', title: '院务会：下学期课程排布', line: '院务会十分钟后开始', open: '会议室里坐满了系主任。议题第一项：下学期大学物理的任课安排，没人愿意接周一早八点。', ch: [['主动接下一门，换别人分担评估材料', 'rep+3 team+2 energy-6', 70, '大家松了一口气。你的周一早上没了。'], ['按教学量公平分配，会后发方案', 'rep+2 integrity+1', 55, '有人不太高兴，但没人能说不公平。'], ['让教学秘书先排，下次会上再定', 'rep-1', 25, '问题推到了下周，和其他问题一起。']] },
+  { post: 'any', loc: 'admin', who: '院办 · 王老师', tag: '行政', title: '王老师：学科评估材料今天要交', line: '王老师：评估材料还差您的签字', open: '王老师抱着一摞材料：学科评估的“代表性成果”表，学校下午五点前要。|王老师：表里有三位老师的成果填重了，要您定。', ch: [['逐条核对，删掉重复的', 'integrity+3 rep+1 energy-5', 60, '表少了两行，但每一行都站得住。'], ['先交上去，评估组不会细看', 'integrity-4 rep+2', 10, '王老师犹豫了一下，还是交了。'], ['退回给三位老师自己改', 'team-2 rep+1', 15, '下午五点差两分钟，材料交上去了。']] },
+  { post: 'any', loc: 'phone', who: '学校人事处 · 电话', tag: '行政', title: '人事处：青年教师招聘名额只剩一个', line: '人事处：名额只剩一个，今天要报', open: '人事处：今年只剩一个青年教师名额，学院要报凝聚态还是粒子物理？今天下班前给我们。', ch: [['按学院规划报凝聚态', 'rep+3 integrity+2', 15, '你自己的方向少了一个人，学院多了一块。'], ['报粒子物理，给自己的方向补人', 'research+3 rep-3 integrity-2', 10, '隔壁的凝聚态主任在走廊里没跟你打招呼。'], ['开个小会听两边意见再定', 'rep+2 team+1', 45, '晚了一小时报上去，但两边都觉得被听见了。']] },
+  { post: 'any', loc: 'meeting', who: '学院 · 研究生培养', tag: '行政', title: '研究生中期考核：三个学生没通过', line: '中期考核结果需要您签字', open: '研究生中期考核结果出来了：三个学生没通过，其中一个是你朋友组里的。|教学秘书：按规定要延期半年。', ch: [['按规定签字，约三位导师分别谈', 'integrity+3 team+1 energy-4', 50, '你朋友叹了口气：“规定就是规定。”'], ['给朋友组那个学生一次补考机会', 'integrity-5 rep+1', 5, '另外两个学生的导师很快就知道了。'], ['三个都给补考机会，写进制度', 'team+2 rep+1', 30, '下周的院务会多了一个议题。']] },
+  { post: 'any', loc: 'phone', who: '校友会 · 电话', tag: '行政', title: '校友：想给学院捐一个实验室', line: '校友会：有位校友想捐赠', open: '校友会：一位做芯片的校友想捐一间实验室，条件是用他公司的名字命名，并且优先招他公司推荐的学生。', ch: [['接受捐赠，但招生按学校标准', 'rep+4 integrity+2', 30, '谈了半小时，校友接受了。'], ['全盘接受，先把钱拿到', 'rep+2 integrity-5', 10, '学生会在论坛上发了帖子。'], ['婉拒，条件不合适', 'rep-2 integrity+3', 10, '校友说：“理解，那我再想想。”']] },
+  { post: 'any', loc: 'admin', who: '学院 · 财务', tag: '行政', title: '财务：年底预算还剩 40 万', line: '财务：预算要在月底前执行', open: '财务老师：学院公用经费还剩 40 万，月底前不执行就收回。几个组都来要了。', ch: [['开公开会，按需求排序分配', 'rep+2 team+2 integrity+2', 60, '分到最后，你自己的组什么也没拿。'], ['给公共平台买一台共享设备', 'rep+3 research+1', 25, '所有组都能用，没人能抱怨。'], ['拨一部分给自己组的探测器', 'research+3 integrity-4 rep-2', 5, '账面上是合规的，但有人记住了。']] },
+  { post: 'any', loc: 'meeting', who: '学院 · 学术委员会', tag: '行政', title: '学术不端举报：一篇论文图片重复', line: '学术委员会：有一份举报需要处理', open: '学术委员会收到匿名举报：本院一位副教授的论文里有两张图片高度相似。他是学院的“明星”青年教师。', ch: [['按程序成立调查组，原始数据说话', 'integrity+5 rep+1 energy-6', 70, '三周后结论出来：一张图贴错了，作者主动更正。'], ['先私下问他，能不说就不说', 'integrity-5', 15, '举报人第二周直接写信给了学校。'], ['转给学校科研诚信办公室', 'integrity+2 rep-1', 15, '程序是对的，只是学院被说“不作为”。']] },
+  { post: 'any', loc: 'phone', who: '学校 · 宣传部', tag: '行政', title: '宣传部：校庆视频要学院出镜', line: '宣传部：需要一位领导出镜', open: '宣传部：校庆宣传片要每个学院一位领导讲 30 秒，今天下午就拍。', ch: [['去拍，顺便讲讲学生的成果', 'rep+3 teaching+1', 45, '剪出来的版本只用了你 8 秒，但都是学生。'], ['推荐一位青年教师替你出镜', 'team+2 rep+1', 5, '那位老师很高兴，下周跟你主动聊了课题。'], ['推掉，今天在写基金', 'rep-2', 2, '宣传部说“那就不拍物理学院了”。']] },
+  { post: 'any', loc: 'meeting', who: '学院 · 职称评审', tag: '行政', title: '职称评审：两个人争一个正高名额', line: '职称评审会就要开始', open: '今年学院一个正高名额，两位副教授：一位论文多，一位教学好、带的学生都去了好地方。', ch: [['按学院公开的标准投票，会上说清楚理由', 'integrity+3 rep+2', 60, '落选的那位会后来找你，说谢谢你讲清楚了。'], ['支持论文多的，学校看指标', 'rep+1 teaching-2', 40, '教学好的那位下学期没再报优秀教学奖。'], ['建议学院明年把教学成果写进标准', 'teaching+3 rep+1', 50, '这个提议被写进了会议纪要。']] },
+  { post: 'any', loc: 'phone', who: '学生代表 · 消息', tag: '行政', title: '学生代表：实验楼晚上十点就锁门', line: '学生代表：晚上实验做不完', open: '研究生会代表：实验楼十点锁门，长时间的测量做不完。大家想申请延长到十二点。', ch: [['和保卫处谈，配门禁与安全巡查', 'team+3 safety+2', 40, '下个月起，刷卡可以进到十二点，有人值班。'], ['直接同意，钥匙给各组', 'team+2 safety-4', 5, '一周后，凌晨两点有人在楼里摔了。'], ['不行，安全第一', 'team-3 safety+1', 3, '学生代表回了一个“好的”。']] },
+  { post: 'any', loc: 'admin', who: '院办 · 王老师', tag: '行政', title: '王老师：本周需要您签的二十份文件', line: '王老师：签字的文件都在您桌上', open: '一摞文件：报销、出差审批、实验室安全承诺书、学位答辩委员名单……王老师用便利贴标出了要特别看的三份。', ch: [['每份都看，重点那三份细看', 'integrity+2 energy-6', 55, '你发现一份出差审批的日期对不上，退了回去。'], ['只看那三份，其余签了', 'integrity-1', 20, '大概不会有问题。大概。'], ['授权王老师代签常规文件', 'team+2 integrity-1', 10, '王老师：“好的，常规的我先处理。”']] },
+  { post: 'any', loc: 'meeting', who: '学院 · 国际交流', tag: '行政', title: '国际处：外方合作院校来访', line: '外方代表团下午到', open: '一所欧洲大学的代表团下午来访，想谈联合培养博士项目。国际处要学院领导接待两小时。', ch: [['亲自接待，带他们看实验室', 'rep+4 research+1 energy-5', 120, '对方当场提出下学期派两名学生来。'], ['接待一小时，交给国际处', 'rep+2', 60, '合作备忘录签了，具体的事下次再说。'], ['请赵博士代表学院接待', 'team+2 rep+1', 10, '赵博士的英语比你想的好。']] },
+  { post: 'dean', loc: 'meeting', who: '学校 · 校长办公会', tag: '院长', title: '校长办公会：学院明年的“双一流”指标', line: '校长办公会：要您汇报学院指标', open: '校长办公会：每个学院院长汇报明年的指标。物理学院被要求论文数增长 15%。', ch: [['据理力争：要求看质量，不只看数量', 'integrity+3 rep-1', 45, '校长说“你说的有道理，但数字还是要有”。'], ['接下 15%，回去分解到每个组', 'rep+3 team-4', 30, '组长们看到分解表的那天，学院群里很安静。'], ['接下指标，但多要两个博士后名额', 'rep+2 research+2', 40, '校长笑了：“你是第一个讨价还价的。”']] },
+  { post: 'dean', loc: 'phone', who: '一位老教授 · 电话', tag: '院长', title: '老教授：我的实验室面积不能减', line: '老教授：院长，我们谈谈实验室', open: '一位快退休的老教授：听说学院要重新分配实验室面积。“我在这里三十年了，这两间房谁也不能动。”', ch: [['登门拜访，听他讲完，再谈过渡方案', 'rep+3 team+2 energy-4', 60, '他最后同意让出一间给青年教师，条件是挂他的铭牌。'], ['按新规定执行，一视同仁', 'integrity+2 rep-4', 10, '他在院务会上发了很长的言。'], ['给他保留，先动别人的', 'rep+1 integrity-3 team-3', 5, '青年教师们看懂了规则。']] },
+  { post: 'dean', loc: 'meeting', who: '学院 · 人才引进', tag: '院长', title: '人才引进：海外候选人要“打包”配偶岗位', line: '引进候选人提出了条件', open: '一位很强的海外候选人愿意回来，条件是他的配偶也要一个教职。配偶的方向和学院不太相关。', ch: [['帮忙联系对口学院，学院不破格', 'integrity+3 rep+2', 50, '最后在化学系找到了合适的位置。'], ['特事特办，学院给一个岗位', 'rep+2 integrity-4 team-3', 15, '人来了。另外三个青年教师在食堂议论了很久。'], ['放弃这位候选人', 'rep-2', 5, '他去了另一所学校，第二年发了一篇大文章。']] },
+  { post: 'dean', loc: 'phone', who: '学校 · 校办', tag: '院长', title: '校办：明天上午部里来检查，需要院长陪同', line: '校办：明天的检查需要您在', open: '校办：部里的专家组明天上午来检查实验室安全，要院长全程陪同，九点到十二点。', ch: [['陪同，顺便把安全问题一起报上去', 'safety+3 rep+3 energy-5', 180, '专家组的意见里写了“该院主动报告隐患，值得推广”。'], ['陪一个小时，让副院长接手', 'rep+1', 60, '专家组问了两次“院长呢？”'], ['让安全员陪同，你有课', 'rep-3 teaching+1', 5, '校办的电话第二天又打来了。']] },
+  { post: 'dean', loc: 'admin', who: '院办 · 王老师', tag: '院长', title: '王老师：您组里的设备采购要院长签字', line: '王老师：这份采购单是您组里的', open: '王老师递上一份 80 万的设备采购单。申请人是你组里的赵博士，审批人是你自己。', ch: [['请副院长代为审批，自己回避', 'integrity+4 rep+1', 10, '副院长签了。流程上干干净净。'], ['自己签了，设备确实需要', 'integrity-5 research+2', 3, '第二年的审计报告里有一行写着这件事。'], ['让赵博士按学院统一采购的排期走', 'integrity+2 team-2 research-1', 5, '赵博士等了两个月。']] },
+  { post: 'dean', loc: 'meeting', who: '学院 · 教职工大会', tag: '院长', title: '教职工大会：有人当场质疑绩效分配', line: '教职工大会十分钟后开始', open: '教职工大会上，一位讲师站起来：“绩效分配向论文倾斜，上课多的老师拿得最少。”会场安静了。', ch: [['当场承认问题，成立小组下月拿方案', 'rep+3 team+3 teaching+2', 50, '散会后，好几位老师来跟你握手。'], ['解释现行办法的理由，会后再议', 'rep+1', 30, '那位讲师没再说话。'], ['“这个问题会后单独谈”', 'team-3 rep-2', 10, '会议记录里没有这一段。'] ] },
+  { post: 'any', loc: 'phone', who: '学院 · 研究生招生', tag: '行政', title: '招生办：推免名额超了两个', line: '招生办：推免名额要调整', open: '今年推免报名的人比名额多两个，两位都是本院的好学生，其中一个在你组里做过本科毕设。', ch: [['按综合排名，结果公示', 'integrity+3 rep+1', 25, '你组里的学生排第三，落选了。他说理解。'], ['向学校申请增加两个名额', 'rep+2 team+2 energy-3', 45, '学校给了一个。你们又排了一次。'], ['给你组里的学生加面试分', 'integrity-6', 5, '另一个学生的家长写信到了校长信箱。']] },
+  { post: 'any', loc: 'meeting', who: '学院 · 安全委员会', tag: '行政', title: '安全委员会：上月有两起液氮事故苗头', line: '安全委员会例会', open: '安全员汇报：上月有两次液氮杜瓦在走廊里无人看管，一次门禁失灵。|安全员：要不要全院停一天做培训？', ch: [['全院停半天，集中培训加检查', 'safety+5 rep+1 research-2', 60, '有人抱怨耽误了实验。下个月零事故。'], ['只对出问题的两个组培训', 'safety+2 team-1', 20, '那两个组的老师觉得被点名了。'], ['发个通知提醒一下', 'safety-2', 5, '通知的阅读量是 37。']] },
+];
+/* 人才帽子 review: one per week from 特聘教授 on. */
+const HAT_EVENT = { loc: 'desk', who: '基金委 · 邮件', tag: '评审', title: '邮件：人才计划会评，请您担任评审', line: '邮件：请您评审 12 份人才计划申请', open: '基金委邀请你担任今年人才计划的会评专家：12 份申请书，周五前给出意见。', ch: [['认真看完，写具体意见', 'rep+3 integrity+2 energy-6', 120, '其中一份写得特别好，你在意见里写了三段。'], ['看摘要和代表作，按惯例打分', 'rep+1', 45, '完成了。你记不太清第七份讲的是什么。'], ['以工作太忙为由婉拒', 'rep-2', 3, '基金委回复：“理解，期待下次合作。”'], ['申请人里有你的合作者，申请回避', 'integrity+4 rep+1', 5, '基金委换了一位专家。']] };
+/* Academy election week: three scenes. Flags feed the vote at week's end. */
+const ACADEMY_EVENTS = [
+  { day: 0, time: '10:00', loc: 'desk', who: '院办 · 王老师', tag: '增选', title: '院士增选：提名材料今天要定稿', line: '王老师：增选材料要您定稿', open: '王老师：院士增选的提名材料今天要交学部。代表作、主要贡献、推荐信……一共 60 页。|王老师：要不要我先按模板整理，您最后看一眼？', ch: [['自己重写“主要贡献”，只放站得住的成果', 'integrity+3 energy-8 @acad_prep2', 150, '写到第三页，你删掉了一项自己曾经很骄傲的结果。'], ['请王老师按模板整理，你看一遍', 'energy-2 @acad_prep1', 30, '材料很工整。有两处你自己也说不清。'], ['把合作者的成果也写成自己的贡献', 'integrity-8 @acad_inflate', 20, '页数多了一倍。']] },
+  { day: 2, time: '15:00', loc: 'meeting', who: '学部 · 答辩', tag: '增选', title: '院士增选：学部答辩（视频）', line: '学部答辩视频会议五分钟后开始', open: '视频那头是十几位院士。主持人：“请用十五分钟介绍你最重要的三项工作，然后回答问题。”', ch: [['讲清楚自己做了什么，坦白说局限和下一步', 'integrity+2 rep+2 @acad_def2', 60, '一位院士问了一个很难的问题，你说“我不知道，但我们在测”。他点了点头。'], ['挑最亮眼的结果讲，回避系统误差', 'rep+1 @acad_def1', 45, '答得很流畅。有一个问题你绕开了。'], ['讲团队，把学生和合作者放在前面', 'team+3 rep+1 @acad_def2 @acad_team', 60, '有位院士说：“很少有人在这里讲学生。”']] },
+  { day: 4, time: '20:30', loc: 'phone', who: '一位老朋友 · 电话', tag: '增选', title: '老朋友：要不要我帮你“打听打听”', line: '老朋友打来电话', open: '一位在学部有熟人的老朋友：“结果下周出。要不要我帮你打听打听，顺便帮你说两句？”', ch: [['谢谢，不用了，等结果', 'integrity+3 wellbeing+4', 3, '你挂了电话，去陪小宇拼完了那盒乐高。'], ['那就麻烦你了', 'integrity-6 @acad_lobby', 5, '你一晚上没睡好。']] },
+];
+
 /* XP levels now describe composure, not academic rank. */
 LEVELS.splice(0, LEVELS.length, [0, '手忙脚乱'], [120, '渐入佳境'], [300, '游刃有余'], [540, '从容不迫'], [820, '运筹帷幄'], [1150, '举重若轻'], [1500, '一代宗师']);
 
@@ -3801,6 +3851,75 @@ const TUTORIAL = [
   { id: 'dossier', text: '基金不只是写：图书馆攒创新点、请学生整理数据、网球场结识合作者。看看桌上的「申请书清单」。', when: () => S.focusBlocks >= 1 || S.t >= hm(12) },
   { id: 'home', text: '晚上有三种过法：加班、去植物园，或者回家。家里的人也在等你——电梯按 B1，或右上角「下班」。', when: () => S.t >= hm(20, 30) },
 ];
+
+/* ---------------- v8: career logic ---------------- */
+// Record across finished weeks. Old history rows (v7) only kept titles, so fall back to reading them.
+function careerStats(c) {
+  const h = c.history || [];
+  return {
+    grants: h.filter(x => x.grantOk ?? /获批|优先资助/.test(x.grant || '')).length,
+    accepts: h.filter(x => x.accept ?? /直接接收/.test(x.paper || '')).length,
+    trust: h.length ? (h[h.length - 1].trust ?? 0) : 0,
+  };
+}
+function reqUnmet(rank, c) {
+  const st = careerStats(c);
+  return (rank.req || []).filter(r => st[r.k] < r.n).map(r => `${r.t} ${st[r.k]}/${r.n}`);
+}
+// Promote while points and record allow. Returns the next rank's unmet conditions (if points alone would allow it).
+function promote(c, week) {
+  while (c.rank < RANKS.length - 1 && c.pts >= RANKS[c.rank + 1].pts) {
+    const un = reqUnmet(RANKS[c.rank + 1], c);
+    if (un.length) return un;
+    c.rank++; (c.rankLog = c.rankLog || []).push({ week, n: RANKS[c.rank].n });
+  }
+  return null;
+}
+function postLabel(c) { return c && c.post && POSTS[c.post] ? ' · ' + POSTS[c.post].n : ''; }
+// Events a title or post brings into a day: admin work, the weekly 帽子 review, the academy-election scenes.
+function careerEvents(d) {
+  if (typeof S === 'undefined' || !S || !S.career) return [];
+  const c = S.career, out = [];
+  const mk = (e, time, id, extra = {}) => { const ev = mkC(d, time, e.loc, e.who, e.tag, e.title, e.line, e.open, e.ch, Object.assign({ id, win: 150, pro: e.loc !== 'phone' }, extra)); ev.state = 'pending'; return ev; };
+  if (c.post && POSTS[c.post]) {
+    const P = POSTS[c.post], pool = ADMIN_EVENTS.filter(e => e.post === 'any' || c.post === 'dean');
+    const n = d >= 5 ? P.weekend : P.perDay[0] + ((d + c.week) % (P.perDay[1] - P.perDay[0] + 1));
+    let r = (c.week * 131 + d * 17 + 1) >>> 0; const rnd = () => (r = (r * 1103515245 + 12345) >>> 0) / 4294967296;
+    const used = new Set();
+    for (let i = 0; i < n && used.size < pool.length; i++) {
+      let k; do { k = Math.floor(rnd() * pool.length); } while (used.has(k)); used.add(k);
+      const e = pool[k];
+      if (e.loc === 'meeting') {
+        // Meetings are fixed: they land inside the two deep-work blocks and wait 30 minutes. Go, and the focus block
+        // is gone; stay at the desk, and the room notices. This is the maker's-vs-manager's schedule the post costs.
+        const slot = ['10:30', '11:00', '15:00', '15:30', '10:00', '14:30'][(Math.floor(rnd() * 6) + i) % 6];
+        out.push(mk(e, slot, `adm_${d}_${i}`, { u: true, win: 30, exp: `rep-3 team-1|没去「${shortTitle(e.title)}」。会上有人问：“${POSTS[c.post].n}呢？”` }));
+      } else {
+        const h = 9 + Math.floor(rnd() * 9), m = [0, 15, 30, 45][Math.floor(rnd() * 4)];
+        out.push(mk(e, `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`, `adm_${d}_${i}`, { win: 120, exp: `rep-2|「${shortTitle(e.title)}」拖过了时限。` }));
+      }
+    }
+  }
+  if (c.rank >= 3 && d === 2) out.push(mk(HAT_EVENT, '09:30', 'hat_' + d, { win: 600 }));
+  if (c.rank >= ACADEMY.rank && c.acadNext === S.week) ACADEMY_EVENTS.filter(e => e.day === d).forEach((e, i) => out.push(mk(e, e.time, `acad_${d}_${i}`, { win: 300 })));
+  return out;
+}
+// The vote. Transparent on purpose: the epilogue shows the odds and what moved them.
+function academyVote(c) {
+  const st = careerStats(c), F = S.flags, tries = c.acadTries || 0;
+  const parts = [
+    // The record carries the vote; weekly KPIs only nudge it (a good week saturates them, a career does not).
+    ['基金获批 ' + st.grants + ' 次', st.grants * 5], ['论文直接接收 ' + st.accepts + ' 篇', st.accepts * 7],
+    ['科研 ' + Math.round(S.k.research), (S.k.research - 60) * 0.3], ['声誉 ' + Math.round(S.k.rep), (S.k.rep - 60) * 0.15], ['诚信 ' + Math.round(S.k.integrity), (S.k.integrity - 70) * 0.3],
+    [F.acad_prep2 ? '材料自己重写' : F.acad_prep1 ? '材料按模板' : '材料没定稿', F.acad_prep2 ? 8 : F.acad_prep1 ? 3 : -6],
+    [F.acad_def2 ? '答辩坦诚扎实' : F.acad_def1 ? '答辩回避了问题' : '没参加答辩', F.acad_def2 ? 10 : F.acad_def1 ? 3 : -10],
+    F.acad_team && ['答辩讲了学生', 3], F.acad_inflate && ['材料夸大贡献', -15], F.acad_lobby && ['托人“打听”', -10],
+    c.lost.length && ['走掉的学生 ' + c.lost.length, -3 * c.lost.length], tries && ['学部已经认识你（第 ' + (tries + 1) + ' 次）', tries * 5],
+  ].filter(Boolean);
+  const p = clamp(Math.round(-40 + parts.reduce((a, [, v]) => a + v, 0)), 5, 80);
+  const roll = rng((c.week * 7919 + tries * 104729 + 3) % 2147483646 + 1)() * 100;
+  return { elected: roll < p, p, parts };
+}
 
 /* People whose trust is tracked, with the hotspot where they sit. */
 const STUDENTS = {
@@ -3928,7 +4047,9 @@ let S = null;
 const setup = { avatar: 'm', day: 'normal', mode: 'basic' };
 let sampleFn = null;
 
-function freshCareer() { return { week: 1, pts: 0, rank: 0, history: [], trust: {}, lost: [], flags: {}, wb: 72, k: null, fam: null, dos: null }; }
+function freshCareer() { return { cv: 2, week: 1, pts: 0, rank: 0, history: [], trust: {}, lost: [], flags: {}, wb: 72, k: null, fam: null, dos: null, post: null, postWeeks: 0, postCool: 0, acadNext: 0, acadTries: 0, rankLog: [], postLog: [], done: false }; }
+// v7 careers: the old top rank (讲席教授·PI at 30 points) maps to 教授; points are kept and re-earn the new titles.
+function migrateCareer(c) { if (c && !c.cv) { if (c.rank >= 3) c.rank = 2; Object.assign(c, { cv: 2, post: null, postWeeks: 0, postCool: 0, acadNext: 0, acadTries: 0, rankLog: [], postLog: [], done: false }); } return c; }
 /* v6: fresh dossier (all components at 0 stars) and family meters. */
 function freshDossier() { const o = {}; for (const p in DOSSIER) { o[p] = {}; DOSSIER[p].comps.forEach(c => { o[p][c.id] = 0; }); } return o; }
 function freshFamily() { return { partner: 70, child: 70, house: 70 }; }
@@ -4040,7 +4161,7 @@ function gainXP(n) {
 function renderXP() {
   const l = S.level, cur = LEVELS[l][0], nxt = LEVELS[l + 1] ? LEVELS[l + 1][0] : cur + 400;
   const pct = clamp((S.xp - cur) / (nxt - cur) * 100);
-  $('pLv').textContent = 'Lv.' + (l + 1); $('pTitle').textContent = `${RANKS[S.career.rank].n} · ${LEVELS[l][1]} · ${S.xp} XP`;
+  $('pLv').textContent = 'Lv.' + (l + 1); $('pTitle').textContent = `${RANKS[S.career.rank].n}${postLabel(S.career)} · ${LEVELS[l][1]} · ${S.xp} XP`;
   $('xpBar').style.width = pct + '%'; $('pAvatar').style.setProperty('--xp', pct + '%');
 }
 function unlock(id) {
@@ -4109,6 +4230,7 @@ function updateEvents() {
       if ((ev.urgent || ev.alarm) && !ev.phone && S.activity && S.activity.deep && !S.dialog) askInterrupt(ev);
     } else if (ev.state === 'active' && S.t > ev.deadline && (!S.dialog || S.dialog.ev !== ev)) {
       ev.state = 'expired'; settleEvent(ev);
+      if (/^adm_/.test(ev.id) && ev.urgent) S.adminMissed = (S.adminMissed || 0) + 1;
       applyFx(ev.expire.fx); if (ev.expire.log) { logIt(ev.expire.log); toast(ev.expire.log, 'bad'); }
       S.wb = clamp(S.wb - 1.5); remember(ev, 'ignored'); if (ev.npc && S.trust[ev.npc] !== undefined) S.trust[ev.npc] = clamp(S.trust[ev.npc] - 10);
       if (ev.expire.lose && ev.crisisOf) loseStudent(ev.crisisOf);
@@ -4529,6 +4651,7 @@ function resolve(after) {
     if (sum >= 3) { S.trust[ev.crisisOf] = clamp(S.trust[ev.crisisOf] + 30); delete S.crisis[ev.crisisOf]; } else if (sum < 0) loseStudent(ev.crisisOf);
   }
   ev.state = 'resolved'; settleEvent(ev); questsDirty = true; gainXP(ev.phone ? 20 : 50);
+  if (/^adm_/.test(ev.id)) S.adminDone = (S.adminDone || 0) + 1;
   if (ev.card && CARDS[ev.card] && !S.cards.includes(ev.card)) {
     S.cards.push(ev.card); gainXP(15);
     const c = CARDS[ev.card];
@@ -4912,7 +5035,7 @@ const SAVE_KEY = 'prof-week-save-v2', SAVE_V1 = 'prof-week-save-v1', CAREER_KEY 
 const PERSIST = ['k', 'xp', 'level', 'ach', 'cards', 'log', 'grant', 'submitted', 'paper', 'paperSubmitted', 'day', 'collapses', 'lastEnd', 'totals', 'muons', 'rooms', 'zones', 'sports', 'reads', 'clears', 'flags', 'coffeesWeek', 'mealsWeek', 'mode', 'avatar',
   'week', 'career', 'wb', 'trust', 'mem', 'lost', 'gq', 'intel', 'crisis', 'crisisSeen', 'timeWeek', 'focusBlocks', 'recruit', 'intents', 'rumours', 'subWb', 'endT',
   'dos', 'dataReq', 'fam', 'homeNights', 'famSkip', 'famEvents'];
-function saveGame() { try { const o = {}; PERSIST.forEach(k => { o[k] = S[k]; }); localStorage.setItem(SAVE_KEY, JSON.stringify({ v: 3, setup: Object.assign({}, setup), S: o, at: Date.now() })); } catch (e) { /* storage blocked */ } }
+function saveGame() { try { const o = {}; PERSIST.forEach(k => { o[k] = S[k]; }); localStorage.setItem(SAVE_KEY, JSON.stringify({ v: 4, setup: Object.assign({}, setup), S: o, at: Date.now() })); } catch (e) { /* storage blocked */ } }
 // v1 saves (v3/v4 builds) have no career, trust or wellbeing: start them as week 1 with defaults.
 function migrateSave(x) {
   if (!x || !x.S) return null;
@@ -4928,6 +5051,8 @@ function migrateSave(x) {
     const F = st.flags || {}; for (const f in FLAG_STARS) if (F[f]) { const [p, c, n] = FLAG_STARS[f]; dos[p][c] = Math.min(3, dos[p][c] + n); }
     Object.assign(st, { dos, dataReq: null, fam: freshFamily(), homeNights: 0, famSkip: 0, famEvents: {} });
   }
+  // v3 → v4 (v8 build): career gains posts and the academy; old top rank remapped.
+  if (x.v === 3) { if (x.S.career) migrateCareer(x.S.career); x.v = 4; }
   return x;
 }
 function loadSave() {
@@ -4938,12 +5063,12 @@ function loadSave() {
   } catch (e) { return null; }
 }
 function clearSave() { try { localStorage.removeItem(SAVE_KEY); localStorage.removeItem(SAVE_V1); } catch (e) { /* storage blocked */ } }
-function loadCareer() { try { const c = JSON.parse(localStorage.getItem(CAREER_KEY) || 'null'); return c && c.week ? c : null; } catch (e) { return null; } }
+function loadCareer() { try { const c = JSON.parse(localStorage.getItem(CAREER_KEY) || 'null'); return c && c.week ? migrateCareer(c) : null; } catch (e) { return null; } }
 function saveCareer(c) { try { localStorage.setItem(CAREER_KEY, JSON.stringify(c)); } catch (e) { /* storage blocked */ } }
 function refreshContinue() {
   const sv = loadSave(), c = loadCareer(), btn = $('contBtn');
   if (sv) { btn.classList.remove('hidden'); btn.textContent = `继续：第 ${sv.S.week || 1} 周 · 第 ${sv.S.day + 1} 天 · ${DAYS[sv.S.day].name}`; btn.onclick = continueGame; }
-  else if (c && c.week > 1) { btn.classList.remove('hidden'); btn.textContent = `继续职业生涯：第 ${c.week} 周 · ${RANKS[c.rank].n}`; btn.onclick = nextWeek; }
+  else if (c && c.week > 1 && !c.done) { btn.classList.remove('hidden'); btn.textContent = `继续职业生涯：第 ${c.week} 周 · ${RANKS[c.rank].n}${postLabel(c)}`; btn.onclick = nextWeek; }
   else btn.classList.add('hidden');
 }
 function nextWeek() {
@@ -4988,6 +5113,29 @@ function weekOutcomes() {
   out.push(S.wb < 30 ? ['bad', `身心透支（${Math.round(S.wb)}）`, '下周会从疲惫开始。', 0] : ['ok', `身心 ${Math.round(S.wb)}`, S.wb >= 60 ? '这周照顾好了自己。' : '还撑得住。', 0]);
   return out;
 }
+/* v8: a post offer (or the option to step down) on the week's end screen. Decisions write straight to the saved career. */
+function renderOffer(offer, c) {
+  const el = $('endOffer'); if (!el) return;
+  const set = (fn, msg) => { const cc = loadCareer(); if (!cc) return; fn(cc); saveCareer(cc); el.innerHTML = `<div class="offerDone">${esc(msg)}</div>`; SFX.click(); };
+  if (offer === 'vice_dean') {
+    el.innerHTML = `<div class="offer"><b>院长：“下学期想请你当副院长，分管科研。”</b><small>每天多 3–4 件行政事务（院务会、评估、招聘、预算），声誉和团队更容易涨，专注时段会更少。三周后若声誉 ≥ 75，可能被提名为院长。</small><div class="row"><button class="btn gold" type="button" id="ofYes">接受</button><button class="btn ghost" type="button" id="ofNo">婉拒，专心做科研</button></div></div>`;
+    $('ofYes').onclick = () => set(cc => { cc.post = 'vice_dean'; cc.postWeeks = 0; (cc.postLog = cc.postLog || []).push({ week: cc.week, n: '副院长' }); }, '你接受了。下周起，你是副院长。');
+    $('ofNo').onclick = () => set(cc => { cc.postCool = 3; }, '你婉拒了。院长说：“那过一阵再说。”');
+  } else if (offer === 'dean') {
+    el.innerHTML = `<div class="offer"><b>学院换届：你被提名为院长</b><small>行政事务翻倍，会遇到利益冲突、人才引进、指标这些真正难的事。院士增选看科研，不看职务。</small><div class="row"><button class="btn gold" type="button" id="ofYes">接受提名</button><button class="btn ghost" type="button" id="ofNo">继续当副院长</button></div></div>`;
+    $('ofYes').onclick = () => set(cc => { cc.post = 'dean'; cc.postWeeks = 0; (cc.postLog = cc.postLog || []).push({ week: cc.week, n: '院长' }); }, '下周起，你是院长。');
+    $('ofNo').onclick = () => set(cc => { cc.postWeeks = 0; }, '你留在副院长的位置上。');
+  } else if (c.post) {
+    el.innerHTML = `<div class="offer"><b>${POSTS[c.post].n} · 第 ${c.postWeeks} 周</b><small>想把时间还给实验室，可以卸任。卸任后四周内不会再被邀请。</small><div class="row"><button class="btn ghost" type="button" id="ofQuit">卸任</button></div></div>`;
+    $('ofQuit').onclick = () => set(cc => { (cc.postLog = cc.postLog || []).push({ week: cc.week, n: '卸任' + POSTS[cc.post].n }); cc.post = null; cc.postWeeks = 0; cc.postCool = 4; }, '你卸任了。下周起，只做教授。');
+  } else el.innerHTML = '';
+}
+function careerEpilogue(c) {
+  const st = careerStats(c), grades = c.history.map(h => h.grade).join('');
+  const path = [{ week: 1, n: '助理教授' }].concat(c.rankLog || [], c.postLog || []).sort((a, b) => a.week - b.week).concat([{ week: c.academician, n: '院士' }]);
+  const fam = S.fam ? Object.entries(FAMILY).map(([k, f]) => `${f.n} ${Math.round(S.fam[k])}`).join(' · ') : '';
+  return `<div class="epi"><b>职业生涯 · ${c.academician} 周</b><div class="epiPath">${path.map(x => `<span><em>W${x.week}</em>${esc(x.n)}</span>`).join('')}</div><small>基金获批 ${st.grants} 次 · 论文直接接收 ${st.accepts} 篇 · 走掉的学生 ${c.lost.length} 人 · 每周评级 ${grades}${fam ? ' · 家里：' + fam : ''}</small><small>增选了 ${c.acadTries} 次。电话是王老师打来的，她比你先知道。</small></div>`;
+}
 function endWeek(reason) {
   const T = S.totals;
   if (!S.collapses) unlock('week'); if (S.k.team >= 85) unlock('mentor7'); if (S.k.safety >= 80) unlock('safe7'); if (S.cards.length >= 20) unlock('scholar');
@@ -5000,21 +5148,45 @@ function endWeek(reason) {
   const G = score >= 82 ? ['S', '院士候选人的一周'] : score >= 70 ? ['A', '稳健的长聘教授'] : score >= 58 ? ['B', '忙而不乱的青年教师'] : score >= 46 ? ['C', '被截止日追着跑的一周'] : ['D', '下周，请先睡一觉'];
   // career
   const c = S.career, rank0 = c.rank;
-  c.pts += pts; while (c.rank < RANKS.length - 1 && c.pts >= RANKS[c.rank + 1].pts) c.rank++;
-  c.history.push({ week: S.week, grade: G[0], pts, grant: outs[0][1], paper: outs[1][1], lost: S.lost.length });
+  c.pts += pts;
+  c.history.push({ week: S.week, grade: G[0], pts, grant: outs[0][1], paper: outs[1][1], lost: S.lost.length, grantOk: outs[0][0] === 'ok', accept: /直接接收/.test(outs[1][1]), trust: Math.round(avgTrust()) });
+  // v8: titles need points and a record; posts are offered; 院士 is voted on every 4 weeks from 讲席教授.
+  const blocked = promote(c, S.week);
+  if (c.post) {
+    c.postWeeks = (c.postWeeks || 0) + 1;
+    // The visible cost of a post: the lab sees less of you. It feeds next week's research and the academy vote.
+    const drift = c.post === 'dean' ? 4 : 2, done = S.adminDone || 0, missed = S.adminMissed || 0;
+    S.k.research = clamp(S.k.research - drift); c.k = Object.assign({}, S.k);
+    outs.push(['mid', `行政：本周处理 ${done} 件，错过 ${missed} 次会议`, `${POSTS[c.post].n}的一周。实验室这周没怎么见到你：科研 −${drift}。`, 0]);
+  }
+  if (c.postCool > 0) c.postCool--;
+  let offer = null;
+  if (!c.post && c.rank >= 2 && !(c.postCool > 0)) offer = 'vice_dean';
+  else if (c.post === 'vice_dean' && c.postWeeks >= 3 && S.k.rep >= 75) offer = 'dean';
+  let vote = null;
+  if (c.rank >= ACADEMY.rank) {
+    if (!c.acadNext) c.acadNext = S.week + ACADEMY.every;
+    else if (c.acadNext === S.week) { vote = academyVote(c); c.acadTries = (c.acadTries || 0) + 1; if (vote.elected) { c.done = true; c.academician = S.week; } else c.acadNext = S.week + ACADEMY.every; }
+  }
+  if (vote) outs.unshift(vote.elected ? ['ok', '院士增选：当选！', `当选把握约 ${vote.p}%：${vote.parts.map(([t, v]) => `${t}（${v >= 0 ? '+' : ''}${Math.round(v)}）`).join('、')}。`, 0]
+    : ['bad', '院士增选：这一轮没有当选', `当选把握约 ${vote.p}%：${vote.parts.map(([t, v]) => `${t}（${v >= 0 ? '+' : ''}${Math.round(v)}）`).join('、')}。下一轮：第 ${c.acadNext} 周。`, 0]);
+  if (blocked) outs.push(['mid', `「${RANKS[c.rank + 1].n}」：积分够了，还差记录`, `还需要：${blocked.join('、')}。`, 0]);
   const carry = freshDossier(); carry.grant.letter = S.dos.grant.letter; carry.grant.idea = Math.max(0, S.dos.grant.idea - 1); carry.grant.data = Math.max(0, S.dos.grant.data - 1);
   Object.assign(c, { week: S.week + 1, trust: Object.assign({}, S.trust), lost: S.lost.slice(), flags: S.flags.ally_coach ? { ally_coach: 1 } : {}, wb: clamp(S.wb + 8), k: Object.assign({}, S.k), setup: Object.assign({}, setup), fam: Object.assign({}, S.fam), dos: carry });
   saveCareer(c);
-  const promoted = c.rank > rank0, nxt = RANKS[c.rank + 1];
-  $('endEyebrow').textContent = `第 ${S.week} 周 · 周日 23:59 · 一周结束`;
-  $('endHead').textContent = promoted ? `晋升：${RANKS[c.rank].n}！` : reason === 'collapse' ? '周日晚上，你在办公桌前睡着了' : '这一周结束了';
+  const promoted = c.rank > rank0, nxt = RANKS[c.rank + 1], elected = !!(vote && vote.elected);
+  if (elected) unlock('academician');
+  $('endEyebrow').textContent = elected ? `第 ${S.week} 周 · 职业生涯结局` : `第 ${S.week} 周 · 周日 23:59 · 一周结束`;
+  $('endHead').textContent = elected ? '当选院士' : promoted ? `晋升：${RANKS[c.rank].n}！` : reason === 'collapse' ? '周日晚上，你在办公桌前睡着了' : '这一周结束了';
   $('endGrade').textContent = G[0];
   $('endImg').src = portrait(PLAYER_LOOK(S.avatar === 'f'), promoted || G[0] === 'S' || G[0] === 'A' ? 'happy' : G[0] === 'D' ? 'sleepy' : 'normal');
-  $('endTitle').textContent = G[1] + ` · ${RANKS[c.rank].n}`;
+  $('endTitle').textContent = elected ? `院士 · ${RANKS[c.rank].n}${postLabel(c)}` : G[1] + ` · ${RANKS[c.rank].n}${postLabel(c)}`;
   $('endSummary').textContent = [`这一周一共冒出 ${T.all} 件事，你亲手处理了 ${T.done} 件，累倒 ${S.collapses} 次。`, `完整的专注时段 ${S.focusBlocks} 段。`, `约有 ${Math.floor(S.muons).toLocaleString('zh-CN')} 个宇宙线缪子在这一周里穿过了你的身体。`].join('');
   $('endOutcomes').innerHTML = outs.map(([k, t, d, p]) => `<div class="oc ${k}"><span class="m">${k === 'ok' ? '✓' : k === 'bad' ? '✕' : '~'}</span><div><b>${esc(t)}</b><small>${esc(d)}</small></div><em>${p ? '+' + p : ''}</em></div>`).join('');
   const pct = nxt ? clamp((c.pts - RANKS[c.rank].pts) / (nxt.pts - RANKS[c.rank].pts) * 100) : 100;
-  $('endCareer').innerHTML = `<div class="crTop"><b>${RANKS[c.rank].n}</b><span>${RANKS[c.rank].en}</span></div><div class="crBar"><i style="width:${pct}%"></i></div><div class="crSub">本周 +${pts} 分 · 职业生涯累计 ${c.pts} 分${nxt ? ` · 距离「${nxt.n}」还差 ${nxt.pts - c.pts} 分` : ' · 已到顶'}</div><div class="crHist">${c.history.slice(-8).map(h => `<span title="${esc(h.grant + ' / ' + h.paper)}">W${h.week} <b>${h.grade}</b> +${h.pts}</span>`).join('')}</div>`;
+  const st = careerStats(c), nextReq = nxt ? reqUnmet(nxt, c) : [];
+  const acadLine = c.rank >= ACADEMY.rank ? (elected ? '' : ` · 下一次院士增选：第 ${c.acadNext} 周`) : '';
+  $('endCareer').innerHTML = `<div class="crTop"><b>${RANKS[c.rank].n}${postLabel(c)}</b><span>${RANKS[c.rank].en}${c.post ? ' · ' + POSTS[c.post].en : ''}</span></div><div class="crBar"><i style="width:${pct}%"></i></div><div class="crSub">本周 +${pts} 分 · 职业生涯累计 ${c.pts} 分${nxt ? ` · 距离「${nxt.n}」还差 ${Math.max(0, nxt.pts - c.pts)} 分${nextReq.length ? '，以及' + nextReq.join('、') : ''}` : ' · 职称已到顶'}${acadLine} · 累计基金获批 ${st.grants} 次、论文直接接收 ${st.accepts} 篇</div><div class="crHist">${c.history.slice(-8).map(h => `<span title="${esc(h.grant + ' / ' + h.paper)}">W${h.week} <b>${h.grade}</b> +${h.pts}</span>`).join('')}</div>`;
   const tw = S.timeWeek, totMin = Object.values(tw).reduce((a, b) => a + b, 0) || 1, waste = ((tw.travel || 0) + (tw.idle || 0)) / totMin;
   $('endTime').innerHTML = catBars(tw);
   $('endMetrics').innerHTML = [['过期事件比例', Math.round(T.missed / Math.max(1, T.all) * 100) + '%', '目标 20–35%：说明你在取舍'], ['完整专注时段', S.focusBlocks + ' 段', '≥ 90 分钟不被打断'], ['时间利用率', Math.round((1 - waste) * 100) + '%', '走路、等电梯和发呆以外的时间'], ['平均学生信任', Math.round(avgTrust()), ''], ['在家的晚上', S.homeNights + ' 晚', homeCap ? '少于 2 晚：评级上限 B' : '目标 3–4 晚']].map(([a, b, c2]) => `<tr><td>${a}<br><span class="note">${c2}</span></td><td>${b}</td></tr>`).join('');
@@ -5023,7 +5195,9 @@ function endWeek(reason) {
   $('endLog').innerHTML = S.log.map(l => `<div><span class="t">${DAYS[l.day || 0].name.slice(1)} ${fmt(l.t)}</span><span>${esc(l.text)}</span></div>`).join('');
   $('cardsHead').textContent = `本周收集的科普卡 · ${S.cards.length} / ${Object.keys(CARDS).length}`;
   $('endCards').innerHTML = S.cards.map(c2 => `<div class="card"><h4>${esc(CARDS[c2].t)}</h4><p>${esc(CARDS[c2].b)}</p></div>`).join('');
-  $('againBtn').textContent = `开始第 ${c.week} 周 ▶`;
+  $('againBtn').textContent = elected ? '开始新的职业生涯 ▶' : `开始第 ${c.week} 周 ▶`;
+  if (elected) $('endOffer').innerHTML = ''; else renderOffer(offer, c);
+  if (elected) $('endCareer').innerHTML += careerEpilogue(c);
   clearSave(); refreshContinue();
   if (promoted) setTimeout(() => { SFX.level(); }, 700);
   try { const best = +localStorage.getItem('prof-day-best') || 0; if (score > best) localStorage.setItem('prof-day-best', String(Math.round(score))); } catch (e) { /* storage unavailable */ }
@@ -5109,6 +5283,12 @@ function showPlanner(d) {
   rows.push(`<div class="${lowF[1] < 40 ? 'bad' : ''}"><b>家 · ${Object.entries(FAMILY).map(([k, f]) => `${f.n} ${Math.round(S.fam[k])}`).join(' · ')}</b>${S.famSkip >= 2 ? `已经 ${S.famSkip} 晚没回家。` : ''}${lowF[1] < 40 ? `${FAMILY[lowF[0]].n}那边快撑不住了：${lowF[0] === 'partner' ? '她会找你谈' : lowF[0] === 'child' ? '学校可能会打电话来' : '早上会找不到东西'}。` : '每个不回家的晚上都会掉一点；回家一晚身心 +' + FAM_HOME_WB + '。'}</div>`);
   (S.rumours || []).filter(r => r.day === d).forEach(r => rows.push(`<div><b>天台八卦</b>${esc(r.text)}</div>`));
   Object.keys(S.crisis).filter(id => S.crisis[id] === d).forEach(id => rows.push(`<div class="bad"><b>${STUDENTS[id].n}</b>昨天一整天都没怎么说话，今天早上想找你谈谈。</div>`));
+  { const c = S.career, bits = [];
+    if (c.post) bits.push(`你是${POSTS[c.post].n}：每天会多出几件行政事，周末也有。`);
+    if (c.rank >= 3) bits.push('周三有一份人才计划会评的邀请。');
+    if (c.rank >= ACADEMY.rank && c.acadNext) bits.push(c.acadNext === S.week ? '本周是院士增选周：周一定稿提名材料，周三学部答辩，周日出结果。' : `下一次院士增选：第 ${c.acadNext} 周。`);
+    const nx = RANKS[c.rank + 1]; if (nx) { const un = reqUnmet(nx, c); bits.push(`下一个职称「${nx.n}」：还差 ${Math.max(0, nx.pts - c.pts)} 分${un.length ? '，以及' + un.join('、') : ''}。`); }
+    rows.push(`<div class="${c.acadNext === S.week && c.rank >= ACADEMY.rank ? 'bad' : ''}"><b>职业生涯 · ${RANKS[c.rank].n}${postLabel(c)}</b>${bits.join('')}</div>`); }
   $('planNotes').innerHTML = rows.join('');
   $('planTrust').innerHTML = Object.entries(STUDENTS).map(([id, p]) => { const lost = S.lost.includes(id), v = Math.round(S.trust[id]); return `<div class="${lost ? 'lost' : ''}"><img alt="" src="${portrait(CAST[id], lost ? 'normal' : v < 35 ? 'worried' : v > 75 ? 'happy' : 'normal', 'head')}"><span>${p.n}</span><i style="--v:${lost ? 0 : v}%;--c:${v < 35 ? 'var(--danger)' : v < 55 ? 'var(--warn)' : 'var(--ok)'}"></i><small>${lost ? '已离开' : '信任 ' + v}</small></div>`; }).join('');
   $('planIntents').innerHTML = INTENTS.map(x => `<button type="button" class="intent" data-id="${x.id}"><span class="ic">${x.ic}</span><b>${x.n}</b><small>${x.d}</small></button>`).join('');
@@ -5224,7 +5404,7 @@ $('setupBack').onclick = () => { SFX.click(); show('scrTitle'); };
 $('setupNext').onclick = () => { SFX.click(); renderHandover(); show('scrHand'); };
 $('handBack').onclick = () => { SFX.click(); show('scrSetup'); };
 $('startBtn').onclick = startGame;
-$('againBtn').onclick = () => { SFX.click(); nextWeek(); };
+$('againBtn').onclick = () => { SFX.click(); const c = loadCareer(); if (c && c.done) { try { localStorage.removeItem(CAREER_KEY); } catch (e) { /* storage blocked */ } show('scrTitle'); refreshContinue(); } else nextWeek(); };
 $('homeBtn').onclick = () => { show('scrTitle'); refreshContinue(); };
 setTimeout(refreshContinue, 0);
 initAI();
