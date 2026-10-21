@@ -1,5 +1,9 @@
 # Changelog
 
+## v9.0.2 — Fix (2026-10-22)
+- Floor tiles no longer flicker on 中/高 quality. Post-processing rendered into buffers with 16-bit depth (three r128's default), too coarse at our camera distance to separate floor layers laid 4–7 mm above the base floor. The buffers now request 24-bit depth, and raised floor layers use a polygon offset so they always draw on top.
+- Desktop: the Performance card moved down so it no longer hides the ¥ line under the vitals.
+
 ## v9.0.1 — Fix (2026-10-22)
 - The ring that marks where you clicked now fades and disappears. It was attached to the floor but removed from the scene root (a no-op), and its material was not transparent, so the fade never showed and the ring stayed on the floor.
 

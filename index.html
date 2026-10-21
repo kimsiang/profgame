@@ -72,7 +72,7 @@ svg.ic{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;str
 .mtab td.p{color:var(--ok)}.mtab td.m{color:#ffb3bd}
 .mwarn{margin-top:6px;font-size:12px;color:var(--danger)}
 /* ---- kpi ---- */
-#kpiCard{top:calc(206px + env(safe-area-inset-top,0px));left:max(14px,env(safe-area-inset-left,0px));width:268px;padding:12px 14px}
+#kpiCard{top:calc(240px + env(safe-area-inset-top,0px));left:max(14px,env(safe-area-inset-left,0px));width:268px;padding:12px 14px}
 #kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;margin-top:8px}
 .kpi{font-size:11px;color:var(--muted)}
 .kpi .row1{display:flex;justify-content:space-between}
@@ -1024,12 +1024,14 @@ function buildPost() {
   post.composer = null;
   if (QUALITY === 'low' || !HAS_POST) return;
   const w = stage.clientWidth || innerWidth, h = stage.clientHeight || innerHeight, pr = PR();
-  const rt = new THREE.WebGLRenderTarget(w * pr, h * pr, { type: THREE.HalfFloatType, format: THREE.RGBAFormat, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter });
+  // stencilBuffer: true is how r128 gets a 24-bit depth buffer (DEPTH_STENCIL); without it render targets get DEPTH_COMPONENT16,
+  // which at our camera distance cannot separate floor layers a few millimetres apart, so the tiles flickered.
+  const rt = new THREE.WebGLRenderTarget(w * pr, h * pr, { type: THREE.HalfFloatType, format: THREE.RGBAFormat, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, stencilBuffer: true });
   const c = new THREE.EffectComposer(renderer, rt);
   c.setPixelRatio(pr); c.setSize(w, h);
   if (QUALITY === 'high' && THREE.SSAOPass && THREE.SimplexNoise) {
     const s = new THREE.SSAOPass(scene, cam, w, h);
-    s.beautyRenderTarget.texture.type = THREE.HalfFloatType;
+    s.beautyRenderTarget.texture.type = THREE.HalfFloatType; s.beautyRenderTarget.stencilBuffer = true;   // 24-bit depth, as above
     s.kernelRadius = 0.55; s.minDistance = 0.0006; s.maxDistance = 0.02;
     c.addPass(s); post.ssao = s;
   } else c.addPass(new THREE.RenderPass(scene, cam));
@@ -1120,7 +1122,10 @@ function plane(w, h, material, x, y, z, o = {}) {
 }
 function floorPlane(x0, z0, x1, z1, material, y = 0) {
   const m = new THREE.Mesh(new THREE.PlaneGeometry(x1 - x0, z1 - z0), material);
-  m.rotation.x = -Math.PI / 2; m.position.set((x0 + x1) / 2, y, (z0 + z1) / 2); m.receiveShadow = true; Z.group.add(m); return m;
+  m.rotation.x = -Math.PI / 2; m.position.set((x0 + x1) / 2, y, (z0 + z1) / 2); m.receiveShadow = true; Z.group.add(m);
+  // A layer laid on top of a base floor (y > 0) always wins the depth test, whatever the depth-buffer precision.
+  if (y > 0) { const mt = m.material = material.clone(); mt.polygonOffset = true; mt.polygonOffsetFactor = -1; mt.polygonOffsetUnits = -Math.round(y * 1000); }
+  return m;
 }
 function tiled(draw, rx, ry, srgb = true) { const t = canvasTex(256, 256, draw, srgb); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, ry); return t; }
 const T = {
