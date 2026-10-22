@@ -58,6 +58,12 @@ Games last about 2 minutes (84–138 s). Energy 95 vs 25 is a 32–59 point swin
 - **Sharpness (v10.3.1).** While the venue is on: pixel ratio boosted (`PR_BOOST`, high 1.5–2×, mid 1.25–1.6×), tilt-shift and grain off, shadow camera ±11 m with a 4096² (high) / 2048² (mid) map. Falls back to normal resolution if the 150-frame average is below 45 fps.
 - **Rules untouched.** `badminton.js` is unchanged; balance numbers below still hold.
 
+## v11.0 Real materials — how they work
+- `pbr(id, o)` makes a MeshStandardMaterial from `assets/textures/<id>_{diff,nor_gl,arm}_1k.jpg`, loaded lazily and shared; until a file loads (or if it is missing) `o.fallback` shows. `o.tile` = metres per repeat; `o.noDiff` uses only the relief and roughness over a flat paint colour (walls, epoxy floors, washroom tiles).
+- `floorPlane` rewrites UVs to world metres for pbr materials; `seg` does the same per box face (`boxUVMetres`); kit desks get projected UVs (`planarUV`) and oak (`deskOak`).
+- `ENV`: `blender_institute` HDRI indoors, `kloofendal_48d_partly_cloudy_puresky` outdoors, swapped in `onZoneChange`; RoomEnvironment until they load.
+- Budget: 26 files, 19 MB, all 1k. Other floors' floors still use the procedural maps (v11.2).
+
 ## v10.4 Sharpness — how it works
 - `PR()` returns a supersampled pixel ratio while `PR_BOOST` is on (high: 1.5 on 1× screens, device ratio up to 2 otherwise; mid: 1.25–1.5). `resize()` keys on size and ratio, so a change applies on the next frame.
 - `canvasTex` draws at `TEX_SS` (2 high, 1.5 mid, capped at 4096 px) by scaling the 2D context; draw and redraw code keeps logical coordinates. Name tags do the same. Anisotropy = GPU max (≤ 16).

@@ -1,5 +1,14 @@
 # Changelog
 
+## v11.0 — Real materials on 5F (2026-10-22)
+First step of the realistic look (design note `v11-realistic-look`: grounded realism, not photoreal). Characters are unchanged until v11.1.
+- **Real floors on 5F** (Poly Haven, CC0, in `assets/textures/`): porcelain tiles in the corridor, pantry and washrooms, wood laminate in the offices, office carpet in the open offices and meeting rooms, grey epoxy in the muon lab and server room, terrazzo by the elevators. Patterns run continuously across rooms (UVs in world metres).
+- **Walls everywhere**: clean paint over real plaster relief, a grey lower band and skirting, aluminium caps, anodised frames, clear glass, stainless thresholds.
+- **Oak desks** (oak veneer with UVs projected from the kit geometry).
+- **Real image-based lighting**: an office-interior HDRI indoors, a partly cloudy sky outdoors (the studio room stays as a fallback).
+- **No more neon**: no glowing wall trim or door strips, a concrete slab edge, warm-white light pools, floor signs as grey printed vinyl.
+- Credits: textures and HDRIs by Poly Haven (CC0).
+
 ## v10.4 — Sharp everywhere (2026-10-22)
 The v10.3.1 badminton sharpness now applies to the whole game.
 - **Render resolution**: supersampled on every screen (high: 1.5× on ordinary screens, up to 2× on Retina; mid: 1.25–1.5×). If the game runs below ~45 fps (averaged over 150 frames, after the first 8 s) it drops back to the old resolution and shadow size for the rest of the session.

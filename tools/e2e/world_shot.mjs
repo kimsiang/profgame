@@ -4,7 +4,7 @@ export default async ({ page, sleep }) => {
   const ev = (code) => page.evaluate((c) => window.__prof(c), code);
   const port = process.env.PORT || 8123;
   await page.evaluateOnNewDocument((q) => { try { localStorage.clear(); localStorage.setItem('prof-day-q', q); } catch (e) {} }, process.env.Q || 'high');
-  await page.goto(`http://localhost:${port}/index.html?debug`, { waitUntil: 'load' });
+  await page.goto(`http://localhost:${port}/index.html?debug`, { waitUntil: 'load', timeout: 180000 });
   await sleep(3000);
   await ev(`setup.mode = 'basic'; startGame();`); await sleep(2500);
   await ev(`beginDay(0, INTENTS[0].id)`); await sleep(3000);

@@ -924,6 +924,7 @@ body.talking #lbT,body.talking #lbB{height:7vh}
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/SkeletonUtils.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/environments/RoomEnvironment.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/RGBELoader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/geometries/RoundedBoxGeometry.js"></script>
 <script src="assets/js/badminton.js"></script>
 <script src="assets/js/bm-venue.js"></script>
@@ -984,6 +985,19 @@ if (THREE.RoomEnvironment) {
   scene.environment = pm.fromScene(new THREE.RoomEnvironment(), 0.04).texture;
   pm.dispose();
 }
+/* v11.0: real image-based lighting from Poly Haven HDRIs (CC0): an office interior indoors, a partly cloudy sky outdoors.
+   The studio room above stays until they load, and if they cannot. setEnvFor(zone) is called on every zone change. */
+const ENV = { room: scene.environment, hdr: {}, want: 'indoor' };
+function envLoad(key, file) {
+  if (ENV.hdr[key] !== undefined || !THREE.RGBELoader) return;
+  ENV.hdr[key] = null;
+  new THREE.RGBELoader().setDataType(THREE.UnsignedByteType).load('assets/textures/' + file, (t) => {
+    const pm = new THREE.PMREMGenerator(renderer); ENV.hdr[key] = pm.fromEquirectangular(t).texture; pm.dispose(); t.dispose();
+    if (ENV.want === key) scene.environment = ENV.hdr[key];
+  }, undefined, () => { /* keep the studio room */ });
+}
+function setEnvFor(z) { const k = z && z.outdoor ? 'outdoor' : 'indoor'; ENV.want = k; scene.environment = ENV.hdr[k] || ENV.room; }
+envLoad('indoor', 'blender_institute_1k.hdr'); envLoad('outdoor', 'kloofendal_48d_partly_cloudy_puresky_1k.hdr');
 
 /* ---------- camera (perspective, orbit around the player) ---------- */
 const cam = new THREE.PerspectiveCamera(30, 1, 1, 900);
@@ -1215,14 +1229,14 @@ function pbrTex(id, m, srgb) {
 }
 function pbrApply(m) {
   const P = m.userData.pbr;
-  pbrTex(P.id, 'diff', true).then(t => { if (t) { m.map = t; m.color.set(P.tint || '#ffffff'); m.needsUpdate = true; } });
+  if (!P.noDiff) pbrTex(P.id, 'diff', true).then(t => { if (t) { m.map = t; m.color.set(P.tint || '#ffffff'); m.needsUpdate = true; } });
   pbrTex(P.id, 'nor_gl', false).then(t => { if (t) { m.normalMap = t; m.normalScale.set(P.ns || 1, P.ns || 1); m.needsUpdate = true; } });
   pbrTex(P.id, 'arm', false).then(t => { if (t) { m.roughnessMap = t; m.roughness = P.roughK || 1; if (P.metal) { m.metalnessMap = t; m.metalness = 1; } m.needsUpdate = true; } });
 }
 function pbr(id, o = {}) {
   const fb = o.fallback;
   const m = new THREE.MeshStandardMaterial({ color: typeof fb === 'string' ? fb : '#ffffff', map: fb && fb.isTexture ? fb : null, roughness: o.rough ?? 0.6, metalness: 0, envMapIntensity: o.env ?? 0.45 });
-  m.userData.pbr = { id, tint: o.tint, ns: o.ns, roughK: o.roughK, metal: !!o.metal, tile: o.tile || 2 };
+  m.userData.pbr = { id, tint: o.tint, ns: o.ns, roughK: o.roughK, metal: !!o.metal, tile: o.tile || 2, noDiff: !!o.noDiff };   // noDiff: relief and roughness only, over a clean paint colour
   PBR_MATS.push(m); pbrApply(m); return m;
 }
 
@@ -1272,6 +1286,20 @@ function kitClone(kind, tint) {
   });
   return c;
 }
+// v11.0: oak veneer desk tops. The kit has no UVs, so project them from the geometry (box mapping by face normal), once per geometry.
+function planarUV(geo, tile) {
+  if (geo.attributes.uv) return geo;
+  const p = geo.attributes.position, n = geo.attributes.normal, a = new Float32Array(p.count * 2);
+  for (let i = 0; i < p.count; i++) { const ax = Math.abs(n.getX(i)), ay = Math.abs(n.getY(i)), az = Math.abs(n.getZ(i));
+    const [u, v] = ay >= ax && ay >= az ? [p.getX(i), p.getZ(i)] : ax >= az ? [p.getZ(i), p.getY(i)] : [p.getX(i), p.getY(i)];
+    a[i * 2] = u / tile; a[i * 2 + 1] = v / tile; }
+  geo.setAttribute('uv', new THREE.BufferAttribute(a, 2)); return geo;
+}
+const OAK = {};
+function deskOak(m, top) {
+  const key = top || 'oak', om = OAK[key] || (OAK[key] = pbr('oak_veneer_01', { tile: 1.2, tint: top && top !== '#f2efe8' ? top : '#ffffff', env: 0.35, fallback: top || '#c8a27a' }));
+  m.traverse(n => { if (n.isMesh && /kit_tint/.test(n.material.name || '') || (n.isMesh && n.material.userData && n.material.userData.kitTint)) { planarUV(n.geometry, 1.2); n.material = om; } });
+}
 function kitApply(s) {
   if (s.applied || !KIT.models[s.kind === 'lampPost' ? 'lamp' : s.kind]) return; s.applied = true;
   const a = s.args, zg = s.zone.group, grp = s.created.find(o => o.isGroup), hide = (list) => list.forEach(o => { o.visible = false; });
@@ -1279,7 +1307,7 @@ function kitApply(s) {
   switch (s.kind) {
     case 'desk': {   // top + four legs are the first five meshes; keyboard, mug and papers stay
       const [x, z, w = 1.5, d = 0.8, o = {}] = a;
-      hide(s.created.slice(0, 5)); m = kitClone('desk', o.top || '#f2efe8'); m.position.set(x, 0, z); m.scale.set(w / 1.5, 1, d / 0.8); zg.add(m); break;
+      hide(s.created.slice(0, 5)); m = kitClone('desk', o.top || '#f2efe8'); m.position.set(x, 0, z); m.scale.set(w / 1.5, 1, d / 0.8); zg.add(m); deskOak(m, o.top); break;
     }
     case 'monitor':  // bezel, neck, base; the animated screen plane stays in front
       hide(grp.children.slice(0, 3)); m = kitClone('monitor'); grp.add(m); break;
@@ -1322,10 +1350,10 @@ const F5_FLOOR = {
   corridor: pbr('interior_tiles', { tile: 1.6, tint: '#ece9e4', fallback: T.concrete(10, 1) }),
   office:   pbr('laminate_floor_02', { tile: 2, fallback: T.wood(3, 4) }),
   carpet:   pbr('dirty_carpet', { tile: 2, rough: 0.95, env: 0.15, fallback: T.carpet(5, 4) }),
-  lab:      pbr('concrete_floor_painted', { tile: 3, rough: 0.45, fallback: '#8e979d' }),
-  server:   pbr('concrete_floor_painted', { tile: 3, tint: '#c9ced2', rough: 0.45, fallback: '#6f777d' }),
+  lab:      pbr('concrete_floor_painted', { tile: 3, noDiff: true, ns: 0.6, fallback: '#9aa1a6' }),   // grey epoxy: the texture's relief, not its dirt
+  server:   pbr('concrete_floor_painted', { tile: 3, noDiff: true, ns: 0.6, fallback: '#6f777d' }),
   pantry:   pbr('interior_tiles', { tile: 1.4, fallback: T.tile(5, 9, '#e7e2d8', '#cfc6b7') }),
-  wc:       pbr('grey_cartago_01', { tile: 2, fallback: T.tile(4, 11, '#cfd6db', '#aab4bb') }),
+  wc:       pbr('interior_tiles', { tile: 1.2, noDiff: true, ns: 1.2, fallback: '#cfd7dc' }),   // pale grey tiles: grey_cartago_01 turned out to be a rusty slate, not a washroom floor
   lobby:    pbr('terrazzo_tiles', { tile: 2.5, tint: '#e9e2d9', fallback: T.concrete(2, 5) }),
 };
 floorPlane(0, 11, 40, 15, F5_FLOOR.corridor);
@@ -1352,12 +1380,20 @@ wv(8, 0, 11); wv(20, 0, 11); wv(32, 0, 11, [], 'glass');
 wv(12, 15, 26); wv(20, 15, 26); wv(26, 15, 26); wv(32, 15, 26); wv(36, 15, 26);
 const WALL_H = 1.35;
 // v11.0: painted plaster walls, a grey wainscot and skirting, an aluminium cap. The neon trim is gone.
-const wallUpper = mat('#efece6', { roughness: 0.92, envMapIntensity: 0.2 }), wallLower = mat('#d9d4cb', { roughness: 0.85, envMapIntensity: 0.2 }), baseB = mat('#5d6166', { roughness: 0.6 }), capM = mat('#b9bec3', { roughness: 0.35, metalness: 0.75 });
+const wallUpper = pbr('plastered_wall', { tile: 2.5, noDiff: true, ns: 0.4, env: 0.25, fallback: '#eeebe5' }), wallLower = pbr('white_stucco', { tile: 1.5, noDiff: true, ns: 0.5, env: 0.25, fallback: '#cfcac1' }), baseB = mat('#5d6166', { roughness: 0.6 }), capM = mat('#b9bec3', { roughness: 0.35, metalness: 0.75 });   // walls: clean paint over real plaster relief
 const trimGlow = mat('#c8cdd2', { roughness: 0.3, metalness: 0.85 });   // was glowing cyan; kept as a name so other zones pick up the metal trim too
 const glassM = new THREE.MeshStandardMaterial({ color: '#d6ebf2', roughness: 0.03, metalness: 0.1, transparent: true, opacity: 0.14, envMapIntensity: 1.4, depthWrite: false });   // v11.0: clear glass, less cyan
 const frameM = mat('#4a4f55', { roughness: 0.4, metalness: 0.65 });   // v11.0: anodised aluminium window and door frames
+// v11.0: give a box UVs in metres (per face), so a tiled real material keeps its scale on every wall length.
+function boxUVMetres(geo, w, h, d, tile) {
+  const uv = geo.attributes.uv, dims = [[d, h], [d, h], [w, d], [w, d], [w, h], [w, h]];   // face order +x -x +y -y +z -z, 4 vertices each
+  for (let f = 0; f < 6; f++) for (let i = 0; i < 4; i++) { const k = f * 4 + i; uv.setXY(k, uv.getX(k) * dims[f][0] / tile, uv.getY(k) * dims[f][1] / tile); }
+  return geo;
+}
 function seg(cx, cz, horiz, len, y, h, t, m, cast = true) {
-  const g = new THREE.Mesh(new THREE.BoxGeometry(horiz ? len : t, h, horiz ? t : len), m);
+  const P = m.userData && m.userData.pbr, bw = horiz ? len : t, bd = horiz ? t : len, geo = new THREE.BoxGeometry(bw, h, bd);
+  if (P) boxUVMetres(geo, bw, h, bd, P.tile);
+  const g = new THREE.Mesh(geo, m);
   g.position.set(cx, y + h / 2, cz); g.castShadow = cast; g.receiveShadow = true; Z.group.add(g); return g;
 }
 for (const [x0, z0, x1, z1, kind] of WALLS) {
@@ -6665,7 +6701,7 @@ initAI();
   refreshProCard();
 })();
 
-function onZoneChange(z) { loadVisibleModels(); cityGroup.visible = !z.outdoor; scene.fog.near = z.outdoor ? 160 : 90; scene.fog.far = z.outdoor ? 420 : 330; }
+function onZoneChange(z) { setEnvFor(z); loadVisibleModels(); cityGroup.visible = !z.outdoor; scene.fog.near = z.outdoor ? 160 : 90; scene.fog.far = z.outdoor ? 420 : 330; }
 onZoneChange(Z);
 /* =========================================================
    MAIN LOOP
