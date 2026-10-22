@@ -202,7 +202,11 @@ svg.ic{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;str
 #dlgStatus .bad b{color:var(--danger)} #dlgStatus .good b{color:var(--ok)}
 .dlgBody{flex:1;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:0;min-height:0}
 #dlgLog{overflow:auto;padding:12px 18px;display:flex;flex-direction:column;gap:9px;min-height:0;border-right:1px solid var(--line)}
-#dlgFoot{padding:12px 16px;overflow:auto;min-height:0;display:flex;flex-direction:column;justify-content:flex-end}
+#dlgFoot{padding:12px 16px;overflow:auto;min-height:0;display:flex;flex-direction:column}
+/* Bottom-align with margin-top:auto, not justify-content:flex-end: flex-end pushes overflow above the scroll top, so the first choices (e.g. 1F in the elevator) were unreachable. */
+#dlgFoot>:first-child{margin-top:auto}
+.choices.grid2{display:grid;grid-template-columns:1fr 1fr}
+@media (max-width:520px){.choices.grid2{grid-template-columns:1fr}}
 .bub{max-width:94%;padding:9px 12px;font-size:13.5px;line-height:1.65;background:rgba(255,255,255,.05);border:1px solid var(--line)}
 .bub .w{display:block;font:700 11px var(--tech);letter-spacing:.12em;color:var(--cyan);margin-bottom:2px}
 .bub.me{align-self:flex-end;background:rgba(34,81,255,.22);border-color:rgba(34,81,255,.5)}
@@ -4920,7 +4924,8 @@ function gotoNode(key) {
 }
 function renderChoices(choices) {
   const f = $('dlgFoot');
-  f.innerHTML = `<div class="choices">${choices.map((c, i) => `<button class="choice" type="button" data-i="${i}"><span class="k">${i + 1}</span><span>${esc(c.t)}${c.d ? `<small>${esc(c.d)}</small>` : ''}</span><span class="t">${c.min ? c.min + ' 分' : ''}</span></button>`).join('')}</div>`;
+  const grid = S.dialog && S.dialog.ev && S.dialog.ev.id === 'elev';   // floor buttons in two columns so all floors fit without scrolling
+  f.innerHTML = `<div class="choices${grid ? ' grid2' : ''}">${choices.map((c, i) => `<button class="choice" type="button" data-i="${i}"><span class="k">${i + 1}</span><span>${esc(c.t)}${c.d ? `<small>${esc(c.d)}</small>` : ''}</span><span class="t">${c.min ? c.min + ' 分' : ''}</span></button>`).join('')}</div>`;
   f.querySelectorAll('.choice').forEach(b => { b.onclick = () => pick(choices[+b.dataset.i]); b.onmouseenter = SFX.click; });
   S.dialog.choices = choices;
 }

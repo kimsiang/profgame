@@ -1,5 +1,8 @@
 # Changelog
 
+## v9.0.5 — Fix (2026-10-22)
+- Elevator: 1F was missing from the list. Dialogs bottom-aligned their choices in a way that pushed overflow above the top of the scroll area, so when a dialog had more choices than fit (the elevator has 8), the first ones could not be reached. Choices now scroll normally in every dialog, and the elevator shows its floors in two columns so all of them fit.
+
 ## v9.0.4 — Fix (2026-10-22)
 - Floor flicker, the actual cause: every floor sits on a dark slab whose top face was at exactly the floor's height, so the two surfaces fought pixel by pixel every frame (white tile vs grey-blue slab). The slab now sits 3 cm lower. The v9.0.3 shadow change stays: it removes a smaller shimmer of shadow edges.
 
