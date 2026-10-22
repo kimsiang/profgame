@@ -1,5 +1,10 @@
 # Changelog
 
+## v10.0-step2.1 — Quick badminton from the title page (2026-10-22)
+- Title page: "直接打一局羽毛球" goes straight to court 2 for a game to 7 against 阿强, without starting a career. Nothing is saved; your career save is untouched.
+- After the game: play again, switch opponent (阿强 casual, or 小吴, chemistry postdoc and varsity player), or go back to the title page.
+- 小吴 now exists in the gym (hidden until she plays); 阿强 steps to the sideline while she is on court.
+
 ## v10.0-step2 — Badminton feel (2026-10-22)
 - Timing ring at your feet: the outer ring closes onto the inner one at the ideal moment. Amber = in time, green = good, both rings green = perfect. Red = you will not get there.
 - The shuttle casts a shadow straight down (smaller and fainter the higher it is), so you can read depth, and leaves a short trail that turns amber at smash speed.

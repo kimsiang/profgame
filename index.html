@@ -193,6 +193,8 @@ body.bm #hud,body.bm #prompt{display:none!important}
 #bmHint{position:absolute;bottom:calc(22px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);padding:8px 14px;font-size:13px;color:#CDEEFF;text-align:center;width:max-content;max-width:calc(100vw - 32px)}
 #bmPop{position:absolute;top:38%;left:50%;transform:translate(-50%,-50%);font:900 34px/1 var(--serif,serif);color:#fff;text-shadow:0 2px 14px rgba(0,0,0,.6);pointer-events:none;opacity:0;transition:opacity .25s}
 #bmPop.on{opacity:1}#bmPop.good{color:#3DDC97}#bmPop.bad{color:#ff7a6b}
+#bmEndBox{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);padding:20px 22px;width:min(380px,calc(100vw - 32px));display:flex;flex-direction:column;gap:10px;text-align:center}
+#bmEndBox h3{margin:0;font:900 26px var(--serif-cn,serif)}#bmEndBox p{margin:0 0 4px;font-size:13px;color:var(--muted);line-height:1.6}
 #bmQuit{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:16px}
 #dlg{position:fixed;z-index:20;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));width:min(1180px,calc(100vw - 28px));height:min(50vh,480px);display:flex;animation:din .35s cubic-bezier(.2,.9,.3,1)}
 @keyframes din{from{opacity:0;transform:translate(-50%,30px)}to{opacity:1;transform:translate(-50%,0)}}
@@ -530,7 +532,7 @@ body.talking #lbT,body.talking #lbB{height:7vh}
 </svg>
 
 <!-- in-game HUD -->
-<div id="bm" class="hidden"><div id="bmScore" class="panel"></div><div id="bmPop"></div><div id="bmHint" class="panel"></div><button id="bmQuit" class="btn" type="button">退出比赛</button></div>
+<div id="bm" class="hidden"><div id="bmScore" class="panel"></div><div id="bmEndBox" class="panel hidden"></div><div id="bmPop"></div><div id="bmHint" class="panel"></div><button id="bmQuit" class="btn" type="button">退出比赛</button></div>
 <div id="hud" class="hidden">
   <div id="pCard" class="hud panel">
     <div class="pTop">
@@ -653,6 +655,7 @@ body.talking #lbT,body.talking #lbB{height:7vh}
     </div>
     <div class="row" style="margin-top:14px;gap:10px">
       <button class="btn gold hidden" id="contBtn" type="button">继续上次的进度</button>
+      <button class="btn" id="quickBM" type="button" title="不影响职业生涯存档">直接打一局羽毛球 ▸</button>
       <button class="btn ghost" id="aiBtnTitle" type="button">AI 设置（学者 Pro 版）</button>
     </div>
     <div class="qualRow">画质
@@ -2532,6 +2535,7 @@ function sportNPC(id, look, x, z, lx, lz) { look._id = id; const p = makeChar(lo
     if (i !== 1) { const a = makeChar({ shirt: ['#2251FF', '#3DDC97'][i / 2 | 0], hairStyle: 'short', pants: '#ffffff' }); a.position.set(cx, 0, 9); face(a, cx, 17); a.userData.state = 'play'; a.userData.baseState = 'play'; Z.npcs.push(a); const b = makeChar({ shirt: ['#c0392b', '#f2c574'][i / 2 | 0], hairStyle: 'pony', pants: '#ffffff' }); b.position.set(cx, 0, 17); face(b, cx, 9); b.userData.state = 'play'; b.userData.baseState = 'play'; Z.npcs.push(b); const sh = ball(cx, 1.6, 13, 0.07, '#ffffff', 'shuttle'); sh.from = [cx, 9.5]; sh.to = [cx, 16.5]; sh.active = true; }
   });
   sportNPC('grad1', { shirt: '#7a5cff', hairStyle: 'spiky', pants: '#ffffff', label: '研究生会 · 阿强' }, 20, 9.5, 20, 16);
+  { const wu = makeChar({ shirt: '#f2c574', hair: '#1a1a1e', hairStyle: 'pony', pants: '#ffffff', accent: '#c0392b', label: '化学系 · 小吴' }); wu.position.set(24.4, 0, 9); face(wu, 20, 9); wu.userData.baseState = 'idle'; wu.visible = false; Z.npcs.push(wu); NPC.wu = wu; }
   const sh2 = ball(20, 1.6, 13, 0.07, '#ffffff', 'shuttle'); sh2.from = [20, 9.8]; sh2.to = [20, 16.6];
   bench(6, 2.4, 0); bench(20, 2.4, 0); bench(33, 2.4, 0); bench(6, 23.6, Math.PI); bench(33, 23.6, Math.PI);
   for (let i = 0; i < 6; i++) { box(0.5, 0.04, 0.02, mat(['#c0392b', '#2251FF', '#3DDC97'][i % 3]), 4.4 + i * 0.5, 0.52, 2.4, { cast: false }); }
@@ -4770,7 +4774,10 @@ async function bmStart(opp) {
   decor.forEach(b => { b.m.visible = false; });
   const sh = bmShuttle(); Z.group.add(sh);
   const fx = bmFx(); Z.group.add(fx.ring, fx.shadow, fx.mark, fx.trail); fx.n = 0; fx.markT = 0; fx.mark.material.opacity = 0; fx.ring.visible = false;
-  BM.m = { core, D, O, opp, npc, sh, decor, npcHome: npc ? npc.position.clone() : null, npcRot: npc ? npc.rotation.y : 0, pop: 0 };
+  BM.m = { core, D, O, opp, npc, sh, decor, npcHome: npc ? npc.position.clone() : null, npcRot: npc ? npc.rotation.y : 0, npcVis: npc ? npc.visible : true, pop: 0 };
+  if (npc) npc.visible = true;
+  const aq = NPC.grad1; if (aq && npc !== aq) { BM.m.aqHome = aq.position.clone(); BM.m.aqRot = aq.rotation.y; aq.position.set(24.3, 0, 11.5); face(aq, 20, 13); }
+  $('bmEndBox').classList.add('hidden'); $('bmQuit').classList.remove('hidden');
   S.path = []; S.autoTarget = null; S.moving = false;
   document.body.classList.add('bm'); $('bm').classList.remove('hidden');
   bmPop(O.lines.intro_zh.split('：').slice(1).join('：') || '', '', 2.2);
@@ -4870,12 +4877,41 @@ function bmEnd(done) {
   if (B.sh.parent) B.sh.parent.remove(B.sh);
   if (BM.fx) [BM.fx.ring, BM.fx.shadow, BM.fx.mark, BM.fx.trail].forEach(o => o.parent && o.parent.remove(o));
   B.decor.forEach(b => { b.m.visible = true; });
-  if (B.npc && B.npcHome) { B.npc.position.copy(B.npcHome); B.npc.rotation.y = B.npcRot; B.npc.userData.state = B.npc.userData.baseState || 'idle'; }
+  if (B.npc && B.npcHome) { B.npc.position.copy(B.npcHome); B.npc.rotation.y = B.npcRot; B.npc.userData.state = B.npc.userData.baseState || 'idle'; B.npc.visible = B.npcVis; }
+  if (B.aqHome) { NPC.grad1.position.copy(B.aqHome); NPC.grad1.rotation.y = B.aqRot; }
   const m = B.core.m;
+  if (S.quick) return quickEnd(B, done);
   if (!done) { pose('idle', 20, 17.5, Math.PI); toast('不打了，收拍。'); return; }
   const w = m.winner === 'P';
   toast(`${w ? '赢了' : '输了'} ${m.score.P}:${m.score.O} · ${(w ? B.O.lines.win_zh : B.O.lines.lose_zh)}`, w ? 'good' : '');
   ACT.badminton(30);
+}
+/* Quick play from the title page: one match in the gym, no career, nothing saved. */
+function quickBadminton(opp = 'aqiang') {
+  ensureAudio(); if (actx && actx.state === 'suspended') actx.resume();
+  fadeTo(() => {
+    if (!S || !S.quick) { S = newState(freshCareer()); S.quick = true; }
+    Object.assign(S, { day: 0, t: hm(17, 30), running: true, paused: false, planning: false, activity: null, dialog: null, ended: false, path: [], autoTarget: null, v: { energy: 85, full: 60, bladder: 15 } });
+    setZone('gym'); if (!player || !player.parent) makePlayer(setup.avatar === 'f'); player.visible = true;
+    camState.orbit = 0; camState.overview = false; camState.wantAz = camState.az = 0; camState.target.set(20, 0, 14);
+    show(null); $('hud').classList.add('hidden');
+    bmStart(opp);
+  });
+}
+function quickEnd(B, done) {
+  const m = B.core.m, w = done && m.winner === 'P', st = m.stats;
+  S.running = false;
+  document.body.classList.add('bm'); $('bm').classList.remove('hidden'); $('bmQuit').classList.add('hidden');
+  $('bmScore').innerHTML = `<span>你</span><b>${m.score.P}</b><span>:</span><b>${m.score.O}</b><span>${esc(B.O.name_zh)}</span>`;
+  $('bmHint').textContent = '这是快速对局，不影响职业生涯存档。';
+  const box = $('bmEndBox');
+  box.innerHTML = `<h3>${done ? (w ? '你赢了' : '输了') : '没打完'}</h3><p>${done ? esc((w ? B.O.lines.win_zh : B.O.lines.lose_zh)) : ''}<br>完美 ${st.perfect} 次 · 杀球 ${st.smashes} 次 · 最长回合 ${st.longest} 拍</p>
+    <button class="btn gold" type="button" data-o="${B.opp}">再来一局</button>
+    <button class="btn" type="button" data-o="${B.opp === 'wu' ? 'aqiang' : 'wu'}">${B.opp === 'wu' ? '换阿强（研究生 · 业余）' : '挑战小吴（化学系博士后 · 校队）'}</button>
+    <button class="btn ghost" type="button" id="bmHome">回首页</button>`;
+  box.classList.remove('hidden');
+  box.querySelectorAll('[data-o]').forEach(b => { b.onclick = () => { box.classList.add('hidden'); quickBadminton(b.dataset.o); }; });
+  $('bmHome').onclick = () => fadeTo(() => { box.classList.add('hidden'); document.body.classList.remove('bm'); $('bm').classList.add('hidden'); S = null; if (player) player.visible = false; setZone('f5'); camState.orbit = 0.0001; show('scrTitle'); });
 }
 /* ---------------- interaction targets ---------------- */
 function amenityAt(x, z) {
@@ -5583,7 +5619,7 @@ const SAVE_KEY = 'prof-week-save-v2', SAVE_V1 = 'prof-week-save-v1', CAREER_KEY 
 const PERSIST = ['k', 'xp', 'level', 'ach', 'cards', 'log', 'grant', 'submitted', 'paper', 'paperSubmitted', 'day', 'collapses', 'lastEnd', 'totals', 'muons', 'rooms', 'zones', 'sports', 'reads', 'clears', 'flags', 'coffeesWeek', 'mealsWeek', 'mode', 'avatar',
   'week', 'career', 'wb', 'trust', 'mem', 'lost', 'gq', 'intel', 'crisis', 'crisisSeen', 'timeWeek', 'focusBlocks', 'recruit', 'intents', 'rumours', 'subWb', 'endT',
   'dos', 'dataReq', 'fam', 'homeNights', 'famSkip', 'famEvents', 'fin'];
-function saveGame() { try { const o = {}; PERSIST.forEach(k => { o[k] = S[k]; }); localStorage.setItem(SAVE_KEY, JSON.stringify({ v: 5, setup: Object.assign({}, setup), S: o, at: Date.now() })); } catch (e) { /* storage blocked */ } }
+function saveGame() { if (S && S.quick) return; try { const o = {}; PERSIST.forEach(k => { o[k] = S[k]; }); localStorage.setItem(SAVE_KEY, JSON.stringify({ v: 5, setup: Object.assign({}, setup), S: o, at: Date.now() })); } catch (e) { /* storage blocked */ } }
 // v1 saves (v3/v4 builds) have no career, trust or wellbeing: start them as week 1 with defaults.
 function migrateSave(x) {
   if (!x || !x.S) return null;
@@ -5970,6 +6006,7 @@ $('dlgLog').addEventListener('click', () => { if (S && S.dialog) S.dialog.typing
   });
   el.addEventListener('wheel', (e) => { e.preventDefault(); camState.followDist = clamp(camState.followDist * (1 + Math.sign(e.deltaY) * 0.1), 13, 44); }, { passive: false });
 })();
+$('quickBM').onclick = () => quickBadminton('aqiang');
 $('modeBasic').onclick = () => { setup.mode = 'basic'; ensureAudio(); renderSetup(); show('scrSetup'); };
 $('modePro').onclick = () => { if (!AI.ready()) return openAI('先选择服务商并填写 API Key，保存后再点「学者 Pro 版」。'); setup.mode = 'pro'; ensureAudio(); renderSetup(); show('scrSetup'); };
 $('aiBtnTitle').onclick = () => openAI();
