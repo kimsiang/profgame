@@ -1,6 +1,6 @@
 # Design note — v12 "A week with weight" / 让这一周有分量
 
-Status: **draft for Kim's OK, 2026-10-23.** Nothing built yet.
+Status: **approved 2026-10-23** (all four decisions as recommended: roster as drafted, harness first, all content to JSON in v12.1, §2.3 targets as first guesses). Adjustments made during the build go in the table at the end.
 Builds on: v5 blocks/intents/trust/memory, v6 dossier and home, v8 career, v9 money, v11.2 places (canteen, café, garden, pitch, gym).
 Execution: once approved, hand to Opus milestone by milestone (section "Build plan"); each milestone is one branch, one tag, one test note.
 
@@ -157,3 +157,9 @@ Rules for Opus during the build: a design question that changes a number in §1 
 2. Harness first (v12.0 baseline before any gameplay change) — yes?
 3. Move **all** content to JSON in v12.1, or only the new table events now and the 136 old events later? (I recommend all now: the migration is mechanical and the harness makes it safe.)
 4. Balance targets in §2.3 — accept as first guesses, to be revised after the baseline run?
+
+---
+
+## Implementation adjustments
+| Draft | Built | Why |
+|---|---|---|
