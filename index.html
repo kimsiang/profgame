@@ -960,10 +960,11 @@ if (!HAS_POST && QUALITY !== 'low') QUALITY = 'low';
 
 const stage = document.getElementById('stage');
 const renderer = new THREE.WebGLRenderer({ antialias: QUALITY === 'low', powerPreference: 'high-performance' });
-// v10.3.1: during a badminton match the scene is light, so render it sharper: supersample even on 1× screens (the composer has no MSAA).
-let PR_BOOST = false;
+// v10.4: sharp everywhere. Supersample even on 1× screens (the composer has no MSAA); if the game runs below ~45 fps it drops
+// back to the old pixel ratios for the rest of the session (see the monitor in frame()).
+let PR_BOOST = QUALITY !== 'low';
 const PR = () => { const d = window.devicePixelRatio || 1;
-  if (PR_BOOST) return QUALITY === 'high' ? Math.min(Math.max(d, 1.5), 2) : QUALITY === 'mid' ? Math.min(Math.max(d, 1.25), 1.6) : Math.min(d, 1.5);
+  if (PR_BOOST) return QUALITY === 'high' ? (d < 1.5 ? 1.5 : Math.min(d, 2)) : QUALITY === 'mid' ? (d < 1.25 ? 1.25 : Math.min(d, 1.5)) : Math.min(d, 1.5);
   return Math.min(d, QUALITY === 'high' ? 1.75 : QUALITY === 'mid' ? 1.3 : 1.25); };
 renderer.setPixelRatio(PR());
 renderer.shadowMap.enabled = QUALITY !== 'low';
@@ -1008,6 +1009,15 @@ sun.shadow.mapSize.set(QUALITY === 'high' ? 2048 : 1024, QUALITY === 'high' ? 20
 Object.assign(sun.shadow.camera, { left: -24, right: 24, top: 20, bottom: -20, near: 1, far: 140 });
 sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.02; sun.shadow.radius = 3;
 scene.add(hemi, amb, sun, sun.target);
+// v10.4: a denser shadow map while the game runs sharp (high 4096², mid 2048²); back to 2048² / 1024² if it falls back.
+const sharpFps = { n: 0, s: 0 };
+function sharpShadows(hi) {
+  if (QUALITY === 'low') return;
+  const n = hi ? (QUALITY === 'high' ? 4096 : 2048) : (QUALITY === 'high' ? 2048 : 1024);
+  if (sun.shadow.mapSize.x === n) return;
+  sun.shadow.mapSize.set(n, n); if (sun.shadow.map) { sun.shadow.map.dispose(); sun.shadow.map = null; }
+}
+sharpShadows(PR_BOOST);
 
 /* ---------- material helpers ---------- */
 const matCache = {};
@@ -1021,12 +1031,17 @@ function glow(color, intensity = 2.2, opacity = 1) {
   const m = new THREE.MeshBasicMaterial({ color, transparent: opacity < 1, opacity, toneMapped: false, fog: false });
   m.color.multiplyScalar(intensity); return m;
 }
+// v10.4: canvas textures are drawn at 2× (high) / 1.5× (mid) of their logical size. The 2D context keeps the scale, so draw
+// code and later redraws (screens, LEDs, slides) keep using logical coordinates. Capped at 4096 px.
+const TEX_SS = QUALITY === 'high' ? 2 : QUALITY === 'mid' ? 1.5 : 1;
+const MAX_ANISO = Math.min(16, renderer.capabilities.getMaxAnisotropy() || 8);
 function canvasTex(w, h, draw, srgb = true) {
-  const c = document.createElement('canvas'); c.width = w; c.height = h;
-  draw(c.getContext('2d'), w, h);
+  const k = Math.min(TEX_SS, 4096 / Math.max(w, h)), c = document.createElement('canvas'); c.width = Math.max(1, Math.round(w * k)); c.height = Math.max(1, Math.round(h * k));
+  const g = c.getContext('2d'); g.scale(c.width / w, c.height / h);
+  draw(g, w, h);
   const t = new THREE.CanvasTexture(c);
   if (srgb) t.encoding = THREE.sRGBEncoding;
-  t.anisotropy = 8; t.userData = t.userData || {}; t.userData.canvas = c;
+  t.anisotropy = MAX_ANISO; t.userData = t.userData || {}; t.userData.canvas = c;
   return t;
 }
 const CN_FONT = '"PingFang SC","Noto Sans SC","Microsoft YaHei",sans-serif';
@@ -1051,7 +1066,7 @@ scene.add(stars);
 /* ---------- post-processing ---------- */
 const post = { composer: null, bloom: null, ssao: null, tiltH: null, tiltV: null, grade: null, smaa: null, bokeh: null };
 const GradeShader = {
-  uniforms: { tDiffuse: { value: null }, exposure: { value: 1.0 }, vig: { value: 0.55 }, sat: { value: 1.08 }, contrast: { value: 1.05 }, tint: { value: new THREE.Vector3(1, 1, 1) }, time: { value: 0 }, grain: { value: 0.025 } },
+  uniforms: { tDiffuse: { value: null }, exposure: { value: 1.0 }, vig: { value: 0.55 }, sat: { value: 1.08 }, contrast: { value: 1.05 }, tint: { value: new THREE.Vector3(1, 1, 1) }, time: { value: 0 }, grain: { value: 0 } },
   vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
   fragmentShader: `uniform sampler2D tDiffuse; uniform float exposure, vig, sat, contrast, time, grain; uniform vec3 tint; varying vec2 vUv;
   void main(){
@@ -1814,13 +1829,13 @@ function setExpr(c, e) { const u = c.userData; if (u.expr === e) return; u.expr 
 function nameTag(text) {
   const fs = 34, c = document.createElement('canvas'), g = c.getContext('2d');
   g.font = `700 ${fs}px ${CN_FONT}`; const tw = g.measureText(text).width;
-  c.width = Math.ceil(tw + 44); c.height = 58; g.font = `700 ${fs}px ${CN_FONT}`;
-  g.fillStyle = 'rgba(5,28,44,.82)'; const r = 29; g.beginPath(); g.moveTo(r, 0); g.arcTo(c.width, 0, c.width, c.height, r); g.arcTo(c.width, c.height, 0, c.height, r); g.arcTo(0, c.height, 0, 0, r); g.arcTo(0, 0, c.width, 0, r); g.fill();
+  const W = Math.ceil(tw + 44), H = 58; c.width = Math.round(W * TEX_SS); c.height = Math.round(H * TEX_SS); g.scale(TEX_SS, TEX_SS); g.font = `700 ${fs}px ${CN_FONT}`;   // v10.4: supersampled
+  g.fillStyle = 'rgba(5,28,44,.82)'; const r = 29; g.beginPath(); g.moveTo(r, 0); g.arcTo(W, 0, W, H, r); g.arcTo(W, H, 0, H, r); g.arcTo(0, H, 0, 0, r); g.arcTo(0, 0, W, 0, r); g.fill();
   g.strokeStyle = 'rgba(0,169,244,.7)'; g.lineWidth = 2; g.stroke();
   g.fillStyle = '#EAF4FB'; g.textBaseline = 'middle'; g.fillText(text, 22, 31);
-  const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding;
+  const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = MAX_ANISO;
   const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false, transparent: true, toneMapped: false }));
-  s.scale.set(c.width * 0.0062, c.height * 0.0062, 1); s.renderOrder = 10; return s;
+  s.scale.set(W * 0.0062, H * 0.0062, 1); s.renderOrder = 10; return s;
 }
 const EMOTES = {};
 ['!', '?', '…', 'zz', '♪', '!!'].forEach(k => { EMOTES[k] = canvasTex(128, 128, (g) => { g.fillStyle = '#ffffff'; g.beginPath(); g.ellipse(64, 56, 52, 44, 0, 0, 7); g.fill(); g.beginPath(); g.moveTo(46, 92); g.lineTo(40, 120); g.lineTo(70, 96); g.fill(); g.fillStyle = k === '!!' || k === '!' ? '#FF5A6E' : '#0A2436'; g.font = '900 56px Georgia,serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(k, 64, 60); }); });
@@ -4794,7 +4809,7 @@ function bmVenueOn() {
   if (BMV.cur || !window.BMVenue) return;
   const v = BMV.built || (BMV.built = BMVenue.build(THREE, { cx: 20, net: 13, quality: QUALITY, aniso: renderer.capabilities.getMaxAnisotropy(), font: CN_FONT, text: BM.data && BM.data.venue }));
   scene.add(v.group); BMV.cur = 'gym'; BMV.v = v; BM.camSnap = true; v.setEvent(false);
-  PR_BOOST = true; bmShadowRes(true); BMV.fps = null;
+
   Z.group.visible = false; cityGroup.visible = false;
   // the players on courts 1 and 3 and their shuttles keep playing beside you
   Z.npcs.forEach(p => { if (p.userData.baseState === 'play') bmVenueBorrow(p); });
@@ -4807,15 +4822,8 @@ function bmVenueOff() {
   BMV.restore.splice(0).reverse().forEach(f => f());
   if (BMV.v.group.parent) BMV.v.group.parent.remove(BMV.v.group);
   BMV.cur = null; BMV.v = null;
-  PR_BOOST = false; bmShadowRes(false);
   Z.group.visible = true; cityGroup.visible = !Z.outdoor;
   cam.fov = 30; cam.updateProjectionMatrix();
-}
-function bmShadowRes(hi) {
-  if (QUALITY === 'low') return;
-  const n = hi ? (QUALITY === 'high' ? 4096 : 2048) : (QUALITY === 'high' ? 2048 : 1024);
-  if (sun.shadow.mapSize.x === n) return;
-  sun.shadow.mapSize.set(n, n); if (sun.shadow.map) { sun.shadow.map.dispose(); sun.shadow.map = null; }
 }
 const bmLayer = () => (BMV.v ? BMV.v.group : Z.group);
 function bmShuttle() {
@@ -6734,12 +6742,12 @@ function frame(now) {
   if (clock.steam > 0.25) { clock.steam = 0; FX.steam.emit({ x: 27.6 + (Math.random() - 0.5) * 0.1, y: 1.1, z: 25.0, vx: (Math.random() - 0.5) * 0.05, vy: 0.35, vz: 0, life: 2.2, max: 2.2, size: 0.12, grow: 0.25, a: 0.35, c: [1, 1, 1] }); FX.steam.emit({ x: 2.2, y: 0.5, z: 9.9, vy: 0.3, life: 1.8, max: 1.8, size: 0.08, grow: 0.15, a: 0.25, c: [1, 1, 1] }); }
   const L = lighting(BMV.cur ? hm(15, 0) : tt, now);   // venues are always played in good light
   if (BMV.v) BMV.v.update(dt, tsec);
-  if (BMV.cur && PR_BOOST && !document.hidden) {   // v10.3.1: keep 60 fps first; give up the extra sharpness on slow machines
-    const f = BMV.fps || (BMV.fps = { n: 0, s: 0 }); f.n++; f.s += dt;
-    if (f.n >= 150) { if (f.s / f.n > 1 / 45) { PR_BOOST = false; bmShadowRes(false); } f.n = 0; f.s = 0; }
+  if (PR_BOOST && !document.hidden && now > 8000) {   // v10.4: keep 60 fps first; on a slow machine give up the extra sharpness for this session
+    const f = sharpFps; f.n++; f.s += dt;
+    if (f.n >= 150) { if (f.s / f.n > 1 / 45) { PR_BOOST = false; sharpShadows(false); } f.n = 0; f.s = 0; }
   }
   if (post.bloom) { post.bloom.strength = BMV.cur ? 0.32 : 0.6; post.bloom.threshold = BMV.cur ? 2.0 : 1.6; }   // the bright floor would bloom into a haze
-  if (BMV.cur && post.grade) { const u = post.grade.uniforms; u.exposure.value = 0.86; u.sat.value = 1.22; u.contrast.value = 1.1; u.vig.value = 0.45; u.grain.value = 0; } else if (post.grade) post.grade.uniforms.grain.value = 0.025;   // punchier, sports-broadcast grade
+  if (BMV.cur && post.grade) { const u = post.grade.uniforms; u.exposure.value = 0.86; u.sat.value = 1.22; u.contrast.value = 1.1; u.vig.value = 0.45; u.grain.value = 0; }    // punchier, sports-broadcast grade
   if (L.ln2 && Math.random() < 0.7) FX.fog.emit({ x: 30.4 + (Math.random() - 0.5) * 0.6, y: 0.15, z: 8.4 + (Math.random() - 0.5) * 0.6, vx: (Math.random() - 0.7) * 1.2, vy: 0.02, vz: (Math.random() - 0.5) * 1.2, drag: 0.6, life: 4, max: 4, size: 0.6, grow: 0.9, a: 0.35, c: [0.92, 0.97, 1] });
   if (L.hv && Math.random() < 0.25) burst(23.9 + Math.random() * 4.2, 0.4 + Math.random() * 1.2, 3 + Math.random() * 2, [2.4, 1.4, 0.4], 4, 1.6);
   Object.values(FX).forEach(f => f.update(dt));
@@ -6769,7 +6777,7 @@ function frame(now) {
     clock.map += dt; if (clock.map > 0.1) { clock.map = 0; drawMinimap(); renderNavChip(); }
     if (!clock.fpsChecked && QUALITY === 'high' && !S.paused) { clock.fps.push(dt); if (clock.fps.length > 240) { clock.fpsChecked = true; const avg = clock.fps.reduce((a, b) => a + b, 0) / clock.fps.length; if (avg > 1 / 26) toast('画面有点卡？右上角可以把画质调成「中」。'); } }
   }
-  const tilt = BMV.cur ? 0 : camState.cine ? (post.bokeh ? 1.1 : 2.2) : (camState.overview || !S || !S.running ? 0.8 : 1.3);
+  const tilt = camState.cine && !BMV.cur ? (post.bokeh ? 1.1 : 2.2) : 0;   // v10.4: no edge blur while walking; the dialogue two-shot keeps its depth of field
   renderFrame(tsec, tilt);
   requestAnimationFrame(frame);
 }
