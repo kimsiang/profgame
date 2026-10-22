@@ -4744,6 +4744,23 @@ function bmShuttle() {
   g.add(cork, skirt); g.scale.setScalar(2.2); cork.castShadow = skirt.castShadow = true;
   return (BM.shuttle = g);
 }
+/* Step 2 feel: timing ring at the player's feet, shuttle shadow and trail, landing mark. Built once, reused. */
+function bmFx() {
+  if (BM.fx) return BM.fx;
+  const flat = (geo, color, op) => { const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color, transparent: true, opacity: op, depthWrite: false, toneMapped: false, polygonOffset: true, polygonOffsetFactor: -3 })); m.rotation.x = -Math.PI / 2; return m; };
+  const ring = new THREE.Group();
+  const inner = flat(new THREE.RingGeometry(0.46, 0.53, 48), '#ffffff', 0.8);
+  const outer = flat(new THREE.RingGeometry(0.5, 0.56, 48), '#ffffff', 0.9);
+  ring.add(inner, outer); ring.position.y = 0.03;
+  const shadow = flat(new THREE.CircleGeometry(0.12, 20), '#000000', 0.38); shadow.position.y = 0.022;
+  const mark = flat(new THREE.RingGeometry(0.16, 0.24, 32), '#3DDC97', 0); mark.position.y = 0.025;
+  const N = 18, pos = new Float32Array(N * 3);
+  const tg = new THREE.BufferGeometry(); tg.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const trail = new THREE.Line(tg, new THREE.LineBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.55, toneMapped: false }));
+  trail.frustumCulled = false;
+  return (BM.fx = { ring, inner, outer, shadow, mark, trail, N, pos, n: 0, markT: 0 });
+}
+const BM_COL = { green: new THREE.Color('#3DDC97').multiplyScalar(1.6), amber: new THREE.Color('#FFB547').multiplyScalar(1.4), white: new THREE.Color('#ffffff'), red: new THREE.Color('#ff6b5e').multiplyScalar(1.3), smash: new THREE.Color('#FFB547').multiplyScalar(1.8) };
 async function bmStart(opp) {
   if (!window.BMCore) { toast('羽毛球脚本没加载上，先按原来的方式打。'); return ACT.badminton(30); }
   if (!BM.data) { try { const r = await fetch('assets/data/badminton.json'); if (!r.ok) throw 0; BM.data = await r.json(); } catch (e) { toast('球场数据没加载上，先按原来的方式打。'); return ACT.badminton(30); } }
@@ -4752,6 +4769,7 @@ async function bmStart(opp) {
   const decor = Z.balls.filter(b => b.kind === 'shuttle' && b.from[0] === 20);
   decor.forEach(b => { b.m.visible = false; });
   const sh = bmShuttle(); Z.group.add(sh);
+  const fx = bmFx(); Z.group.add(fx.ring, fx.shadow, fx.mark, fx.trail); fx.n = 0; fx.markT = 0; fx.mark.material.opacity = 0; fx.ring.visible = false;
   BM.m = { core, D, O, opp, npc, sh, decor, npcHome: npc ? npc.position.clone() : null, npcRot: npc ? npc.rotation.y : 0, pop: 0 };
   S.path = []; S.autoTarget = null; S.moving = false;
   document.body.classList.add('bm'); $('bm').classList.remove('hidden');
@@ -4805,7 +4823,10 @@ function bmFrame(dt) {
   const p = core.pos(), sh = B.sh;
   if (p) { sh.visible = true; sh.position.set(p.x, Math.max(0.03, p.y), p.z); if (p.y > 0.02) sh.lookAt(_bmV.set(p.x + p.vx, p.y + p.vy, p.z + p.vz)); }
   else { const s = m.ch[m.server]; sh.visible = true; sh.position.set(s.x + 0.25, 1.0, s.z - (m.server === 'P' ? 0.35 : -0.35)); sh.rotation.set(Math.PI / 2, 0, 0); }
+  bmVisuals(dt, p);
   for (const ev of evs) {
+    if (ev.type === 'hit' && ev.q === 'perfect') { const q = core.pos(); if (q) burst(q.x, q.y, q.z, ev.side === 'P' ? [0.6, 2.4, 1.3] : [2.2, 1.6, 0.6], 18, 1.8); }
+    if (ev.type === 'point') { const l = m.fl && m.fl.land; if (l) { const fx = BM.fx; fx.mark.position.x = l.x; fx.mark.position.z = l.z; fx.mark.material.color.copy(ev.why === 'in' ? BM_COL.green : BM_COL.red); fx.markT = 1.6; } }
     if (ev.type === 'hit' && ev.side === 'O') SFX.tick();
     if (ev.type === 'miss' && ev.side === 'O' && ev.why === 'leave') bmPop('对手没接：看会不会出界…', '', 0.9);
     if (ev.type === 'miss' && ev.side === 'P') { if (ev.why === 'leave') bmPop(B.D.misses.leave.zh, 'good'); else if (ev.why !== 'early') { bmPop(B.D.misses[ev.why].zh, 'bad'); SFX.bad(); } }
@@ -4816,11 +4837,38 @@ function bmFrame(dt) {
   if (B.pop > 0) { B.pop -= dt; if (B.pop <= 0) $('bmPop').classList.remove('on'); }
   if (B.overT != null) { if (m.phase === 'over') { player.userData.state = m.winner === 'P' ? 'celebrate' : 'disappointed'; if (B.npc) B.npc.userData.state = m.winner === 'P' ? 'disappointed' : 'celebrate'; } B.overT -= dt; if (B.overT <= 0) bmEnd(true); }
 }
+function bmVisuals(dt, p) {
+  const B = BM.m, core = B.core, m = core.m, fx = BM.fx, rg = core.ring();
+  // Timing ring: the outer ring closes onto the inner one at the ideal moment; green inside the "good" window.
+  if (rg) {
+    const left = rg.left, a = Math.abs(left), W = rg.W;
+    fx.ring.visible = true; fx.ring.position.x = player.position.x; fx.ring.position.z = player.position.z;
+    const k = 1 + Math.min(1.4, Math.max(0, left)) * 1.5; fx.outer.scale.set(k, k, 1);
+    const col = !rg.reach ? BM_COL.red : a <= W.good ? BM_COL.green : a <= W.fair ? BM_COL.amber : BM_COL.white;
+    fx.outer.material.color.copy(col); fx.inner.material.color.copy(a <= W.perfect && rg.reach ? BM_COL.green : BM_COL.white);
+    fx.outer.material.opacity = left < -W.fair ? 0.25 : 0.95;
+  } else fx.ring.visible = false;
+  // Shadow straight below the shuttle: smaller and fainter the higher it is, which is how you read depth.
+  if (p) {
+    fx.shadow.visible = true; fx.shadow.position.x = p.x; fx.shadow.position.z = p.z;
+    const h = Math.max(0, p.y), s = 1 / (1 + h * 0.35); fx.shadow.scale.set(s, s, 1); fx.shadow.material.opacity = 0.42 * s;
+    // Trail: last ~0.3 s of flight; amber for a smash-speed shuttle.
+    const P = fx.pos, N = fx.N;
+    P.copyWithin(3, 0, (N - 1) * 3); P[0] = p.x; P[1] = Math.max(0.03, p.y); P[2] = p.z; fx.n = Math.min(N, fx.n + 1);
+    if (fx.n === 1) for (let i = 1; i < N; i++) { P[i * 3] = p.x; P[i * 3 + 1] = Math.max(0.03, p.y); P[i * 3 + 2] = p.z; }
+    fx.trail.geometry.attributes.position.needsUpdate = true; fx.trail.geometry.setDrawRange(0, fx.n); fx.trail.visible = true;
+    const spd = Math.hypot(p.vx, p.vy, p.vz); fx.trail.material.color.copy(spd > B.D.smashSpeed ? BM_COL.smash : BM_COL.white); fx.trail.material.opacity = Math.min(0.7, 0.15 + spd / 40);
+  } else { fx.shadow.visible = false; fx.trail.visible = false; fx.n = 0; }
+  if (fx.markT > 0) { fx.markT -= dt; fx.mark.material.opacity = Math.min(1, fx.markT) * 0.9; const k = 1 + (1.6 - fx.markT) * 0.6; fx.mark.scale.set(k, k, 1); }
+  // A short swing pose is already shown for 0.35 s after each hit; lean the player toward the shuttle while it is coming.
+  if (rg && rg.reach && player.userData.state !== 'play') player.rotation.y = Math.PI + Math.max(-0.5, Math.min(0.5, (rg.c.x - player.position.x) * 0.4));
+}
 function bmEnd(done) {
   const B = BM.m; if (!B) return;
   BM.m = null;
   document.body.classList.remove('bm'); $('bm').classList.add('hidden'); $('bmPop').className = '';
   if (B.sh.parent) B.sh.parent.remove(B.sh);
+  if (BM.fx) [BM.fx.ring, BM.fx.shadow, BM.fx.mark, BM.fx.trail].forEach(o => o.parent && o.parent.remove(o));
   B.decor.forEach(b => { b.m.visible = true; });
   if (B.npc && B.npcHome) { B.npc.position.copy(B.npcHome); B.npc.rotation.y = B.npcRot; B.npc.userData.state = B.npc.userData.baseState || 'idle'; }
   const m = B.core.m;

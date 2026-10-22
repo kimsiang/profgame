@@ -1,5 +1,11 @@
 # Changelog
 
+## v10.0-step2 — Badminton feel (2026-10-22)
+- Timing ring at your feet: the outer ring closes onto the inner one at the ideal moment. Amber = in time, green = good, both rings green = perfect. Red = you will not get there.
+- The shuttle casts a shadow straight down (smaller and fainter the higher it is), so you can read depth, and leaves a short trail that turns amber at smash speed.
+- Perfect hits throw sparks; when a rally ends, a ring on the floor marks where the shuttle landed (green in, red out or net).
+- While a shot is coming the player turns slightly toward it.
+
 ## v9.0.6 — Fix (2026-10-22)
 - Floor signs point where they say. Every sign had a pointed end facing east whatever was there (物理楼 · 正门 pointed along the road, not at the door). Signs now carry an arrow only when they name a place nearby: room signs in the 5F corridor and on 2F point to their door, entrance and exit signs to the door, elevator signs to the elevator. Title plates (物理楼 5F, 书库, 阅览区…) have no arrow. The "→" in the English subtitles is gone too.
 
