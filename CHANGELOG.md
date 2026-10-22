@@ -1,5 +1,11 @@
 # Changelog
 
+## v10.0-step1 — Badminton you actually play (2026-10-22)
+- Court 2 in the gym: press E to play a game to 7 against 阿强 instead of a 30-minute fast-forward. Movement is automatic; you only swing. Swipe (or drag with the mouse) up for a clear, down for a drop or net shot, left/right for a drive, tap when it is overhead to smash. Keyboard: W/S/A/D and Space. Esc or "退出比赛" leaves.
+- Real shuttle flight: quadratic drag with a 6.8 m/s terminal speed, so clears rise and then fall almost straight down; shots that hit the tape drop on the hitter's side.
+- The clock stops during the match; the result is followed by the usual 30-minute badminton activity and its effects.
+- New files: `assets/js/badminton.js` (physics, rules, AI; no rendering), `assets/data/badminton.json` (shots, timing windows, opponents, lines in 中文/English), `tools/bm_balance.js` (bot balance runs: `node tools/bm_balance.js 200`).
+
 ## v9.0.5 — Fix (2026-10-22)
 - Elevator: 1F was missing from the list. Dialogs bottom-aligned their choices in a way that pushed overflow above the top of the scroll area, so when a dialog had more choices than fit (the elevator has 8), the first ones could not be reached. Choices now scroll normally in every dialog, and the elevator shows its floors in two columns so all of them fit.
 

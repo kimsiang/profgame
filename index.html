@@ -185,6 +185,15 @@ svg.ic{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;str
 @keyframes lvl{0%{opacity:0;transform:scale(.7)}15%{opacity:1;transform:scale(1.04)}25%{transform:scale(1)}80%{opacity:1}100%{opacity:0;transform:translateY(-20px)}}
 
 /* ---- dialogue (visual-novel panel) ---- */
+/* v10 badminton overlay: catches swipes over the whole screen while a match is on */
+body.bm #hud,body.bm #prompt{display:none!important}
+#bm{position:fixed;inset:0;z-index:15;touch-action:none;user-select:none;-webkit-user-select:none}
+#bmScore{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);padding:8px 18px;font:700 20px/1.2 var(--mono,monospace);display:flex;gap:14px;align-items:center;white-space:nowrap}
+#bmScore b{font-size:28px;color:#fff}#bmScore .srv{color:#FFB547}
+#bmHint{position:absolute;bottom:calc(22px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);padding:8px 14px;font-size:13px;color:#CDEEFF;text-align:center;width:max-content;max-width:calc(100vw - 32px)}
+#bmPop{position:absolute;top:38%;left:50%;transform:translate(-50%,-50%);font:900 34px/1 var(--serif,serif);color:#fff;text-shadow:0 2px 14px rgba(0,0,0,.6);pointer-events:none;opacity:0;transition:opacity .25s}
+#bmPop.on{opacity:1}#bmPop.good{color:#3DDC97}#bmPop.bad{color:#ff7a6b}
+#bmQuit{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:16px}
 #dlg{position:fixed;z-index:20;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));width:min(1180px,calc(100vw - 28px));height:min(50vh,480px);display:flex;animation:din .35s cubic-bezier(.2,.9,.3,1)}
 @keyframes din{from{opacity:0;transform:translate(-50%,30px)}to{opacity:1;transform:translate(-50%,0)}}
 #dlgBust{position:absolute;left:-6px;bottom:0;width:300px;height:calc(100% + 120px);pointer-events:none;display:flex;align-items:flex-end;justify-content:center}
@@ -521,6 +530,7 @@ body.talking #lbT,body.talking #lbB{height:7vh}
 </svg>
 
 <!-- in-game HUD -->
+<div id="bm" class="hidden"><div id="bmScore" class="panel"></div><div id="bmPop"></div><div id="bmHint" class="panel"></div><button id="bmQuit" class="btn" type="button">退出比赛</button></div>
 <div id="hud" class="hidden">
   <div id="pCard" class="hud panel">
     <div class="pTop">
@@ -887,6 +897,7 @@ body.talking #lbT,body.talking #lbB{height:7vh}
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/SkeletonUtils.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/environments/RoomEnvironment.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/geometries/RoundedBoxGeometry.js"></script>
+<script src="assets/js/badminton.js"></script>
 <script>
 (function(){
 'use strict';
@@ -4700,6 +4711,103 @@ function sport(kind, min, o) {
     onCancel: finish });
   function finish() { if (partner) { partner.userData.state = partner.userData.baseState || 'idle'; setExpr(partner, 'normal'); } Z.balls.forEach(b => { b.active = b.kind === 'soccer' || (b.kind === 'shuttle' && b.from[0] !== 20); }); pose('idle', o.x, o.z); }
 }
+
+/* ---------------- v10: badminton match on court 2 (core in assets/js/badminton.js, data in assets/data/badminton.json) ---------------- */
+const BM = { data: null, m: null, shuttle: null };
+function bmShuttle() {
+  if (BM.shuttle) return BM.shuttle;
+  const g = new THREE.Group();
+  const cork = new THREE.Mesh(new THREE.SphereGeometry(0.028, 12, 8), new THREE.MeshStandardMaterial({ color: '#f4efe6', roughness: 0.6 })); cork.position.z = 0.04;
+  const skirt = new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.075, 12, 1, true), new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.4, side: THREE.DoubleSide, transparent: true, opacity: 0.92 }));
+  skirt.rotation.x = Math.PI / 2; skirt.position.z = 0;
+  g.add(cork, skirt); g.scale.setScalar(2.2); cork.castShadow = skirt.castShadow = true;
+  return (BM.shuttle = g);
+}
+async function bmStart(opp) {
+  if (!window.BMCore) { toast('羽毛球脚本没加载上，先按原来的方式打。'); return ACT.badminton(30); }
+  if (!BM.data) { try { const r = await fetch('assets/data/badminton.json'); if (!r.ok) throw 0; BM.data = await r.json(); } catch (e) { toast('球场数据没加载上，先按原来的方式打。'); return ACT.badminton(30); } }
+  const D = BM.data, O = D.opponents[opp], npc = NPC[O.npc];
+  const core = BMCore(D, { opp, energy: S.v.energy });
+  const decor = Z.balls.filter(b => b.kind === 'shuttle' && b.from[0] === 20);
+  decor.forEach(b => { b.m.visible = false; });
+  const sh = bmShuttle(); Z.group.add(sh);
+  BM.m = { core, D, O, opp, npc, sh, decor, npcHome: npc ? npc.position.clone() : null, npcRot: npc ? npc.rotation.y : 0, pop: 0 };
+  S.path = []; S.autoTarget = null; S.moving = false;
+  document.body.classList.add('bm'); $('bm').classList.remove('hidden');
+  bmPop(O.lines.intro_zh.split('：').slice(1).join('：') || '', '', 2.2);
+  bmScore(); bmHint();
+  SFX.click();
+}
+function bmScore() {
+  const B = BM.m, m = B.core.m;
+  $('bmScore').innerHTML = `<span>${m.server === 'P' ? '<span class="srv">●</span> ' : ''}你</span><b>${m.score.P}</b><span>:</span><b>${m.score.O}</b><span>${esc(B.O.name_zh)}${m.server === 'O' ? ' <span class="srv">●</span>' : ''}</span>`;
+}
+function bmHint() {
+  const m = BM.m.core.m;
+  $('bmHint').innerHTML = m.phase === 'serve' && m.server === 'P' ? '发球：上滑 / <span class="key">W</span> 高远球 · 下滑 / <span class="key">S</span> 网前球'
+    : '上滑 <span class="key">W</span> 高远 · 下滑 <span class="key">S</span> 吊球 · 左右 <span class="key">A</span><span class="key">D</span> 平抽 · 头顶点击 <span class="key">空格</span> 杀球';
+}
+function bmPop(text, cls, sec = 0.9) { const el = $('bmPop'); el.textContent = text; el.className = 'on ' + (cls || ''); BM.m.pop = sec; }
+function bmSwing(g) {
+  const B = BM.m; if (!B || B.core.m.phase === 'over') return;
+  const r = B.core.swing(g); if (!r) return;
+  const D = B.D;
+  if (r.r === 'serve') { SFX.click(); bmHint(); return; }
+  if (D.quality[r.r]) { bmPop(`${D.quality[r.r].label_zh} ${D.shots[r.shot].zh}`, r.r === 'perfect' ? 'good' : ''); SFX[r.r === 'perfect' ? 'good' : 'click'](); }
+  else { bmPop(D.misses[r.r].zh, 'bad'); SFX.bad(); }
+}
+function bmKey(e) {
+  const map = { KeyW: 'up', ArrowUp: 'up', KeyS: 'down', ArrowDown: 'down', KeyA: 'left', ArrowLeft: 'left', KeyD: 'right', ArrowRight: 'right', Space: 'tap', KeyJ: 'tap' };
+  if (map[e.code]) { e.preventDefault(); if (!e.repeat) bmSwing(map[e.code]); }
+  else if (e.code === 'Escape') bmEnd(false);
+}
+(() => {
+  const el = $('bm'); let down = null;
+  el.addEventListener('pointerdown', (e) => { if (e.target.closest('button')) return; down = { x: e.clientX, y: e.clientY, id: e.pointerId }; el.setPointerCapture(e.pointerId); e.preventDefault(); });
+  el.addEventListener('pointerup', (e) => {
+    if (!down || down.id !== e.pointerId) return;
+    const dx = e.clientX - down.x, dy = e.clientY - down.y; down = null;
+    bmSwing(Math.hypot(dx, dy) < 24 ? 'tap' : Math.abs(dy) >= Math.abs(dx) ? (dy < 0 ? 'up' : 'down') : (dx > 0 ? 'right' : 'left'));
+  });
+  el.addEventListener('pointercancel', () => { down = null; });
+  el.addEventListener('contextmenu', (e) => e.preventDefault());
+  $('bmQuit').onclick = () => bmEnd(false);
+})();
+const _bmV = new THREE.Vector3();
+function bmFrame(dt) {
+  const B = BM.m, core = B.core, m = core.m;
+  const evs = core.update(dt);
+  const P = m.ch.P, Oc = m.ch.O, st = (c) => (m.t - c.swingT < 0.35 ? 'play' : c.moving ? 'run' : 'idle');
+  player.position.set(P.x, 0, P.z); player.rotation.y = Math.PI; player.userData.state = st(P); player.userData.seated = false; player.visible = true;
+  if (B.npc) { B.npc.position.set(Oc.x, 0, Oc.z); B.npc.rotation.y = 0; B.npc.userData.state = st(Oc); }
+  playerRing.visible = false;
+  const p = core.pos(), sh = B.sh;
+  if (p) { sh.visible = true; sh.position.set(p.x, Math.max(0.03, p.y), p.z); if (p.y > 0.02) sh.lookAt(_bmV.set(p.x + p.vx, p.y + p.vy, p.z + p.vz)); }
+  else { const s = m.ch[m.server]; sh.visible = true; sh.position.set(s.x + 0.25, 1.0, s.z - (m.server === 'P' ? 0.35 : -0.35)); sh.rotation.set(Math.PI / 2, 0, 0); }
+  for (const ev of evs) {
+    if (ev.type === 'hit' && ev.side === 'O') SFX.tick();
+    if (ev.type === 'miss' && ev.side === 'O' && ev.why === 'leave') bmPop('对手没接：看会不会出界…', '', 0.9);
+    if (ev.type === 'miss' && ev.side === 'P') { if (ev.why === 'leave') bmPop(B.D.misses.leave.zh, 'good'); else if (ev.why !== 'early') { bmPop(B.D.misses[ev.why].zh, 'bad'); SFX.bad(); } }
+    if (ev.type === 'point') { bmScore(); const why = { net: '下网', out: '出界', in: '界内' }[ev.why]; bmPop(`${ev.winner === 'P' ? '得分' : '失分'} · ${why}`, ev.winner === 'P' ? 'good' : 'bad', 1.3); (ev.winner === 'P' ? SFX.good : SFX.bad)(); }
+    if (ev.type === 'serveReady') bmHint();
+    if (ev.type === 'over') { const w = ev.winner === 'P'; player.userData.state = w ? 'celebrate' : 'disappointed'; if (B.npc) B.npc.userData.state = w ? 'disappointed' : 'celebrate'; bmPop(w ? `赢了 ${m.score.P}:${m.score.O}！` : `输了 ${m.score.P}:${m.score.O}`, w ? 'good' : 'bad', 3); B.overT = 2.4; }
+  }
+  if (B.pop > 0) { B.pop -= dt; if (B.pop <= 0) $('bmPop').classList.remove('on'); }
+  if (B.overT != null) { if (m.phase === 'over') { player.userData.state = m.winner === 'P' ? 'celebrate' : 'disappointed'; if (B.npc) B.npc.userData.state = m.winner === 'P' ? 'disappointed' : 'celebrate'; } B.overT -= dt; if (B.overT <= 0) bmEnd(true); }
+}
+function bmEnd(done) {
+  const B = BM.m; if (!B) return;
+  BM.m = null;
+  document.body.classList.remove('bm'); $('bm').classList.add('hidden'); $('bmPop').className = '';
+  if (B.sh.parent) B.sh.parent.remove(B.sh);
+  B.decor.forEach(b => { b.m.visible = true; });
+  if (B.npc && B.npcHome) { B.npc.position.copy(B.npcHome); B.npc.rotation.y = B.npcRot; B.npc.userData.state = B.npc.userData.baseState || 'idle'; }
+  const m = B.core.m;
+  if (!done) { pose('idle', 20, 17.5, Math.PI); toast('不打了，收拍。'); return; }
+  const w = m.winner === 'P';
+  toast(`${w ? '赢了' : '输了'} ${m.score.P}:${m.score.O} · ${(w ? B.O.lines.win_zh : B.O.lines.lose_zh)}`, w ? 'good' : '');
+  ACT.badminton(30);
+}
 /* ---------------- interaction targets ---------------- */
 function amenityAt(x, z) {
   const near = (h, r = 1.25) => (HS[h].zone || 'f5') === Z.id && Math.hypot(HS[h].x - x, HS[h].z - z) < r;
@@ -4710,7 +4818,7 @@ function amenityAt(x, z) {
   if (near('garden', 1.8)) return { label: `在植物园里走 20 分钟 · 身心 +9（现在 ${Math.round(S.wb)}）`, code: '6F', act: () => ACT.walk(20) };
   if (near('roofcafe', 1.6)) return { label: `天台咖啡（第 ${S.coffees + 1} 杯）· 顺便听听明天的八卦`, code: 'R', act: openRoofCafe };
   if (near('pitch', 2.5)) return { label: `和本科生踢 40 分钟球 · 团队 + 身心${S.recruit ? '' : ' · 也许能招到人'}`, code: '校园', act: () => ACT.soccer(40) };
-  if (near('courtB', 2.0)) return { label: '和研究生打 30 分钟羽毛球 · 所有学生信任 +', code: '体育馆', act: () => ACT.badminton(30) };
+  if (near('courtB', 2.0)) return { label: '和阿强打一局羽毛球（7 分）· 学生信任 +', code: '体育馆', act: () => bmStart('aqiang') };
   if (near('desk')) return { label: `办公桌 · 专注写到 ${fmt(commitEnd())} · 基金 ${S.submitted ? '已交' : Math.floor(S.grant) + '%'} · 论文 ${S.paperSubmitted ? '已交' : Math.floor(S.paper) + '%'}`, code: '503', act: openDesk };
   if (near('sofa')) return { label: '在沙发上小睡 25 分钟', code: '503', act: ACT.nap };
   if (near('coffee')) return { label: `冲一杯咖啡（今天第 ${S.coffees + 1} 杯）`, code: '508', act: ACT.coffee };
@@ -5724,6 +5832,7 @@ function togglePause(force) { if (!S || !S.running || S.planning) return; S.paus
 addEventListener('keydown', (e) => {
   if (e.target && (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT')) return;
   keys[e.code] = true;
+  if (BM.m) { bmKey(e); return; }
   if (!S || !S.running) { if (e.key === 'Enter' && !$('scrHand').classList.contains('hidden')) startGame(); return; }
   if (S.planning) { if (/^Digit[1-4]$/.test(e.code)) beginDay(S.day, INTENTS[+e.code.slice(5) - 1].id); return; }
   if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) e.preventDefault();
@@ -5883,17 +5992,18 @@ const _want = new THREE.Vector3();
 function frame(now) {
   const dt = Math.min(0.05, (now - clock.last) / 1000); clock.last = now;
   const tsec = now / 1000;
-  if (S && S.running && !S.paused && !S.dialog && !S.ended) {
+  if (S && S.running && !S.paused && !S.dialog && !S.ended && !BM.m) {
     const mult = S.activity ? S.activity.ff * S.speed : S.speed;
     let dm = dt * mult;
     while (dm > 0 && S.running && !S.ended && !S.dialog) { const d = Math.min(1, dm); minuteTick(d); dm -= d; }
   }
-  if (S && S.running) movePlayer(dt);
+  if (S && S.running && !BM.m) movePlayer(dt);
   musicTick(dt);
   if (player) { animChar(player, tsec, dt); playerRing.position.set(player.position.x, 0.025, player.position.z); ringOut.rotation.z += dt * 1.5; ringIn.material.opacity = 0.6 + Math.sin(tsec * 4) * 0.25; playerRing.visible = player.visible && !(S && S.activity); }
   else playerRing.visible = false;
   if (Z.id === 'f5') Object.values(NPC).forEach(p => { if (p.visible && p.parent === F5.group) animChar(p, tsec, dt); });
   else Z.npcs.forEach(p => animChar(p, tsec, dt));
+  if (BM.m) bmFrame(dt);
   Z.balls.forEach(b => { if (!b.active) { b.m.position.y += (b.y - b.m.position.y) * 0.1; return; } b.t += dt; const u = (Math.sin(b.t * 1.4) + 1) / 2, h = Math.sin(((b.t * 1.4) % Math.PI)) ; b.m.position.set(b.from[0] + (b.to[0] - b.from[0]) * u, 0.3 + Math.abs(Math.sin(b.t * 1.4)) * (b.kind === 'soccer' ? 0.9 : 1.6), b.from[1] + (b.to[1] - b.from[1]) * u); });
   Z.anims.forEach(f => f(tsec));
   if (S && S.activity && S.activity.perFrame) S.activity.perFrame(tsec);
@@ -5938,6 +6048,7 @@ function frame(now) {
   camState.az += (camState.wantAz - camState.az) * Math.min(1, dt * 6);
   let wantDist, wantEl;
   if (!S || !S.running || camState.overview || !player) { _want.set(Z.W / 2, 0, Z.D / 2); wantDist = (Z.view || 66) * ((stage.clientWidth || innerWidth) < 700 ? 1.4 : 1); wantEl = 0.82; }
+  else if (BM.m) { const a = (stage.clientWidth || innerWidth) / (stage.clientHeight || innerHeight); _want.set(20, 0.8, 14.2); wantDist = a < 0.8 ? 31 : a < 1.3 ? 23 : 19; wantEl = 0.8; camState.wantAz = 0; }
   else if (camState.cine) { camState.cineT = (camState.cineT || 0) + dt; _want.set(camState.cine.x, 1.15, camState.cine.z); wantDist = ((stage.clientWidth || innerWidth) < 900 ? 11.5 : 9.5) - Math.min(1.2, camState.cineT * 0.12); wantEl = 0.3; const b = camBasis(); _want.addScaledVector(b.fwd, -2.2); camState.wantAz += dt * 0.012; }
   else { _want.set(player.position.x, 0.6, player.position.z); wantDist = camState.followDist; wantEl = 0.86; }
   if (!camState.cine) camState.cineT = 0;
