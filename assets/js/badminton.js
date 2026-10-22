@@ -97,20 +97,26 @@
     }
 
     // Who receives the flight, where and when they can meet it, and whether they get there in time.
-    function plan(recv) {
-      const f = m.fl, R = m.ch[recv], P = PAR[recv], sg = sideSign(recv);
+    // o.bonus = { maxY, reach } for a jump (中国跳); replanning mid-flight starts from "now" with no reaction delay.
+    function plan(recv, o) {
+      o = o || {};
+      const f = m.fl, R = m.ch[recv], P = PAR[recv], sg = sideSign(recv), now = m.t - f.t0;
       if (f.netHit) { m.inc = { recv, none: true, done: true }; return; }
+      const maxY = P.maxY + (o.bonus ? o.bonus.maxY : 0), reachR = P.reach + (o.bonus ? o.bonus.reach : 0);
+      let react = o.replan ? 0.05 : P.reaction;
+      if (recv === 'P' && m.stumble && !o.replan) { react += D.footwork.stumbleDelay; m.stumble = false; }
       let best = null, need = 0, last = null;
       for (const p of f.pts) {
-        if ((p.z - C.net) * sg <= 0.05 || p.y < P.minY) continue;
+        if (p.t < now + 0.03 || (p.z - C.net) * sg <= 0.05 || p.y < P.minY) continue;
         last = p;
-        if (p.y > P.maxY) continue;
-        const d = Math.max(0, Math.hypot(p.x - R.x, p.z - R.z) - P.reach);
-        need = P.reaction + d / P.speed;
+        if (p.y > maxY) continue;
+        const d = Math.max(0, Math.hypot(p.x - R.x, p.z - R.z) - reachR);
+        need = now + react + d / P.speed;
         if (need <= p.t) { best = p; break; }
       }
       const reach = !!best; if (!best) best = last || f.land;
-      m.inc = { recv, c: { t: f.t0 + best.t, x: best.x, y: best.y, z: best.z, vx: best.vx, vy: best.vy, vz: best.vz, reach, margin: reach ? best.t - need : -1 }, done: false, out: !inBounds(f.land, recv) };
+      const keep = o.replan && m.inc ? { foot: m.inc.foot } : {};
+      m.inc = Object.assign({ recv, c: { t: f.t0 + best.t, x: best.x, y: best.y, z: best.z, vx: best.vx, vy: best.vy, vz: best.vz, reach, margin: reach ? best.t - need : -1 }, done: false, out: !inBounds(f.land, recv) }, keep);
       // Stand so the shuttle meets the racket a little in front, on the forehand side.
       R.tx = best.x + 0.35; R.tz = best.z + sg * 0.35; clampHalf(R, recv); R.mvT = m.t + P.reaction;
     }
@@ -142,7 +148,8 @@
       const prevInc = m.inc, margin = o.serve || !prevInc || !prevInc.c ? 9 : prevInc.c.margin;
       const inSpd = o.serve || !prevInc || !prevInc.c ? 0 : Math.hypot(prevInc.c.vx, prevInc.c.vy, prevInc.c.vz);
       const rec = { side, shot: shotId, q, serve: !!o.serve, from: { x: from.x, y: from.y, z: from.z }, land: { x: f.land.x, z: f.land.z }, net: f.netHit,
-        margin, inSpd, opp: { x: R.x, z: R.z }, foot: o.foot || null, tags: [] };
+        margin, inSpd, opp: { x: R.x, z: R.z }, foot: o.foot || null, tags: o.footTag ? [o.footTag] : [] };
+      if (o.footTag && side === 'P') m.tags[o.footTag] = (m.tags[o.footTag] || 0) + 1;
       tagShot(rec);
       m.log.push(rec); m.fl.rec = rec;
       m.stats.rally++;
@@ -150,7 +157,7 @@
       const H = m.ch[side]; H.swingT = m.t;
       // Recover toward base, shaded to the side the shuttle went.
       const b = base(side); H.tx = b.x + (etx - C.cx) * 0.3; H.tz = b.z; H.mvT = m.t + 0.25;
-      emit({ type: 'hit', side, shot: shotId, q, speed: v.spd, serve: !!o.serve, tags: rec.tags });
+      emit({ type: 'hit', side, shot: shotId, q, speed: v.spd, serve: !!o.serve, tags: rec.tags, foot: o.foot || null });
       plan(recv);
     }
 
@@ -201,6 +208,41 @@
       return { shot: z === 'high' ? 'smash' : 'push', aim };
     }
 
+    /* ---------- rear-court footwork: 并步 (default) · 马来步 · 中国跳 ----------
+       马来步: turn the body, take the round-the-head (头顶区) ball on the forehand. Needs time (margin).
+       中国跳: no turn, one-foot take-off, intercept earlier and higher. Costs energy; tired legs may land badly.
+       Right-handed player on the near side faces -z, so the backhand / round-the-head side is -x. */
+    const FW = D.footwork;
+    const rearOf = (c) => Math.abs(c.z - C.net) >= FW.rearDepth && c.y >= D.overhead - 0.35;
+    const headSide = (c) => c.x - C.cx < -FW.headX;
+    function prep(foot) {
+      const inc = m.inc;
+      if (m.phase !== 'rally' || !inc || inc.recv !== 'P' || inc.done || !inc.c || inc.foot) return null;
+      if (Math.abs(inc.c.z - C.net) < FW.rearDepth) return { r: 'front' };
+      if (inc.c.t - m.t < FW.prepLead) return { r: 'late' };
+      inc.foot = foot;
+      if (foot === 'china') {
+        m.chinaUses = (m.chinaUses || 0) + 1;
+        plan('P', { replan: true, bonus: { maxY: FW.chinaY, reach: FW.chinaReach } });
+      }
+      return { r: 'ok', foot };
+    }
+    function footwork(c, q, shot) {
+      const foot = m.inc.foot || null, out = { q, power: 1, foot, tag: null, note: null };
+      if (!rearOf(c)) { if (foot) out.note = 'front'; return out; }
+      if (!foot) { if (headSide(c)) { out.q = down(q); out.power = FW.backhandPower; out.note = 'backhand'; } return out; }
+      if (foot === 'malay') {
+        if (c.margin < FW.malayMargin) { out.q = down(q, 2); out.tag = 'footBad'; out.note = 'noTime'; }
+        else if (!headSide(c)) { out.tag = 'footWaste'; out.note = 'forehand'; }
+        else { out.power = FW.malayPower; out.tag = 'footGood'; }
+      } else {
+        const e = energy - FW.chinaEnergy * (m.chinaUses || 0);
+        out.power = FW.chinaPower; out.tag = 'footChina';
+        if (e < FW.tiredEnergy) { out.tag = 'footTired'; if (rnd() < FW.stumbleP) { m.stumble = true; out.note = 'stumble'; } }
+      }
+      return out;
+    }
+
     /* ---------- serving ---------- */
     function setupServe() {
       const s = m.server, r = other(s), right = m.score[s] % 2 === 0, S = m.ch[s], R = m.ch[r];
@@ -247,16 +289,16 @@
       if (m.phase === 'serve' && m.server === 'P') { serve(g === 'down' ? 'short' : 'high', 'good'); return { r: 'serve' }; }
       if (m.phase !== 'rally' || !m.inc || m.inc.recv !== 'P' || m.inc.done) return null;
       const c = m.inc.c, dt = m.t - c.t;
-      if (dt < -W.fair) { if (dt < -0.7) return null; m.timing.push(dt); m.inc.done = true; m.stats.misses++; emit({ type: 'miss', side: 'P', why: 'early' }); return { r: 'early' }; }
+      if (dt < -W.fair) { if (dt < -0.7 || g === 'tap') return null; m.timing.push(dt); m.inc.done = true; m.stats.misses++; emit({ type: 'miss', side: 'P', why: 'early' }); return { r: 'early' }; }
       if (!c.reach) { m.inc.done = true; m.stats.misses++; emit({ type: 'miss', side: 'P', why: 'far' }); return { r: 'far' }; }
       m.timing.push(dt);
       let q = Math.abs(dt) <= W.perfect ? 'perfect' : Math.abs(dt) <= W.good ? 'good' : 'fair';
       if (Math.hypot(c.vx, c.vy, c.vz) > D.smashSpeed) q = down(q);   // a smash is hard to return cleanly
       if (c.margin < 0.05) q = down(q);
-      const sf = shotFor(g, c);
+      const sf = shotFor(g, c), fw = footwork(c, q, sf.shot);
       m.inc.done = true;
-      hit('P', sf.shot, q, { aim: sf.aim || 0 });
-      return { r: q, shot: sf.shot };
+      hit('P', sf.shot, fw.q, { aim: sf.aim || 0, power: fw.power, foot: fw.foot, footTag: fw.tag });
+      return { r: fw.q, shot: sf.shot, foot: fw.foot, footNote: fw.note };
     }
 
     function update(dt) {
@@ -300,12 +342,12 @@
     function ring() {
       const inc = m.inc;
       if (m.phase !== 'rally' || !inc || inc.none || inc.recv !== 'P' || inc.done) return null;
-      return { left: inc.c.t - m.t, reach: inc.c.reach, out: inc.out, W, c: inc.c };
+      return { left: inc.c.t - m.t, reach: inc.c.reach, out: inc.out, W, c: inc.c, foot: inc.foot || null, rear: Math.abs(inc.c.z - C.net) >= FW.rearDepth };
     }
 
     setupServe();
     m.ev = [];
-    return { m, swing, update, ring, pos: () => (m.fl ? flightPos(m.t) : null), W, PAR, inBounds, shotFor, D };
+    return { m, swing, prep, update, ring, pos: () => (m.fl ? flightPos(m.t) : null), W, PAR, inBounds, shotFor, D };
   }
 
   /* Post-match review: one headline finding, evidence, two cues. Pure: takes the finished match state. */
@@ -329,6 +371,8 @@
     if (n >= 5 && Math.abs(mean) >= 0.05) items.push({ id: 'timing', text: fill(T.findings.timing[L], { dir: (T.words[mean < 0 ? 'early' : 'late'] || {})[L], ms: Math.round(Math.abs(mean) * 1000) }), cues: ['shadow'] });
     if (far.length >= 3) items.push({ id: 'far', text: fill(T.findings.far[L], { n: far.length }), cues: ['transition', 'base'] });
     if (shots >= 8 && (tags.spread || 0) / shots < 0.25) items.push({ id: 'spread', text: fill(T.findings.spread[L], { shots, n: tags.spread || 0 }), cues: ['spread'] });
+    if ((tags.footBad || 0) >= 2) items.push({ id: 'footBad', text: fill(T.findings.footBad[L], { n: tags.footBad }), cues: ['footBad'] });
+    if ((tags.footTired || 0) >= 2) items.push({ id: 'footTired', text: fill(T.findings.footTired[L], { n: tags.footTired }), cues: ['footTired'] });
     items.push({ id: 'good', text: fill(T.findings.good[L], { w: winners.length, n: unforced.length }), cues: [(tags.backhand || 0) < 2 ? 'backhand' : 'smashNet', 'space'] });
     const cues = []; items.forEach((it) => it.cues.forEach((c) => { if (!cues.find((x) => x.id === c)) { const q = cue(c); if (q) cues.push(q); } }));
     // Court map: every shot's landing point, coloured by what that shot did.
@@ -340,7 +384,8 @@
     return {
       headline: items[0].text, items, cues: cues.slice(0, 2),
       nums: { won: won.length, lost: lost.length, winners: winners.length, unforced: unforced.length, forced: forced.length, timingMiss: timingMiss.length, far: far.length,
-        meanMs: Math.round(mean * 1000), sdMs: Math.round(sd * 1000), swings: n, longest: m.stats.longest, perfect: m.stats.perfect, shots },
+        meanMs: Math.round(mean * 1000), sdMs: Math.round(sd * 1000), swings: n, longest: m.stats.longest, perfect: m.stats.perfect, shots,
+        malay: (tags.footGood || 0) + (tags.footBad || 0) + (tags.footWaste || 0), china: (tags.footChina || 0) + (tags.footTired || 0), chinaUses: m.chinaUses || 0 },
       tags, dots,
     };
   };

@@ -1,5 +1,14 @@
 # Changelog
 
+## v10.1-step4 — Rear-court footwork: 马来步 and 中国跳 (2026-10-22)
+Definitions follow the VICTOR coaching article (Sohu, 2020): the difference is whether the body turns.
+- **Default (并步)**: a round-the-head ball on your backhand side drops one grade and smashes softer.
+- **马来步 (Malaysian step)**: hold your finger still for a moment, then swipe (keyboard: K, then the shot). You turn and take the round-the-head ball on the forehand: no downgrade, smash +15%. It needs time: with less than 0.3 s to spare, "转身来不及" and the shot drops two grades. On the forehand rear corner the turn is wasted.
+- **中国跳 (China jump)**: double-tap, then swipe (keyboard: L). No turn, one-foot take-off: you meet the shuttle earlier and higher (the ring re-plans), smash +10%. Each jump costs 2 energy; below 40 energy a landing can go wrong (30%) and you react late on the next ball.
+- You have to set your feet at least 0.25 s before contact, and only for rear-court balls; the hint line tells you when one is coming.
+- Animation: the China jump goes straight up, the Malaysian step turns a quarter toward the backhand and jumps lower.
+- The review counts both and adds findings/cues for turning without time and jumping on tired legs.
+
 ## v10.1-step3 — Badminton: placement, tactics and the post-match review (2026-10-22)
 - **Choose the corner.** Diagonal swipes pick the side: up-left / up-right clear to a rear corner, down-left / down-right drop to a front corner; straight up or down still plays to the open space. Keyboard: Q/E and Z/C. Tap with the shuttle overhead is still the smash.
 - **Every shot gets a tactical tag** from `assets/data/badminton-tactics.json`: 拉吊四角, 打空档, 被动过渡, 冒险进攻 (forcing a smash from the baseline off balance), 攻反手后场, 杀后上网. The tag shows next to "完美 / 好球".

@@ -1,29 +1,149 @@
 {
   "_comment": "v10.1 singles tactics: tag thresholds, cues and review findings. Distances in metres, times in seconds. Cues are coaching cues, written to be true on a real court.",
   "rules": {
-    "spread":     { "dz": 3.0, "dx": 3.0, "zh": "拉吊四角", "en": "Moving them around", "cue_zh": "把对手拉开，再找空档：一拍后场，一拍前场。", "cue_en": "Stretch them first, then find the space: one deep, one short." },
-    "space":      { "dist": 2.5, "zh": "打空档", "en": "Into the space", "cue_zh": "打人不在的地方，不是打人站的地方。", "cue_en": "Hit where they are not, not where they stand." },
-    "transition": { "margin": 0.2, "depth": 5.0, "zh": "被动过渡", "en": "Buying time", "cue_zh": "被动时先把球挑高挑远，争取回中心的时间。", "cue_en": "Under pressure, lift high and deep to buy time to recover." },
-    "risky":      { "depth": 5.0, "margin": 0.25, "zh": "冒险进攻", "en": "Forcing it", "cue_zh": "位置不好不硬杀：底线来不及时先打高远或吊球。", "cue_en": "Don't force the smash off balance at the baseline: clear or drop instead." },
-    "backhand":   { "depth": 4.5, "x": 1.0, "zh": "攻反手后场", "en": "Backhand rear corner", "cue_zh": "反手后场是多数业余选手最弱的地方，多往那里压。", "cue_en": "The rear backhand corner is most club players' weakest spot: press it." },
-    "smashNet":   { "zh": "杀后上网", "en": "Smash and follow", "cue_zh": "杀完别站着，跟上去封网，对手回过来的多半是网前球。", "cue_en": "Don't admire the smash: follow it in, the reply usually comes short." },
-    "unforced":   { "margin": 0.25 }
+    "spread": {
+      "dz": 3.0,
+      "dx": 3.0,
+      "zh": "拉吊四角",
+      "en": "Moving them around",
+      "cue_zh": "把对手拉开，再找空档：一拍后场，一拍前场。",
+      "cue_en": "Stretch them first, then find the space: one deep, one short."
+    },
+    "space": {
+      "dist": 2.5,
+      "zh": "打空档",
+      "en": "Into the space",
+      "cue_zh": "打人不在的地方，不是打人站的地方。",
+      "cue_en": "Hit where they are not, not where they stand."
+    },
+    "transition": {
+      "margin": 0.2,
+      "depth": 5.0,
+      "zh": "被动过渡",
+      "en": "Buying time",
+      "cue_zh": "被动时先把球挑高挑远，争取回中心的时间。",
+      "cue_en": "Under pressure, lift high and deep to buy time to recover."
+    },
+    "risky": {
+      "depth": 5.0,
+      "margin": 0.25,
+      "zh": "冒险进攻",
+      "en": "Forcing it",
+      "cue_zh": "位置不好不硬杀：底线来不及时先打高远或吊球。",
+      "cue_en": "Don't force the smash off balance at the baseline: clear or drop instead."
+    },
+    "backhand": {
+      "depth": 4.5,
+      "x": 1.0,
+      "zh": "攻反手后场",
+      "en": "Backhand rear corner",
+      "cue_zh": "反手后场是多数业余选手最弱的地方，多往那里压。",
+      "cue_en": "The rear backhand corner is most club players' weakest spot: press it."
+    },
+    "smashNet": {
+      "zh": "杀后上网",
+      "en": "Smash and follow",
+      "cue_zh": "杀完别站着，跟上去封网，对手回过来的多半是网前球。",
+      "cue_en": "Don't admire the smash: follow it in, the reply usually comes short."
+    },
+    "unforced": {
+      "margin": 0.25
+    },
+    "footGood": {
+      "zh": "马来步",
+      "en": "Malaysian step",
+      "cue_zh": "头顶区时间够时用马来步：右脚先撤、再撤左脚起跳，转身用正手发力。",
+      "cue_en": "With time on a round-the-head ball, use the Malaysian step: right foot back, then left, jump and turn to hit on the forehand."
+    },
+    "footBad": {
+      "zh": "转身来不及",
+      "en": "No time to turn",
+      "cue_zh": "时间不够就别转身：用中国跳单脚起跳直接截击。",
+      "cue_en": "No time to turn? Don't: China-jump off one foot and intercept."
+    },
+    "footWaste": {
+      "zh": "多余的转身",
+      "en": "Unneeded turn",
+      "cue_zh": "正手后场用不着马来步，侧身直接打就好。",
+      "cue_en": "On the forehand rear corner you don't need the Malaysian step: just turn side-on and hit."
+    },
+    "footChina": {
+      "zh": "中国跳",
+      "en": "China jump",
+      "cue_zh": "中国跳不转身、击球点早，打完马上回中心。",
+      "cue_en": "The China jump doesn't turn and takes the shuttle early: recover straight after."
+    },
+    "footTired": {
+      "zh": "累了还在跳",
+      "en": "Jumping on tired legs",
+      "cue_zh": "腿累了先别跳：先用高远球过渡，落地不稳最容易伤膝盖和脚踝。",
+      "cue_en": "Tired legs: stop jumping, clear to buy time. Shaky landings are how knees and ankles get hurt."
+    }
   },
   "cues": {
-    "netClear": { "zh": "过网要留高度：吊球和放网瞄网带上方一拍的高度。", "en": "Give the net some room: aim drops and net shots a racket-length above the tape." },
-    "inside":   { "zh": "打深但别打出界：瞄底线以内半米、边线以内半米。", "en": "Deep but in: aim half a metre inside the baseline and the sideline." },
-    "shadow":   { "zh": "看影子判断落点，等球落到击球点再出手，不要追着球挥。", "en": "Read the shadow, wait for the shuttle to reach your hitting point; don't chase it with the racket." },
-    "base":     { "zh": "打完一拍先回中心，下一拍才来得及。", "en": "After every shot, get back to the centre first." }
+    "netClear": {
+      "zh": "过网要留高度：吊球和放网瞄网带上方一拍的高度。",
+      "en": "Give the net some room: aim drops and net shots a racket-length above the tape."
+    },
+    "inside": {
+      "zh": "打深但别打出界：瞄底线以内半米、边线以内半米。",
+      "en": "Deep but in: aim half a metre inside the baseline and the sideline."
+    },
+    "shadow": {
+      "zh": "看影子判断落点，等球落到击球点再出手，不要追着球挥。",
+      "en": "Read the shadow, wait for the shuttle to reach your hitting point; don't chase it with the racket."
+    },
+    "base": {
+      "zh": "打完一拍先回中心，下一拍才来得及。",
+      "en": "After every shot, get back to the centre first."
+    }
   },
   "findings": {
-    "unforced": { "zh": "{lost} 个失分里有 {n} 个是主动失误，多数是{shot}{why}。", "en": "{n} of your {lost} lost points were unforced errors, mostly {shot} {why}." },
-    "timing":   { "zh": "你的出手平均{dir}了 {ms} 毫秒。", "en": "On average you swung {ms} ms {dir}." },
-    "far":      { "zh": "有 {n} 分是被调动后够不到：对手把你拉开了。", "en": "{n} points were lost chasing: your opponent pulled you out of position." },
-    "spread":   { "zh": "落点太集中：{shots} 拍里只有 {n} 拍把对手拉开。", "en": "Too predictable: only {n} of {shots} shots moved your opponent." },
-    "good":     { "zh": "打得扎实：{w} 个制胜球，主动失误只有 {n} 个。", "en": "Solid: {w} winners and only {n} unforced errors." }
+    "unforced": {
+      "zh": "{lost} 个失分里有 {n} 个是主动失误，多数是{shot}{why}。",
+      "en": "{n} of your {lost} lost points were unforced errors, mostly {shot} {why}."
+    },
+    "timing": {
+      "zh": "你的出手平均{dir}了 {ms} 毫秒。",
+      "en": "On average you swung {ms} ms {dir}."
+    },
+    "far": {
+      "zh": "有 {n} 分是被调动后够不到：对手把你拉开了。",
+      "en": "{n} points were lost chasing: your opponent pulled you out of position."
+    },
+    "spread": {
+      "zh": "落点太集中：{shots} 拍里只有 {n} 拍把对手拉开。",
+      "en": "Too predictable: only {n} of {shots} shots moved your opponent."
+    },
+    "good": {
+      "zh": "打得扎实：{w} 个制胜球，主动失误只有 {n} 个。",
+      "en": "Solid: {w} winners and only {n} unforced errors."
+    },
+    "footBad": {
+      "zh": "有 {n} 次时间不够还在用马来步转身，回球质量掉了两档。",
+      "en": "{n} times you tried to turn for a Malaysian step without the time for it."
+    },
+    "footTired": {
+      "zh": "体力不够时跳了 {n} 次中国跳。",
+      "en": "{n} China jumps on tired legs."
+    }
   },
   "words": {
-    "net": { "zh": "下网", "en": "into the net" }, "out": { "zh": "出界", "en": "out" },
-    "early": { "zh": "早", "en": "early" }, "late": { "zh": "晚", "en": "late" }
+    "net": {
+      "zh": "下网",
+      "en": "into the net"
+    },
+    "out": {
+      "zh": "出界",
+      "en": "out"
+    },
+    "early": {
+      "zh": "早",
+      "en": "early"
+    },
+    "late": {
+      "zh": "晚",
+      "en": "late"
+    }
   }
 }

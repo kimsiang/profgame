@@ -36,6 +36,11 @@
   "netZone": 2.6,
   "netMargin": 0.22,
   "smashSpeed": 22,
+  "footwork": { "_comment": "rear-court footwork; see design-notes/v10.1. Times in s, distances in m.",
+    "rearDepth": 4.5, "headX": 0.3, "prepLead": 0.25, "malayMargin": 0.3, "malayPower": 1.15, "backhandPower": 0.85,
+    "chinaPower": 1.1, "chinaY": 0.45, "chinaReach": 0.25, "chinaEnergy": 2, "tiredEnergy": 40, "stumbleP": 0.3, "stumbleDelay": 0.2,
+    "zh": { "malay": "马来步", "china": "中国跳", "front": "前场用不着后场步法", "late": "来不及准备步法", "backhand": "反手头顶，质量降一档", "noTime": "转身来不及", "forehand": "正手后场用不着转身", "stumble": "落地不稳" },
+    "en": { "malay": "Malaysian step", "china": "China jump", "front": "No rear-court footwork at the front", "late": "Too late to set your feet", "backhand": "Backhand overhead: one grade down", "noTime": "No time to turn", "forehand": "No need to turn on the forehand side", "stumble": "Shaky landing" } },
   "opponents": {
     "aqiang": {
       "npc": "grad1", "name_zh": "阿强", "name_en": "Ah Qiang", "level_zh": "研究生会 · 业余", "level_en": "Grad union · casual",

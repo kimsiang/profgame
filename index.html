@@ -4794,10 +4794,11 @@ function bmScore() {
   const B = BM.m, m = B.core.m;
   $('bmScore').innerHTML = `<span>${m.server === 'P' ? '<span class="srv">●</span> ' : ''}你</span><b>${m.score.P}</b><span>:</span><b>${m.score.O}</b><span>${esc(B.O.name_zh)}${m.server === 'O' ? ' <span class="srv">●</span>' : ''}</span>`;
 }
+const core0 = () => BM.m.core;
 function bmHint() {
   const m = BM.m.core.m;
   $('bmHint').innerHTML = m.phase === 'serve' && m.server === 'P' ? '发球：上滑 / <span class="key">W</span> 高远球 · 下滑 / <span class="key">S</span> 网前球'
-    : '上滑 <span class="key">W</span> 高远 · 下滑 <span class="key">S</span> 吊球 · 斜滑 <span class="key">Q</span><span class="key">E</span><span class="key">Z</span><span class="key">C</span> 选左右角 · 左右 <span class="key">A</span><span class="key">D</span> 平抽 · 头顶点击 <span class="key">空格</span> 杀球';
+    : (core0().ring() && core0().ring().rear ? '后场球：按住再滑 / <span class="key">K</span> 马来步 · 双击再滑 / <span class="key">L</span> 中国跳 · ' : '') + '上滑 <span class="key">W</span> 高远 · 下滑 <span class="key">S</span> 吊球 · 斜滑 <span class="key">Q</span><span class="key">E</span><span class="key">Z</span><span class="key">C</span> 选左右角 · 左右 <span class="key">A</span><span class="key">D</span> 平抽 · 头顶点击 <span class="key">空格</span> 杀球';
 }
 function bmPop(text, cls, sec = 0.9) { const el = $('bmPop'); el.textContent = text; el.className = 'on ' + (cls || ''); BM.m.pop = sec; }
 function bmSwing(g) {
@@ -4805,21 +4806,43 @@ function bmSwing(g) {
   const r = B.core.swing(g); if (!r) return;
   const D = B.D;
   if (r.r === 'serve') { SFX.click(); bmHint(); return; }
-  if (D.quality[r.r]) { const lg = B.core.m.log[B.core.m.log.length - 1], tg = (lg && lg.tags || []).map(t => D.tactics && D.tactics.rules[t] ? D.tactics.rules[t].zh : '').filter(Boolean)[0]; bmPop(`${D.quality[r.r].label_zh} ${D.shots[r.shot].zh}${tg ? ' · ' + tg : ''}`, r.r === 'perfect' ? 'good' : (lg && lg.tags.includes('risky') ? 'bad' : '')); SFX[r.r === 'perfect' ? 'good' : 'click'](); }
+  if (r.foot || r.footNote) B.jump = { t: 0, foot: r.foot, note: r.footNote };
+  if (D.quality[r.r]) { const lg = B.core.m.log[B.core.m.log.length - 1], tg = (lg && lg.tags || []).map(t => D.tactics && D.tactics.rules[t] ? D.tactics.rules[t].zh : '').filter(Boolean)[0]; bmPop(`${D.quality[r.r].label_zh} ${D.shots[r.shot].zh}${tg ? ' · ' + tg : ''}${r.footNote && D.footwork.zh[r.footNote] ? ' · ' + D.footwork.zh[r.footNote] : ''}`, r.r === 'perfect' ? 'good' : (lg && lg.tags.includes('risky') ? 'bad' : '')); SFX[r.r === 'perfect' ? 'good' : 'click'](); }
   else { bmPop(D.misses[r.r].zh, 'bad'); SFX.bad(); }
 }
+function bmPrep(foot) {
+  const B = BM.m; if (!B) return;
+  const r = B.core.prep(foot), FWT = B.D.footwork.zh; if (!r) return;
+  if (r.r === 'ok') { bmPop(FWT[foot] + ' · 准备', '', 0.7); SFX.tick(); } else bmPop(FWT[r.r], 'bad', 0.8);
+}
 function bmKey(e) {
+  if (e.code === 'KeyK' && !e.repeat) { e.preventDefault(); return bmPrep('malay'); }
+  if (e.code === 'KeyL' && !e.repeat) { e.preventDefault(); return bmPrep('china'); }
   const map = { KeyW: 'up', ArrowUp: 'up', KeyS: 'down', ArrowDown: 'down', KeyA: 'left', ArrowLeft: 'left', KeyD: 'right', ArrowRight: 'right', Space: 'tap', KeyJ: 'tap', KeyQ: 'upleft', KeyE: 'upright', KeyZ: 'downleft', KeyC: 'downright' };
   if (map[e.code]) { e.preventDefault(); if (!e.repeat) bmSwing(map[e.code]); }
   else if (e.code === 'Escape') bmEnd(false);
 }
 (() => {
   const el = $('bm'); let down = null;
-  el.addEventListener('pointerdown', (e) => { if (e.target.closest('button')) return; down = { x: e.clientX, y: e.clientY, id: e.pointerId }; el.setPointerCapture(e.pointerId); e.preventDefault(); });
+  let lastTap = 0;
+  el.addEventListener('pointerdown', (e) => {
+    if (e.target.closest('button')) return;
+    down = { x: e.clientX, y: e.clientY, id: e.pointerId, t: performance.now(), moved: false };
+    // Hold still ≥ 0.22 s before swiping = 马来步 (turn and set the feet first).
+    const d0 = down; setTimeout(() => { if (down === d0 && !d0.moved) { d0.held = true; bmPrep('malay'); } }, 220);
+    el.setPointerCapture(e.pointerId); e.preventDefault();
+  });
+  el.addEventListener('pointermove', (e) => { if (down && down.id === e.pointerId && Math.hypot(e.clientX - down.x, e.clientY - down.y) >= 24) down.moved = true; });
   el.addEventListener('pointerup', (e) => {
     if (!down || down.id !== e.pointerId) return;
-    const dx = e.clientX - down.x, dy = e.clientY - down.y; down = null;
-    if (Math.hypot(dx, dy) < 24) return bmSwing('tap');
+    const dx = e.clientX - down.x, dy = e.clientY - down.y, d0held = !!down.held; down = null;
+    if (Math.hypot(dx, dy) < 24) {
+      if (d0held) return;   // a hold without a swipe only sets the feet
+      // Double tap = 中国跳: the first tap is ignored by the core when the shuttle is still far.
+      const now = performance.now(), B = BM.m, rg = B && B.core.ring();
+      if (rg && rg.rear && now - lastTap < 350 && rg.left > B.D.footwork.prepLead) { lastTap = 0; return bmPrep('china'); }
+      lastTap = now; return bmSwing('tap');
+    }
     // Eight 45° sectors, screen up = -y.
     const a = Math.atan2(-dy, dx) * 180 / Math.PI, i = ((Math.round(a / 45) % 8) + 8) % 8;
     bmSwing(['right', 'upright', 'up', 'upleft', 'left', 'downleft', 'down', 'downright'][i]);
@@ -4836,10 +4859,18 @@ function bmFrame(dt) {
   player.position.set(P.x, 0, P.z); player.rotation.y = Math.PI; player.userData.state = st(P); player.userData.seated = false; player.visible = true;
   if (B.npc) { B.npc.position.set(Oc.x, 0, Oc.z); B.npc.rotation.y = 0; B.npc.userData.state = st(Oc); }
   playerRing.visible = false;
+  if (B.jump) {   // 中国跳: straight up, no turn. 马来步: quarter turn toward the backhand side, then a lower jump.
+    const j = B.jump; j.t += dt; const u = Math.min(1, j.t / 0.5), arc = Math.sin(Math.PI * u);
+    if (j.foot === 'china') player.position.y = 0.5 * arc;
+    else if (j.foot === 'malay') { player.position.y = 0.3 * arc; player.rotation.y = Math.PI + Math.PI / 2 * arc; }
+    else if (j.note === 'stumble') player.position.y = 0;
+    if (u >= 1) B.jump = null;
+  }
   const p = core.pos(), sh = B.sh;
   if (p) { sh.visible = true; sh.position.set(p.x, Math.max(0.03, p.y), p.z); if (p.y > 0.02) sh.lookAt(_bmV.set(p.x + p.vx, p.y + p.vy, p.z + p.vz)); }
   else { const s = m.ch[m.server]; sh.visible = true; sh.position.set(s.x + 0.25, 1.0, s.z - (m.server === 'P' ? 0.35 : -0.35)); sh.rotation.set(Math.PI / 2, 0, 0); }
   bmVisuals(dt, p);
+  { const rr = !!(core.ring() && core.ring().rear); if (rr !== B.rearHint) { B.rearHint = rr; bmHint(); } }
   for (const ev of evs) {
     if (ev.type === 'hit' && ev.q === 'perfect') { const q = core.pos(); if (q) burst(q.x, q.y, q.z, ev.side === 'P' ? [0.6, 2.4, 1.3] : [2.2, 1.6, 0.6], 18, 1.8); }
     if (ev.type === 'point') { const l = m.fl && m.fl.land; if (l) { const fx = BM.fx; fx.mark.position.x = l.x; fx.mark.position.z = l.z; fx.mark.material.color.copy(ev.why === 'in' ? BM_COL.green : BM_COL.red); fx.markT = 1.6; } }
@@ -4908,7 +4939,7 @@ function bmReviewHTML(B, done) {
   const ms = n.meanMs === 0 ? '准' : `${n.meanMs < 0 ? '早' : '晚'} ${Math.abs(n.meanMs)} ms`;
   return title + `<div class="bmRev">${bmCourtSVG(R.dots, B.D.court.cx)}<div style="min-width:0">
     <div class="head">${esc(R.headline)}</div>
-    <div class="num"><span>制胜球</span><b>${n.winners}</b><span>主动失误</span><b>${n.unforced}</b><span>被动失误</span><b>${n.forced}</b><span>时机失误（早/晚）</span><b>${n.timingMiss}</b><span>被调动够不到</span><b>${n.far}</b><span>出手平均偏差</span><b>${ms}</b><span>稳定度（±）</span><b>${n.sdMs} ms</b><span>最长回合</span><b>${n.longest} 拍</b></div>
+    <div class="num"><span>制胜球</span><b>${n.winners}</b><span>主动失误</span><b>${n.unforced}</b><span>被动失误</span><b>${n.forced}</b><span>时机失误（早/晚）</span><b>${n.timingMiss}</b><span>被调动够不到</span><b>${n.far}</b><span>出手平均偏差</span><b>${ms}</b><span>稳定度（±）</span><b>${n.sdMs} ms</b><span>最长回合</span><b>${n.longest} 拍</b><span>马来步 / 中国跳</span><b>${n.malay} / ${n.china}</b></div>
     ${R.cues.map(c => `<div class="cue">${esc(c.text)}</div>`).join('')}
     <div class="lg"><i style="background:#3DDC97"></i>你的得分球<i style="background:#ff6b5e"></i>你的失误<i style="background:#00A9F4"></i>你的来回球<i style="background:#FFB547"></i>对手得分球</div>${trend}
   </div></div>`;
@@ -4934,6 +4965,7 @@ function bmEnd(done) {
   $('bmGo').onclick = () => {
     box.className = 'panel hidden'; document.body.classList.remove('bm'); $('bm').classList.add('hidden'); S.paused = wasPaused;
     toast(`${w ? '赢了' : '输了'} ${m.score.P}:${m.score.O} · ${(w ? B.O.lines.win_zh : B.O.lines.lose_zh)}`, w ? 'good' : '');
+    if (m.chinaUses) S.v.energy = clamp(S.v.energy - B.D.footwork.chinaEnergy * m.chinaUses);   // jumping costs legs
     ACT.badminton(30);
   };
   $('bmGo').focus({ preventScroll: true });
