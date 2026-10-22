@@ -1,0 +1,47 @@
+grinder #1: 22.7 s
+grinder #2: 20.6 s
+grinder #3: 19.9 s
+grinder #4: 22.9 s
+grinder #5: 19.3 s
+mentor #1: 55.5 s
+mentor #2: 52.7 s
+mentor #3: 52.0 s
+mentor #4: 55.4 s
+mentor #5: 52.5 s
+balanced #1: 47.9 s
+balanced #2: 50.4 s
+balanced #3: 48.6 s
+balanced #4: 47.5 s
+balanced #5: 48.3 s
+random #1: 27.1 s
+random #2: 29.3 s
+random #3: 33.3 s
+random #4: 37.9 s
+random #5: 38.9 s
+metric                          grinder     mentor      balanced    random    
+------------------------------  ----------  ----------  ----------  ----------
+weeks played                    50          50          50          50        
+grades S/A/B/C/D                0/0/0/0/50  50/0/0/0/0  50/0/0/0/0  0/0/0/0/50
+median grade                    D           S           S           D         
+median score                    39          97          97          33        
+grant submitted                 100%        100%        100%        100%      
+grant funded                    90%         100%        100%        52%       
+paper accepted as is            0%          0%          0%          0%        
+Sunday wellbeing (median)       0           97          100         99        
+weeks ending wellbeing < 40     100%        0%          0%          0%        
+collapses / week                0           0           0           0         
+avg student trust (median)      0           98          86          0         
+weeks with a student lost       100%        0%          0%          100%      
+home nights (avg)               0           7           7           6         
+lowest family meter (median)    0           100         100         51        
+cash > 0 at month end           100%        100%        100%        100%      
+consequential choices / day     1.2         16.3        14.3        1.9       
+events handled                  6%          67%         59%         13%       
+companions / week (avg)         0           11.4        7.6         2.8       
+table talks / week (avg)        0           1.3         1.3         0.5       
+first day energy < 30 (median)  0           0           —           —         
+rank reached (max)              2           3           3           2         
+
+dominant-strategy test: pass (no policy beats balanced on both median score and wellbeing)
+--- console ---
+
