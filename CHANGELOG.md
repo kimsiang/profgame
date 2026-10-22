@@ -1,5 +1,13 @@
 # Changelog
 
+## v10.3 — Badminton you can watch (2026-10-22)
+Presentation pass modelled on a broadcast-style badminton game (reference video from Kim). Rules, timing and balance are unchanged.
+- **Same gym, new camera.** Matches are still on court 2 of the gym, now rebuilt for a camera behind your baseline: window walls, courts 1 and 3 still in play beside you, the umpire's chair. Friday's 物理 vs 化学 fills a bleacher behind the far court with a cheering crowd, boards, banners and a live scoreboard.
+- **Rackets and strokes.** Both players hold a racket and actually swing it: wind-up as the shuttle comes, overhead / side / underarm strokes by contact height, follow-through. Players are 1.2× bigger in matches.
+- **Hit effects.** A flash ring at each contact, a floating label over the hitter ("杀球 184 km/h · 好球", "完美 高远球 · 拉吊四角"), a glowing trail, a yellow ring where you are running to. A perfect smash freezes for a beat, shakes the camera and throws speed lines. Racket sounds; the Friday crowd reacts to points.
+- **HUD.** Score as two pills (the leader outlined); the timing ring is tighter for the closer camera.
+- Tests: `tools/e2e/bm_venue.mjs`, `bm_fx.mjs` (steps the match in-page; headless WebGL is ~1 fps), `bm_mobile.mjs`, `bm_restore.mjs`, `swing.mjs`.
+
 ## v10.2 — Save and load (2026-10-22)
 - **Resume where you stopped.** Besides the saves at the start and end of each day, the game now autosaves the day in progress every 20 seconds and whenever the tab is hidden or closed. "继续" on the title page brings you back to the same day, time, floor and spot, with the same events open, done or missed (before, it restarted the day at 08:00). Mid-dialog moments and badminton matches are not saved; the last save before them is used. Work you were doing (writing, a lecture) stops on load, its progress kept.
 - **Three save slots** (存档 button in the top bar, or O): save, overwrite, load, delete. Loading a slot also restores the career it was saved with.

@@ -11,6 +11,7 @@ Living summary of the systems in the build. Full design notes (goal, player expe
 | v9 | Money | `FIN`, `FIN_EVENTS` | `finSettle`, `financeEvents`, `finFlag`, `finPlannerRow` |
 | v10.2 | Saves: autosave mid-day, 3 slots, export/import | `SAVE_KEY`, `SLOT_KEYS`, `PERSIST`, `SNAP_SKIP` | `saveGame(mid)`, `savePayload`, `continueGame`, `resumeMid`, `renderSaveSheet`, `exportSaves`, `importSaves` |
 | v10 / v10.1 | Badminton: match, footwork, tactics, review, drills | `assets/data/badminton.json`, `badminton-tactics.json`, `badminton-drills.json` | core `assets/js/badminton.js` (`BMCore`, `BMCore.review`, `BMCore.drillReview`); UI in `index.html` (`bmOffer`, `bmStart`, `bmFrame`, `bmVisuals`, `bmEnd`, `quickMenu`, `drillEnd`) |
+| v10.3 | Badminton presentation: match venue, broadcast camera, rackets and strokes, hit effects | `assets/data/badminton.json` (`venue`) | venue `assets/js/bm-venue.js` (`BMVenue.build`); UI in `index.html` (`bmVenueOn/Off`, `bmPoseArms`, `bmRig`, `bmLabel`, `bmFlash`, `bmThock`) |
 
 ## v9 Money — rules in one place
 - 1 game week = 1 financial month; statement at Sunday 23:59 (`finSettle`).
@@ -48,6 +49,13 @@ Living summary of the systems in the build. Full design notes (goal, player expe
 | 阿杰 | 45% | 39% | 25% | 13% |
 
 Games last about 2 minutes (84–138 s). Energy 95 vs 25 is a 32–59 point swing in win rate, which meets the design target of 25–40 points for 小吴 and 阿杰 and exceeds it for 阿强.
+
+## v10.3 Badminton presentation — how it works
+- **Same gym, rebuilt for the camera.** While a match is on (and on the quick-play menu), the gym zone is hidden and `BMVenue` shows court 2 of the same gym at the same world coordinates: window walls on three sides, courts 1 and 3 still in use (their players and shuttles are borrowed from the zone and returned), umpire's chair, benches. Friday's 物理 vs 化学 adds bleachers with a crowd, boards, banners and a live scoreboard (`setEvent`). No ceiling: the camera sits above the roof line, as in the diorama view.
+- **Broadcast camera.** Behind the player's baseline, 46° lens (40° in portrait), framing fitted to the reference video (far baseline ≈ 30 % from the top, net ≈ 45 %, near baseline ≈ 92 %); drifts 30 % with the player; cuts rather than flies in. Fixed afternoon light and a punchier grade in the venue; bloom held back so the floor does not haze.
+- **Players.** 1.2× during matches; a racket in the right hand; arms posed over the clip each frame by world-space aiming of upper arm, forearm and the free arm: wind-up as the shuttle comes in (type from predicted contact height), stroke at contact, follow-through, release. Overhead > 1.75 m, underarm < 0.95 m and serves, side otherwise. The GLB hand prop (a book) is scaled away.
+- **Feedback.** Contact flash ring; floating label over the hitter (your quality, shot, tactic tag, footwork; smashes show km/h from launch speed); ribbon trail (amber at smash speed); yellow ring at your run target. Perfect smash: 70 ms hit-stop, shake, speed lines. Central pop text is kept for misses, points and match messages.
+- **Rules untouched.** `badminton.js` is unchanged; balance numbers below still hold.
 
 ## v10.2 Saves — how a mid-day save works
 - Day boundaries store `PERSIST` only (as before). During a day, `saveGame(true)` also stores `mid`: the whole state minus 3D objects, dialogs and activities (`SNAP_SKIP`), the zone and the player's position, and `dayBase` (the state captured at the start of the day, before its events were built).
