@@ -1,9 +1,15 @@
 # Changelog
 
+## v10.1-step5 — Badminton training (2026-10-22)
+- "直接打一局羽毛球" on the title page now opens a small menu in the gym: play 阿强 or 小吴, or train. Nothing here touches the career save.
+- **后场头顶区 (round-the-head corner)**: 10 feeds to your rear backhand corner, high-and-slow or flat-and-fast in a fixed mix. Points for a return that lands in (3/2/1 by timing) plus 2 for the right footwork: 马来步 on the slow ones, 中国跳 on the fast ones. The Malaysian step now needs 0.75 s to spare, so it genuinely fails on the fast feeds.
+- **接杀 (smash defence)**: 10 smashes to your left, right and body. Points for getting it back in, plus 1 for a block to the net or a lift to the back.
+- After each set: score, ball-by-ball marks, footwork choices, average timing offset, one tip from `assets/data/badminton-drills.json`, and your best score (kept in this browser).
+
 ## v10.1-step4 — Rear-court footwork: 马来步 and 中国跳 (2026-10-22)
 Definitions follow the VICTOR coaching article (Sohu, 2020): the difference is whether the body turns.
 - **Default (并步)**: a round-the-head ball on your backhand side drops one grade and smashes softer.
-- **马来步 (Malaysian step)**: hold your finger still for a moment, then swipe (keyboard: K, then the shot). You turn and take the round-the-head ball on the forehand: no downgrade, smash +15%. It needs time: with less than 0.3 s to spare, "转身来不及" and the shot drops two grades. On the forehand rear corner the turn is wasted.
+- **马来步 (Malaysian step)**: hold your finger still for a moment, then swipe (keyboard: K, then the shot). You turn and take the round-the-head ball on the forehand: no downgrade, smash +15%. It needs time: with less than 0.75 s to spare, "转身来不及" and the shot drops two grades. On the forehand rear corner the turn is wasted.
 - **中国跳 (China jump)**: double-tap, then swipe (keyboard: L). No turn, one-foot take-off: you meet the shuttle earlier and higher (the ring re-plans), smash +10%. Each jump costs 2 energy; below 40 energy a landing can go wrong (30%) and you react late on the next ball.
 - You have to set your feet at least 0.25 s before contact, and only for rear-court balls; the hint line tells you when one is coming.
 - Animation: the China jump goes straight up, the Malaysian step turns a quarter toward the backhand and jumps lower.

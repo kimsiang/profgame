@@ -4771,31 +4771,34 @@ function bmFx() {
   return (BM.fx = { ring, inner, outer, shadow, mark, trail, N, pos, n: 0, markT: 0 });
 }
 const BM_COL = { green: new THREE.Color('#3DDC97').multiplyScalar(1.6), amber: new THREE.Color('#FFB547').multiplyScalar(1.4), white: new THREE.Color('#ffffff'), red: new THREE.Color('#ff6b5e').multiplyScalar(1.3), smash: new THREE.Color('#FFB547').multiplyScalar(1.8) };
-async function bmStart(opp) {
+async function bmStart(opp, drillId) {
   if (!window.BMCore) { toast('羽毛球脚本没加载上，先按原来的方式打。'); return ACT.badminton(30); }
-  if (!BM.data) { try { const r = await fetch('assets/data/badminton.json'); if (!r.ok) throw 0; const d = await r.json(); try { const t = await fetch('assets/data/badminton-tactics.json'); if (t.ok) d.tactics = await t.json(); } catch (e) { /* review falls back to plain numbers */ } BM.data = d; } catch (e) { toast('球场数据没加载上，先按原来的方式打。'); return ACT.badminton(30); } }
+  if (!BM.data) { try { const r = await fetch('assets/data/badminton.json'); if (!r.ok) throw 0; const d = await r.json(); try { const t = await fetch('assets/data/badminton-tactics.json'); if (t.ok) d.tactics = await t.json(); } catch (e) { /* review falls back to plain numbers */ } try { const t = await fetch('assets/data/badminton-drills.json'); if (t.ok) d.drills = (await t.json()).drills; } catch (e) { /* no drills */ } BM.data = d; } catch (e) { toast('球场数据没加载上，先按原来的方式打。'); return ACT.badminton(30); } }
   const D = BM.data, O = D.opponents[opp], npc = NPC[O.npc];
-  const core = BMCore(D, { opp, energy: S.v.energy });
+  const drill = drillId && D.drills ? D.drills[drillId] : null;
+  const core = BMCore(D, { opp, energy: S.v.energy, drill });
   const decor = Z.balls.filter(b => b.kind === 'shuttle' && b.from[0] === 20);
   decor.forEach(b => { b.m.visible = false; });
   const sh = bmShuttle(); Z.group.add(sh);
   const fx = bmFx(); Z.group.add(fx.ring, fx.shadow, fx.mark, fx.trail); fx.n = 0; fx.markT = 0; fx.mark.material.opacity = 0; fx.ring.visible = false;
-  BM.m = { core, D, O, opp, npc, sh, decor, npcHome: npc ? npc.position.clone() : null, npcRot: npc ? npc.rotation.y : 0, npcVis: npc ? npc.visible : true, pop: 0 };
+  BM.m = { core, D, O, opp, drillId: drill ? drillId : null, drill, npc, sh, decor, npcHome: npc ? npc.position.clone() : null, npcRot: npc ? npc.rotation.y : 0, npcVis: npc ? npc.visible : true, pop: 0 };
   if (npc) npc.visible = true;
   const aq = NPC.grad1; if (aq && npc !== aq) { BM.m.aqHome = aq.position.clone(); BM.m.aqRot = aq.rotation.y; aq.position.set(24.3, 0, 11.5); face(aq, 20, 13); }
   $('bmEndBox').classList.add('hidden'); $('bmQuit').classList.remove('hidden');
   S.path = []; S.autoTarget = null; S.moving = false;
   document.body.classList.add('bm'); $('bm').classList.remove('hidden');
-  bmPop(O.lines.intro_zh.split('：').slice(1).join('：') || '', '', 2.2);
-  bmScore(); bmHint();
+  if (drill) bmPop('训练 · ' + drill.zh, '', 1.6); else bmPop(O.lines.intro_zh.split('：').slice(1).join('：') || '', '', 2.2);
+  bmScore(); bmHint(); if (drill) { $('bmHint').textContent = drill.intro_zh; BM.m.introT = 6; }
   SFX.click();
 }
 function bmScore() {
   const B = BM.m, m = B.core.m;
+  if (B.drill) { $('bmScore').innerHTML = `<span>${esc(B.drill.zh)}</span><span>第</span><b>${Math.min(B.drill.balls, m.drill.i + (m.phase === 'rally' ? 1 : 0))}</b><span>/ ${B.drill.balls} 球 · 得分</span><b>${m.drill.score}</b>`; return; }
   $('bmScore').innerHTML = `<span>${m.server === 'P' ? '<span class="srv">●</span> ' : ''}你</span><b>${m.score.P}</b><span>:</span><b>${m.score.O}</b><span>${esc(B.O.name_zh)}${m.server === 'O' ? ' <span class="srv">●</span>' : ''}</span>`;
 }
 const core0 = () => BM.m.core;
 function bmHint() {
+  if (BM.m.introT > 0) return;
   const m = BM.m.core.m;
   $('bmHint').innerHTML = m.phase === 'serve' && m.server === 'P' ? '发球：上滑 / <span class="key">W</span> 高远球 · 下滑 / <span class="key">S</span> 网前球'
     : (core0().ring() && core0().ring().rear ? '后场球：按住再滑 / <span class="key">K</span> 马来步 · 双击再滑 / <span class="key">L</span> 中国跳 · ' : '') + '上滑 <span class="key">W</span> 高远 · 下滑 <span class="key">S</span> 吊球 · 斜滑 <span class="key">Q</span><span class="key">E</span><span class="key">Z</span><span class="key">C</span> 选左右角 · 左右 <span class="key">A</span><span class="key">D</span> 平抽 · 头顶点击 <span class="key">空格</span> 杀球';
@@ -4868,7 +4871,7 @@ function bmFrame(dt) {
   }
   const p = core.pos(), sh = B.sh;
   if (p) { sh.visible = true; sh.position.set(p.x, Math.max(0.03, p.y), p.z); if (p.y > 0.02) sh.lookAt(_bmV.set(p.x + p.vx, p.y + p.vy, p.z + p.vz)); }
-  else { const s = m.ch[m.server]; sh.visible = true; sh.position.set(s.x + 0.25, 1.0, s.z - (m.server === 'P' ? 0.35 : -0.35)); sh.rotation.set(Math.PI / 2, 0, 0); }
+  else { const who = m.drill ? 'O' : m.server, s = m.ch[who]; sh.visible = true; sh.position.set(s.x + 0.25, 1.0, s.z - (who === 'P' ? 0.35 : -0.35)); sh.rotation.set(Math.PI / 2, 0, 0); }
   bmVisuals(dt, p);
   { const rr = !!(core.ring() && core.ring().rear); if (rr !== B.rearHint) { B.rearHint = rr; bmHint(); } }
   for (const ev of evs) {
@@ -4879,10 +4882,14 @@ function bmFrame(dt) {
     if (ev.type === 'miss' && ev.side === 'P') { if (ev.why === 'leave') bmPop(B.D.misses.leave.zh, 'good'); else if (ev.why !== 'early') { bmPop(B.D.misses[ev.why].zh, 'bad'); SFX.bad(); } }
     if (ev.type === 'point') { bmScore(); const why = { net: '下网', out: '出界', in: '界内' }[ev.why]; bmPop(`${ev.winner === 'P' ? '得分' : '失分'} · ${why}`, ev.winner === 'P' ? 'good' : 'bad', 1.3); (ev.winner === 'P' ? SFX.good : SFX.bad)(); }
     if (ev.type === 'serveReady') bmHint();
+    if (ev.type === 'feed') bmScore();
+    if (ev.type === 'drillBall') { const r = ev.res; bmScore(); if (r.ok) { bmPop(`+${r.pts}${r.foot ? ' · ' + B.D.footwork.zh[r.foot] : ''}`, r.pts >= 4 ? 'good' : '', 1.0); SFX.good(); } else { bmPop({ net: '下网', out: '出界', early: '早了', late: '晚了', far: '够不到', miss: '没接到', leave: '没接' }[r.why] || '没接到', 'bad', 1.0); SFX.bad(); } }
+    if (ev.type === 'over' && ev.drill) { bmPop(`训练结束 · ${m.drill.score} 分`, 'good', 2); B.overT = 1.8; continue; }
     if (ev.type === 'over') { const w = ev.winner === 'P'; player.userData.state = w ? 'celebrate' : 'disappointed'; if (B.npc) B.npc.userData.state = w ? 'disappointed' : 'celebrate'; bmPop(w ? `赢了 ${m.score.P}:${m.score.O}！` : `输了 ${m.score.P}:${m.score.O}`, w ? 'good' : 'bad', 3); B.overT = 2.4; }
   }
+  if (B.introT > 0) { B.introT -= dt; if (B.introT <= 0) bmHint(); }
   if (B.pop > 0) { B.pop -= dt; if (B.pop <= 0) $('bmPop').classList.remove('on'); }
-  if (B.overT != null) { if (m.phase === 'over') { player.userData.state = m.winner === 'P' ? 'celebrate' : 'disappointed'; if (B.npc) B.npc.userData.state = m.winner === 'P' ? 'disappointed' : 'celebrate'; } B.overT -= dt; if (B.overT <= 0) bmEnd(true); }
+  if (B.overT != null) { if (m.phase === 'over' && !B.drill) { player.userData.state = m.winner === 'P' ? 'celebrate' : 'disappointed'; if (B.npc) B.npc.userData.state = m.winner === 'P' ? 'disappointed' : 'celebrate'; } B.overT -= dt; if (B.overT <= 0) bmEnd(true); }
 }
 function bmVisuals(dt, p) {
   const B = BM.m, core = B.core, m = core.m, fx = BM.fx, rg = core.ring();
@@ -4971,7 +4978,32 @@ function bmEnd(done) {
   $('bmGo').focus({ preventScroll: true });
 }
 /* Quick play from the title page: one match in the gym, no career, nothing saved. */
-function quickBadminton(opp = 'aqiang') {
+const BM_BEST = 'prof-bm-drill-best-v1';
+function bmBest(id, score) {
+  let b = {}; try { b = JSON.parse(localStorage.getItem(BM_BEST) || '{}'); } catch (e) { b = {}; }
+  if (score != null && score > (b[id] || 0)) { b[id] = score; try { localStorage.setItem(BM_BEST, JSON.stringify(b)); } catch (e) { /* storage blocked */ } }
+  return b[id] || 0;
+}
+// Title page → gym, then a small menu: two opponents and two drills.
+function quickMenu() { quickBadminton(null); }
+function showQuickMenu() {
+  S.running = false;
+  document.body.classList.add('bm'); $('bm').classList.remove('hidden'); $('bmQuit').classList.add('hidden');
+  $('bmScore').innerHTML = '<span>体育馆 · 2 号场</span>'; $('bmHint').textContent = '快速对局和训练都不影响职业生涯存档。';
+  const box = $('bmEndBox'); box.className = 'panel';
+  box.innerHTML = `<h3>打一局，还是练一练？</h3>
+    <button class="btn gold" type="button" data-o="aqiang">对阿强 · 研究生 · 业余</button>
+    <button class="btn" type="button" data-o="wu">对小吴 · 化学系博士后 · 校队</button>
+    <p style="margin-top:6px">训练 · 每组 10 球</p>
+    <button class="btn" type="button" data-d="rearHead">后场头顶区 · 马来步还是中国跳${bmBest('rearHead') ? ` · 最好 ${bmBest('rearHead')} 分` : ''}</button>
+    <button class="btn" type="button" data-d="defense">接杀 · 挡网前或挑后场${bmBest('defense') ? ` · 最好 ${bmBest('defense')} 分` : ''}</button>
+    <button class="btn ghost" type="button" id="bmHome">回首页</button>`;
+  box.querySelectorAll('[data-o]').forEach(b => { b.onclick = () => quickBadminton(b.dataset.o); });
+  box.querySelectorAll('[data-d]').forEach(b => { b.onclick = () => quickBadminton('aqiang', b.dataset.d); });
+  $('bmHome').onclick = quickHome;
+}
+function quickHome() { fadeTo(() => { $('bmEndBox').className = 'panel hidden'; document.body.classList.remove('bm'); $('bm').classList.add('hidden'); S = null; if (player) player.visible = false; setZone('f5'); camState.orbit = 0.0001; show('scrTitle'); }); }
+function quickBadminton(opp = 'aqiang', drillId) {
   ensureAudio(); if (actx && actx.state === 'suspended') actx.resume();
   fadeTo(() => {
     if (!S || !S.quick) { S = newState(freshCareer()); S.quick = true; }
@@ -4979,12 +5011,15 @@ function quickBadminton(opp = 'aqiang') {
     setZone('gym'); if (!player || !player.parent) makePlayer(setup.avatar === 'f'); player.visible = true;
     camState.orbit = 0; camState.overview = false; camState.wantAz = camState.az = 0; camState.target.set(20, 0, 14);
     show(null); $('hud').classList.add('hidden');
-    bmStart(opp);
+    $('bmEndBox').className = 'panel hidden';
+    if (!opp) return showQuickMenu();
+    bmStart(opp, drillId);
   });
 }
 function quickEnd(B, done) {
   const m = B.core.m, w = done && m.winner === 'P', st = m.stats;
   S.running = false;
+  if (B.drill) return drillEnd(B, done);
   document.body.classList.add('bm'); $('bm').classList.remove('hidden'); $('bmQuit').classList.add('hidden');
   $('bmScore').innerHTML = `<span>你</span><b>${m.score.P}</b><span>:</span><b>${m.score.O}</b><span>${esc(B.O.name_zh)}</span>`;
   $('bmHint').textContent = '这是快速对局，不影响职业生涯存档。';
@@ -4993,11 +5028,28 @@ function quickEnd(B, done) {
   box.innerHTML = bmReviewHTML(B, done) + `
     <button class="btn gold" type="button" data-o="${B.opp}">再来一局</button>
     <button class="btn" type="button" data-o="${B.opp === 'wu' ? 'aqiang' : 'wu'}">${B.opp === 'wu' ? '换阿强（研究生 · 业余）' : '挑战小吴（化学系博士后 · 校队）'}</button>
-    <button class="btn ghost" type="button" id="bmHome">回首页</button>`;
+    <button class="btn ghost" type="button" id="bmMenu">回菜单</button><button class="btn ghost" type="button" id="bmHome">回首页</button>`;
   box.classList.remove('hidden');
   box.querySelectorAll('[data-o]').forEach(b => { b.onclick = () => { box.classList.add('hidden'); quickBadminton(b.dataset.o); }; });
+  $('bmMenu').onclick = showQuickMenu;
   $('bmHome').onclick = () => fadeTo(() => { box.classList.add('hidden'); document.body.classList.remove('bm'); $('bm').classList.add('hidden'); S = null; if (player) player.visible = false; setZone('f5'); camState.orbit = 0.0001; show('scrTitle'); });
 }
+function drillEnd(B, done) {
+  const m = B.core.m, R = BMCore.drillReview(m, 'zh'), id = B.drillId, prev = bmBest(id), best = done ? bmBest(id, R.score) : prev;
+  document.body.classList.add('bm'); $('bm').classList.remove('hidden'); $('bmQuit').classList.add('hidden');
+  bmScoreStatic(`<span>${esc(B.drill.zh)}</span><b>${R.score}</b><span>/ ${R.max} 分</span>`);
+  $('bmHint').textContent = '训练不影响职业生涯存档。';
+  const box = $('bmEndBox'); box.className = 'panel';
+  const dots = m.drill.results.map(r => `<span title="${r.tag}" style="display:inline-block;width:22px;text-align:center;font-weight:800;color:${r.ok ? (r.pts >= 4 ? '#3DDC97' : '#CDEEFF') : '#ff6b5e'}">${r.ok ? r.pts : '×'}</span>`).join('');
+  box.innerHTML = `<h3>${done ? '训练完成' : '没练完'} · ${esc(B.drill.zh)}</h3>
+    <p>${R.ok} / ${R.balls} 球回到界内${R.right != null ? ` · 步法选对 ${R.right} 次` : ''}${R.meanMs ? ` · 出手平均${R.meanMs < 0 ? '早' : '晚'} ${Math.abs(R.meanMs)} ms` : ''}<br>${done && R.score > prev && prev ? '新纪录！' : ''}最好成绩 ${best} 分</p>
+    <div style="font-family:var(--mono,monospace);font-size:14px">${dots}</div>
+    <div class="cue" style="text-align:left;border-left:2px solid #00A9F4;padding-left:10px;font-size:13px;color:#CDEEFF;line-height:1.6">${esc(R.tip)}</div>
+    <button class="btn gold" type="button" id="bmAgain">再练一组</button><button class="btn ghost" type="button" id="bmMenu">回菜单</button><button class="btn ghost" type="button" id="bmHome">回首页</button>`;
+  box.classList.remove('hidden');
+  $('bmAgain').onclick = () => quickBadminton('aqiang', id); $('bmMenu').onclick = showQuickMenu; $('bmHome').onclick = quickHome;
+}
+function bmScoreStatic(html) { $('bmScore').innerHTML = html; }
 /* ---------------- interaction targets ---------------- */
 function amenityAt(x, z) {
   const near = (h, r = 1.25) => (HS[h].zone || 'f5') === Z.id && Math.hypot(HS[h].x - x, HS[h].z - z) < r;
@@ -6091,7 +6143,7 @@ $('dlgLog').addEventListener('click', () => { if (S && S.dialog) S.dialog.typing
   });
   el.addEventListener('wheel', (e) => { e.preventDefault(); camState.followDist = clamp(camState.followDist * (1 + Math.sign(e.deltaY) * 0.1), 13, 44); }, { passive: false });
 })();
-$('quickBM').onclick = () => quickBadminton('aqiang');
+$('quickBM').onclick = () => quickMenu();
 $('modeBasic').onclick = () => { setup.mode = 'basic'; ensureAudio(); renderSetup(); show('scrSetup'); };
 $('modePro').onclick = () => { if (!AI.ready()) return openAI('先选择服务商并填写 API Key，保存后再点「学者 Pro 版」。'); setup.mode = 'pro'; ensureAudio(); renderSetup(); show('scrSetup'); };
 $('aiBtnTitle').onclick = () => openAI();

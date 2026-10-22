@@ -1,0 +1,36 @@
+{
+  "_comment": "v10.1 training drills. A feeder on the far side plays one ball at a time; the drill ends after `balls`. Feed targets are relative to the player's half: dx from the centre line as the player sees it (negative = player's left), depth from the net. Points: quality (perfect/good/fair/bad) if the return lands in, plus bonuses.",
+  "drills": {
+    "rearHead": {
+      "zh": "后场头顶区", "en": "Round-the-head corner",
+      "intro_zh": "球都喂到你的左后场（反手头顶区）。高而慢的球用马来步转身发力；平而快的球来不及转身，用中国跳截击。",
+      "intro_en": "Every feed goes to your rear backhand (round-the-head) corner. High, slow ones: Malaysian step and hit on the forehand. Flat, fast ones: no time to turn, China-jump.",
+      "balls": 10, "gap": 1.2,
+      "feeds": [
+        { "tag": "slow", "shot": "lift", "angle": 64, "dx": -1.9, "depth": 6.0 },
+        { "tag": "fast", "shot": "clear", "angle": 24, "dx": -1.9, "depth": 5.9 }
+      ],
+      "order": ["slow", "fast", "slow", "slow", "fast", "fast", "slow", "fast", "slow", "fast"],
+      "points": { "perfect": 3, "good": 2, "fair": 1, "bad": 0 },
+      "bonus": { "slow:malay": 2, "fast:china": 2 },
+      "tips_zh": { "good": "步法选得对：时间够就转身，时间紧就跳。", "malayFast": "快球来不及转身：这类球用中国跳。", "chinaSlow": "慢球可以从容转身发力，马来步更稳、更省腿。", "none": "头顶区不处理步法就只能反手回，质量会掉。" },
+      "tips_en": { "good": "Right choices: turn when there is time, jump when there isn't.", "malayFast": "No time to turn on the fast ones: China-jump those.", "chinaSlow": "The slow ones give you time to turn: the Malaysian step is steadier and easier on the legs.", "none": "Without footwork the round-the-head ball becomes a backhand and drops a grade." }
+    },
+    "defense": {
+      "zh": "接杀", "en": "Smash defence",
+      "intro_zh": "对面连续杀球，轮流杀你的左边、右边和身体。挡网前（下滑）或挑后场（上滑）都可以，先求回到界内。",
+      "intro_en": "Smash after smash, to your left, right and body. Block short (swipe down) or lift deep (swipe up): first get it back in.",
+      "balls": 10, "gap": 1.3,
+      "feeds": [
+        { "tag": "left", "shot": "smash", "dx": -1.6, "depth": 4.2, "from": { "dx": 0.5, "y": 2.65, "depth": 5.2 } },
+        { "tag": "right", "shot": "smash", "dx": 1.6, "depth": 4.2, "from": { "dx": -0.5, "y": 2.65, "depth": 5.2 } },
+        { "tag": "body", "shot": "smash", "dx": 0.2, "depth": 3.6, "from": { "dx": 0, "y": 2.7, "depth": 4.8 } }
+      ],
+      "order": ["left", "right", "body", "left", "right", "body", "right", "left", "body", "right"],
+      "points": { "perfect": 3, "good": 2, "fair": 1, "bad": 0 },
+      "bonus": { "shot:netdrop": 1, "shot:lift": 1 },
+      "tips_zh": { "good": "防守稳：拍面提前准备好，借力挡回去。", "early": "接杀偏早：球速再快，也要等它到身前再出手。", "late": "接杀偏晚：重心放低、拍子提前举在身前。", "out": "挡回去先求界内，不用打得太远。" },
+      "tips_en": { "good": "Solid defence: racket ready early, use the pace.", "early": "Too early: however fast the smash, let it come to you.", "late": "Too late: get low and have the racket up in front.", "out": "Just get it back in; no need to hit it far." }
+    }
+  }
+}

@@ -12,7 +12,7 @@
 
   function BMCore(D, opts) {
     const rnd = opts.rng || Math.random;
-    const C = D.court, k = D.physics.drag, OP = D.opponents[opts.opp];
+    const C = D.court, k = D.physics.drag, OP = D.opponents[opts.opp || 'aqiang'];
     const gauss = () => { let u = 0, v = 0; while (!u) u = rnd(); while (!v) v = rnd(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
     const lerp = (a, b, t) => a + (b - a) * t;
     const energy = Math.max(0, Math.min(100, opts.energy == null ? 80 : opts.energy));
@@ -74,7 +74,7 @@
     const mkCh = (s) => { const b = base(s); return { x: b.x, z: b.z, tx: b.x, tz: b.z, mvT: 0, moving: false, swingT: -9 }; };
     const m = {
       t: 0, phase: 'serve', score: { P: 0, O: 0 }, server: 'P', ch: { P: mkCh('P'), O: mkCh('O') },
-      fl: null, inc: null, phaseT: 0, ev: [], W, energy, opp: opts.opp,
+      fl: null, inc: null, phaseT: 0, ev: [], W, energy, opp: opts.opp, drill: null,
       stats: { shots: 0, perfect: 0, smashes: 0, smashWin: 0, rally: 0, longest: 0, rallies: 0, misses: 0 },
       log: [],      // every shot: who, what, where it landed, under how much pressure, tactical tags
       points: [],   // every rally: who won, how, and whose error it was
@@ -126,7 +126,7 @@
       const S = D.shots[shotId], Q = D.quality[q], sg = sideSign(side), recv = other(side), R = m.ch[recv];
       const from = o.from || flightPos(m.t);
       const deep = shotId === 'clear' || shotId === 'lift' || shotId === 'high';
-      let depth = lerp(S.depth[0], S.depth[1], rnd()) - Q.short * (deep ? 1 : 0.3);
+      let depth = o.depth != null ? o.depth : lerp(S.depth[0], S.depth[1], rnd()) - Q.short * (deep ? 1 : 0.3);
       let tx;
       if (o.tx != null) tx = o.tx;
       else if (o.aim) tx = C.cx + o.aim * S.width * (0.8 + 0.2 * rnd());
@@ -134,7 +134,7 @@
       const smashSpd = shotId === 'smash' ? (o.power || 1) * { perfect: 72, good: 60, fair: 46, bad: 40 }[q] : 0;
       // Intended aim: the noise-free shot must clear the tape by a margin. Lift the angle (or, for a smash,
       // aim deeper) until it does.
-      let ang = S.angle;
+      let ang = o.angle != null ? o.angle : S.angle;
       for (let i = 0; i < 10; i++) {
         const tr = fly(from, solve(from, tx, C.net - sg * depth, Object.assign({}, S, { angle: ang }), smashSpd), true, 1 / 120);
         if (!tr.netHit && tr.netY != null && tr.netY - C.netH >= D.netMargin) break;
@@ -243,6 +243,31 @@
       return out;
     }
 
+    /* ---------- training drills: a feeder plays one ball at a time (data: badminton-drills.json) ---------- */
+    const DR = opts.drill ? Object.assign({ i: 0, score: 0, max: 0, results: [], cur: null }, { def: opts.drill }) : null;
+    function drillFeed() {
+      const d = DR.def, tag = d.order[DR.i % d.order.length], fd = d.feeds.find((f) => f.tag === tag), O = m.ch.O, P = m.ch.P;
+      const fr = fd.from || { dx: 0, y: fd.shot === 'lift' ? 0.9 : 2.4, depth: fd.shot === 'lift' ? 2.2 : 4.8 };
+      O.x = O.tx = C.cx - fr.dx; O.z = O.tz = C.net - fr.depth;   // feeder faces the player: its dx is mirrored
+      const b = base('P'); P.tx = b.x; P.tz = b.z;
+      DR.cur = { tag, i: DR.i }; m.phase = 'rally'; m.stats.rallies++; m.stats.rally = 0;
+      hit('O', fd.shot, 'perfect', { from: { x: O.x, y: fr.y, z: O.z + 0.35 }, tx: C.cx + fd.dx, depth: fd.depth, angle: fd.angle != null ? fd.angle : undefined, serve: false });
+      emit({ type: 'feed', i: DR.i, tag });
+    }
+    function drillLand(f) {
+      const d = DR.def, r = f.rec, res = { i: DR.i, tag: DR.cur.tag, ok: false, pts: 0, q: null, foot: null, shot: null, why: null };
+      if (f.hitter === 'P') {
+        res.q = f.q; res.shot = f.shot; res.foot = r && r.foot; res.tags = r ? r.tags : [];
+        res.ok = !f.netHit && inBounds(f.land, 'O'); res.why = f.netHit ? 'net' : res.ok ? 'in' : 'out';
+        if (res.ok) res.pts = (d.points[f.q] || 0) + (d.bonus[res.tag + ':' + res.foot] || 0) + (d.bonus['shot:' + f.shot] || 0);
+      } else res.why = m.lastMiss && m.lastMiss.side === 'P' ? m.lastMiss.why : 'miss';
+      DR.results.push(res); DR.score += res.pts; DR.i++; m.lastMiss = null;
+      m.phase = 'feed'; m.phaseT = m.t;
+      emit({ type: 'drillBall', res, score: DR.score });
+      if (DR.i >= d.balls) { m.phase = 'over'; m.winner = null; emit({ type: 'over', drill: true }); }
+    }
+    if (DR) { const d = DR.def, best = Math.max(...Object.values(d.points)) + Math.max(0, ...Object.values(d.bonus)); DR.max = best * d.balls; }
+
     /* ---------- serving ---------- */
     function setupServe() {
       const s = m.server, r = other(s), right = m.score[s] % 2 === 0, S = m.ch[s], R = m.ch[r];
@@ -310,10 +335,13 @@
         const dx = c.tx - c.x, dz = c.tz - c.z, d = Math.hypot(dx, dz);
         if (d > 0.03) { const st = Math.min(d, sp * dt); c.x += dx / d * st; c.z += dz / d * st; c.moving = true; }
       }
-      if (m.phase === 'serve') {
+      if (m.phase === 'feed') {
+        if (m.t - m.phaseT > DR.def.gap) drillFeed();
+      } else if (m.phase === 'serve') {
         if (m.server === 'O' && m.t - m.phaseT > D.match.aiServeDelay) serve(rnd() < 0.55 ? 'short' : 'high', rnd() < OP.q.perfect ? 'perfect' : 'good');
       } else if (m.phase === 'rally') {
         const inc = m.inc;
+        if (DR && inc && inc.recv === 'O') inc.done = true;   // the feeder never returns
         if (inc && !inc.done && inc.recv === 'O' && m.t >= inc.c.t) {
           inc.done = true;
           if (!inc.c.reach) emit({ type: 'miss', side: 'O', why: 'far' });
@@ -326,7 +354,8 @@
           else { m.stats.misses++; if (inc.c.reach) m.timing.push(W.fair + 0.05); emit({ type: 'miss', side: 'P', why: inc.c.reach ? 'late' : 'far' }); }
         }
         const f = m.fl;
-        if (f && m.t >= f.t0 + f.land.t) {
+        if (f && DR && m.t >= f.t0 + f.land.t) drillLand(f);
+        else if (f && m.t >= f.t0 + f.land.t) {
           const H = f.hitter, X = other(H);
           if (f.netHit) pointTo(X, 'net');
           else if (inBounds(f.land, X)) pointTo(H, 'in');
@@ -345,7 +374,7 @@
       return { left: inc.c.t - m.t, reach: inc.c.reach, out: inc.out, W, c: inc.c, foot: inc.foot || null, rear: Math.abs(inc.c.z - C.net) >= FW.rearDepth };
     }
 
-    setupServe();
+    if (DR) { m.drill = DR; m.phase = 'feed'; m.phaseT = m.t - DR.def.gap + 1.6; m.ch.P.x = m.ch.P.tx; } else setupServe();
     m.ev = [];
     return { m, swing, prep, update, ring, pos: () => (m.fl ? flightPos(m.t) : null), W, PAR, inBounds, shotFor, D };
   }
@@ -388,6 +417,21 @@
         malay: (tags.footGood || 0) + (tags.footBad || 0) + (tags.footWaste || 0), china: (tags.footChina || 0) + (tags.footTired || 0), chinaUses: m.chinaUses || 0 },
       tags, dots,
     };
+  };
+
+  /* Drill summary: score, the most useful tip, and counts. */
+  BMCore.drillReview = (m, lang) => {
+    const L = lang === 'en' ? 'en' : 'zh', DR = m.drill, d = DR.def, R = DR.results, tips = d['tips_' + L];
+    const ok = R.filter((r) => r.ok).length, tm = m.timing, mean = tm.length ? tm.reduce((a, b) => a + b, 0) / tm.length : 0;
+    let tip = tips.good;
+    if (d.bonus['slow:malay'] != null) {
+      const malayFast = R.filter((r) => r.tag === 'fast' && r.foot === 'malay').length, chinaSlow = R.filter((r) => r.tag === 'slow' && r.foot === 'china').length, none = R.filter((r) => !r.foot).length;
+      tip = malayFast >= 2 ? tips.malayFast : none >= 4 ? tips.none : chinaSlow >= 2 ? tips.chinaSlow : tips.good;
+      return { score: DR.score, max: DR.max, ok, balls: d.balls, tip, right: R.filter((r) => (r.tag === 'slow' && r.foot === 'malay') || (r.tag === 'fast' && r.foot === 'china')).length, meanMs: Math.round(mean * 1000) };
+    }
+    const out = R.filter((r) => r.why === 'out' || r.why === 'net').length;
+    tip = ok >= 8 ? tips.good : mean < -0.04 ? tips.early : mean > 0.04 ? tips.late : out >= 3 ? tips.out : tips.good;
+    return { score: DR.score, max: DR.max, ok, balls: d.balls, tip, meanMs: Math.round(mean * 1000) };
   };
 
   // Win probability for "just play it out", interpolated on energy (numbers come from the balance runs).
