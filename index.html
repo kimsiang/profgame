@@ -5743,7 +5743,7 @@ function saveGame(mid) { if (S && S.quick) return false; try { localStorage.setI
 function saveLabel(x) {
   if (!x || !x.S) return '';
   const st = x.mid ? x.mid.S : x.S, c = st.career, day = Math.max(0, Math.min(6, st.day || 0));
-  return `第 ${st.week || 1} 周 · ${DAYS[day].name}${x.mid ? ' ' + fmt(st.t) : ' 早上'}${c && RANKS[c.rank] ? ' · ' + RANKS[c.rank].n : ''}`;
+  return `第 ${st.week || 1} 周 · ${DAYS[day] ? DAYS[day].name : '周' + '一二三四五六日'[day]}${x.mid ? ' ' + fmt(st.t) : ' 早上'}${c && RANKS[c.rank] ? ' · ' + RANKS[c.rank].n : ''}`;
 }
 const fmtWhen = (t) => { const d = new Date(t); return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
 function readSlot(i) { try { return migrateSave(JSON.parse(localStorage.getItem(SLOT_KEYS[i]) || 'null')); } catch (e) { return null; } }
@@ -6266,7 +6266,7 @@ $('handBack').onclick = () => { SFX.click(); show('scrSetup'); };
 $('startBtn').onclick = startGame;
 $('againBtn').onclick = () => { SFX.click(); const c = loadCareer(); if (c && c.done) { try { localStorage.removeItem(CAREER_KEY); } catch (e) { /* storage blocked */ } show('scrTitle'); refreshContinue(); } else nextWeek(); };
 $('homeBtn').onclick = () => { show('scrTitle'); refreshContinue(); };
-setTimeout(refreshContinue, 0);
+setTimeout(() => (CONTENT.p || Promise.resolve()).then(refreshContinue), 0);   // the label names the day, which comes with the content
 initAI();
 (async () => {
   try {
