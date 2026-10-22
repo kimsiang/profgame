@@ -1140,9 +1140,11 @@ const T = {
    ARCHITECTURE
    ========================================================= */
 function slab(w, d, cx, cz, color = '#1b2c3d') {
-  box(w + 1.2, 1.2, d + 1.2, mat(color, { roughness: 0.9 }), cx, -1.2, cz, { cast: false });
+  // The slab's top sits 3 cm below the floor (y = 0). It used to be exactly at y = 0, coplanar with every
+  // floor plane, so the GPU picked slab or tile at random per pixel per frame: the white/grey floor flicker.
+  box(w + 1.2, 1.2, d + 1.2, mat(color, { roughness: 0.9 }), cx, -1.23, cz, { cast: false });
   const e = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(w + 1.2, 0.02, d + 1.2)), new THREE.LineBasicMaterial({ color: new THREE.Color('#00A9F4').multiplyScalar(2.5), toneMapped: false }));
-  e.position.set(cx, -0.03, cz); Z.group.add(e);
+  e.position.set(cx, -0.04, cz); Z.group.add(e);
 }
 /* ---------- v7.3: prop kit (assets/props/kit.glb, built by tools/blender/build_props.py) ----------
    Every procedural builder below is wrapped so it records the meshes it made. When the kit loads, each

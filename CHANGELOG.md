@@ -1,5 +1,8 @@
 # Changelog
 
+## v9.0.4 — Fix (2026-10-22)
+- Floor flicker, the actual cause: every floor sits on a dark slab whose top face was at exactly the floor's height, so the two surfaces fought pixel by pixel every frame (white tile vs grey-blue slab). The slab now sits 3 cm lower. The v9.0.3 shadow change stays: it removes a smaller shimmer of shadow edges.
+
 ## v9.0.3 — Fix (2026-10-22)
 - Floor no longer flickers between white and grey while you walk or as the clock runs. The real cause was the sun's shadow, not the floor: the shadow map followed the player continuously and the sun angle changed every in-game minute, so wall shadows crawled across the floor. The sun now moves in 20-minute steps and the shadow map shifts only in whole texels.
 
