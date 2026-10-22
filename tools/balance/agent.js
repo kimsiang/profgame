@@ -45,7 +45,12 @@
       return n - 1;
     }
     if (id === 'canteenMenu') { const i = ch.findIndex((c) => /本周第一次/.test(c.d || '')); return i >= 0 ? i : 0; }
-    if (id === 'roofcafe') return 0;
+    // v12.2 companions: who comes along is the policy's call (P.invite returns a person id or null)
+    if (id === 'canteenWho' || id === 'gardenWho' || id === 'roofcafe') {
+      const place = id === 'canteenWho' ? 'canteen' : id === 'gardenWho' ? 'garden' : 'cafe', who = P.invite ? P.invite(S, place, G().companionsFor(place).ok, rnd) : null;
+      if (who) { const nm = G().TABLE.people[who].n; const i = ch.findIndex((c) => c.t.includes(nm)); if (i >= 0) return i; }
+      return id === 'canteenWho' ? n - 1 : 0;
+    }
     if (id === 'home') { const i = find(/带束花/); return P.name !== 'grinder' && i >= 0 && S.fam.partner < 60 ? i : 0; }
     // events and home scenes: best weighted value
     let best = 0, bv = -1e9;
@@ -91,18 +96,25 @@
       post: false,
     },
     mentor: {
+      invite: (S, place, ok) => { const st = ok.filter((id) => S.trust[id] !== undefined).sort((a, b) => S.trust[a] - S.trust[b]); return place === 'garden' ? (ok.includes('partner') && S.fam.partner < 75 ? 'partner' : null) : place === 'cafe' ? (ok.includes('zhao') ? 'zhao' : null) : st[0] || null; },
       intent: () => 'students',
       act(S) {
         const n = needs(S, this); if (n) return n;
         const evs = G().activeEvents().filter((e) => takeable(S, e)).sort(byDeadline);
         if (evs.length) return { ev: evs[0] };
         if (S.t >= hm(18, 30) && !lateDeadline(S)) return { do: 'home' };
+        if (S.t >= hm(15) && S.t < hm(16, 30) && S.cafeDay !== S.day && G().companionsFor && G().companionsFor('cafe').ok.includes('zhao')) { S.cafeDay = S.day; return { do: 'roofcafe' }; }
         if (S.t >= hm(17) && S.t < hm(18) && S.dayBad !== S.day) { S.dayBad = S.day; return { do: 'badminton', min: 60 }; }
         return deskOrWrite(S) || (S.t >= hm(17) ? { do: 'home' } : { do: 'wait', min: 15 });
       },
       post: false,
     },
     balanced: {
+      invite: (S, place, ok) => {
+        if (place === 'garden') return ok.includes('partner') && S.fam.partner < 70 ? 'partner' : null;
+        if (place === 'cafe') return ok.includes('coach') && !S.submitted && S.dos.grant.letter < 3 ? 'coach' : ok.includes('zhao') && workKind(S) ? 'zhao' : ok.includes('wang') ? 'wang' : null;
+        const st = ok.filter((id) => S.trust[id] !== undefined && S.trust[id] < 75).sort((a, b) => S.trust[a] - S.trust[b]); return st[0] || null;
+      },
       intent: (S, d) => { const k = workKind(S); if (S.wb < 45) return 'self'; if (d === 1) return 'students'; return k || 'paper'; },
       act(S) {
         const n = needs(S, this); if (n) return n;
@@ -112,6 +124,7 @@
         if (!inFocusBlock(S) && evs.length) return { ev: evs[0] };
         if (S.t >= hm(19) && !lateDeadline(S)) return { do: 'home' };
         if (S.wb < 45 && S.t >= hm(15) && S.walkDay !== S.day) { S.walkDay = S.day; return { do: 'walk', min: 20 }; }
+        if (S.t >= hm(14, 30) && S.t < hm(16) && S.cafeDay !== S.day && S.day <= 4 && G().companionsFor && G().companionsFor('cafe').ok.length) { S.cafeDay = S.day; return { do: 'roofcafe' }; }
         if (S.day === 1 && S.t >= hm(17) && S.t < hm(18) && S.dayBad !== S.day) { S.dayBad = S.day; return { do: 'badminton', min: 60 }; }
         if (!S.submitted && S.day <= 3 && S.dos.grant.idea < 2 && S.readDay !== S.day && S.t >= hm(14)) { S.readDay = S.day; return { do: 'read', min: 30 }; }
         return deskOrWrite(S) || (S.t >= hm(17) ? { do: 'home' } : evs.length ? { ev: evs[0] } : { do: 'wait', min: 15 });
@@ -119,6 +132,7 @@
       post: false,
     },
     random: {
+      invite: (S, place, ok, rnd) => (ok.length && rnd() < 0.5 ? ok[(rnd() * ok.length) | 0] : null),
       intent: (S, d, rnd) => ['grant', 'paper', 'students', 'self'][(rnd() * 4) | 0],
       act(S, rnd) {
         const g = G(), evs = g.activeEvents().filter((e) => takeable(S, e));
@@ -158,7 +172,8 @@
         case 'coffee': g.ACT.coffee(); break;
         case 'nap': g.ACT.nap(); break;
         case 'wc': g.ACT.wc(); break;
-        case 'walk': g.ACT.walk(a.min); break;
+        case 'walk': g.openGarden ? g.openGarden() : g.ACT.walk(a.min); break;
+        case 'roofcafe': g.openRoofCafe(); break;
         case 'read': g.ACT.read(a.min); break;
         case 'badminton': g.ACT.badminton(a.min); break;
       }
@@ -195,7 +210,7 @@
         grantSubmitted: S.submitted, grantOk: outs.some((o) => /^基金：(获批|优先资助)/.test(o[1])), paper: (outs.find((o) => /^论文/.test(o[1])) || [])[1] || '',
         wb: Math.round(S.wb), collapses: S.collapses, trust: Math.round(g.avgTrust()), lost: S.lost.length, homeNights: S.homeNights,
         fam: Math.round(Math.min(...FAMK.map((k) => S.fam[k]))), cash: S.fin ? Math.round(S.fin.cash) : null, rank: S.career.rank, post: S.career.post,
-        events: S.totals.all, done: S.totals.done, picks, conseqPerDay: +(conseq / 7).toFixed(1), firstLowEnergyDay: firstLowE,
+        events: S.totals.all, done: S.totals.done, picks, companions: Object.values(S.companions || {}).reduce((a, d) => a + Object.keys(d).length, 0), table: (S.tableLog || []).length, conseqPerDay: +(conseq / 7).toFixed(1), firstLowEnergyDay: firstLowE,
         k: Object.fromEntries(Object.entries(S.k).map(([k, v]) => [k, Math.round(v)])),
       });
       const no = document.getElementById(P.post ? 'ofYes' : 'ofNo'); if (no) no.click();

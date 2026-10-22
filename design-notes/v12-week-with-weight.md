@@ -169,3 +169,8 @@ Rules for Opus during the build: a design question that changes a number in §1 
 | §3.3 every JSON string `{zh, en}` | Existing content stays 中文-only; new content (v12.2 table talks) is written zh + en | Translating 200 events is content work; the loader and validator accept both forms. |
 | §7 v12.1 saves v6 migration | No save change needed | Event ids and state keys are unchanged; v12.2's new state fields default in `newState`. |
 | Harness: one page for all runs | A fresh page per career | Memory grew to 4 GB over 400 weeks (the player was rebuilt every morning; also fixed). |
+| §1.1 gym: 院长, 陈老师, 赵博士 as badminton partners | Not in v12.2 | The playable match needs an opponent profile and court NPC per person; the companion rule works without it. Candidate for later. |
+| §1.1 王老师: tomorrow's admin event a day early | One reimbursement fixed, or office tasks +60 min | The café already gives tomorrow's rumours; Wang needed a perk of her own. |
+| §1.1 canteen cost ¥35–60 | ¥45 flat | Simpler to read on the button. |
+| §1.4 "already ate → coffee at 30% cost" | Invites only at lunch and dinner | Fewer rules to explain; the café covers coffee. |
+| §1.3 memory by the generic rule (sum of fx) | Table talks are remembered by their trust delta | An encouraging answer that costs research read as "bad" in her memory. |
