@@ -1,5 +1,8 @@
 # Changelog
 
+## v9.0.6 — Fix (2026-10-22)
+- Floor signs point where they say. Every sign had a pointed end facing east whatever was there (物理楼 · 正门 pointed along the road, not at the door). Signs now carry an arrow only when they name a place nearby: room signs in the 5F corridor and on 2F point to their door, entrance and exit signs to the door, elevator signs to the elevator. Title plates (物理楼 5F, 书库, 阅览区…) have no arrow. The "→" in the English subtitles is gone too.
+
 ## v10.0-step1 — Badminton you actually play (2026-10-22)
 - Court 2 in the gym: press E to play a game to 7 against 阿强 instead of a 30-minute fast-forward. Movement is automatic; you only swing. Swipe (or drag with the mouse) up for a clear, down for a drop or net shot, left/right for a drive, tap when it is overhead to smash. Keyboard: W/S/A/D and Space. Esc or "退出比赛" leaves.
 - Real shuttle flight: quadratic drag with a 6.8 m/s terminal speed, so clears rise and then fall almost straight down; shots that hit the tape drop on the hitter's side.

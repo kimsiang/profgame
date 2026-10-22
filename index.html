@@ -1306,26 +1306,47 @@ DOORS.forEach(([a, b, z]) => {
 });
 
 /* signage on the corridor floor */
+/* Floor signs. A sign only carries an arrow when it is told where its place is: o.to = 'n' | 's' | 'e' | 'w'
+   (world directions: n = -z, s = +z, e = +x, w = -x). East/west signs get a pointed end; north/south signs get a
+   separate flat chevron at the edge facing the place, so the arrow stays right however the camera turns.
+   Signs without o.to are plain name plates. (v9.0.6: every sign used to point +x, whatever was there.) */
 function decal(text, x, z, w = 3.2, h = 0.7, o = {}) {
+  const to = o.to || null, tipR = to === 'e', tipL = to === 'w';
   const tex = canvasTex(512, Math.round(512 * h / w), (g, cw, ch) => {
-    g.fillStyle = o.bg || 'rgba(5,28,44,.86)'; g.beginPath(); g.moveTo(0, 0); g.lineTo(cw - ch * 0.4, 0); g.lineTo(cw, ch / 2); g.lineTo(cw - ch * 0.4, ch); g.lineTo(0, ch); g.fill();
-    g.fillStyle = o.accent || '#00A9F4'; g.fillRect(0, 0, 10, ch);
+    const t = ch * 0.4;
+    g.fillStyle = o.bg || 'rgba(5,28,44,.86)'; g.beginPath();
+    if (tipR) { g.moveTo(0, 0); g.lineTo(cw - t, 0); g.lineTo(cw, ch / 2); g.lineTo(cw - t, ch); g.lineTo(0, ch); }
+    else if (tipL) { g.moveTo(t, 0); g.lineTo(cw, 0); g.lineTo(cw, ch); g.lineTo(t, ch); g.lineTo(0, ch / 2); }
+    else { g.rect(0, 0, cw, ch); }
+    g.fill();
+    const x0 = tipL ? t + 6 : 0;
+    g.fillStyle = o.accent || '#00A9F4'; g.fillRect(x0, 0, 10, ch);
     g.fillStyle = o.fg || '#EAF4FB'; g.font = `800 ${Math.round(ch * 0.44)}px ${CN_FONT}`; g.textBaseline = 'middle';
-    g.fillText(text, 30, ch * 0.4);
-    if (o.sub) { g.fillStyle = 'rgba(205,238,255,.75)'; g.font = `600 ${Math.round(ch * 0.19)}px ${CN_FONT}`; g.fillText(o.sub, 30, ch * 0.8); }
+    g.fillText(text, x0 + 30, ch * 0.4);
+    if (o.sub) { g.fillStyle = 'rgba(205,238,255,.75)'; g.font = `600 ${Math.round(ch * 0.19)}px ${CN_FONT}`; g.fillText(o.sub, x0 + 30, ch * 0.8); }
   });
   const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshStandardMaterial({ map: tex, transparent: true, roughness: 0.4, envMapIntensity: 0.6, polygonOffset: true, polygonOffsetFactor: -2 }));
-  m.rotation.x = -Math.PI / 2; m.position.set(x, 0.015, z); m.receiveShadow = true; Z.group.add(m); return m;
+  m.rotation.x = -Math.PI / 2; m.position.set(x, 0.015, z); m.receiveShadow = true; Z.group.add(m);
+  if (to === 'n' || to === 's') {
+    // Flat chevron just past the plate edge, apex toward the place.
+    const sg = to === 'n' ? -1 : 1, a = 0.34, shp = new THREE.Shape();
+    shp.moveTo(-a, 0); shp.lineTo(0, a * 0.9); shp.lineTo(a, 0); shp.lineTo(a * 0.55, 0); shp.lineTo(0, a * 0.5); shp.lineTo(-a * 0.55, 0); shp.closePath();
+    const c = new THREE.Mesh(new THREE.ShapeGeometry(shp), new THREE.MeshBasicMaterial({ color: new THREE.Color(o.accent || '#00A9F4').multiplyScalar(1.6), toneMapped: false, transparent: true, opacity: 0.95, polygonOffset: true, polygonOffsetFactor: -2 }));
+    // Shape lies in XY with apex +y; lay it on the floor so the apex points to world -z (n) or +z (s).
+    c.rotation.x = -Math.PI / 2; if (sg > 0) c.rotation.z = Math.PI;
+    c.position.set(x, 0.016, z + sg * (h / 2 + 0.12)); Z.group.add(c);
+  }
+  return m;
 }
-decal('教授办公室', 6, 12.05, 2.8, 0.6, { sub: '503 · PROFESSOR' });
-decal('学生办公区', 14.5, 12.05, 2.8, 0.6, { sub: '505 · MUON GROUP' });
-decal('缪子实验室', 26, 12.05, 2.8, 0.6, { sub: '507 · HV / LN₂', accent: '#FF5A6E' });
-decal('计算机房', 36, 12.05, 2.6, 0.6, { sub: '509 · GPU CLUSTER' });
-decal('报告厅', 6, 13.95, 2.4, 0.6, { sub: '502 · 200 SEATS' });
-decal('会议室', 16, 13.95, 2.2, 0.6, { sub: '504 · MEETING' });
-decal('院办', 23, 13.95, 1.9, 0.6, { sub: '506 · OFFICE' });
-decal('茶水间', 29, 13.95, 2.1, 0.6, { sub: '508 · PANTRY' });
-decal('洗手间', 34, 13.95, 1.9, 0.6, { sub: 'WC' });
+decal('教授办公室', 6, 12.05, 2.8, 0.6, { sub: '503 · PROFESSOR' , to: 'n' });
+decal('学生办公区', 14.5, 12.05, 2.8, 0.6, { sub: '505 · MUON GROUP' , to: 'n' });
+decal('缪子实验室', 26, 12.05, 2.8, 0.6, { sub: '507 · HV / LN₂', accent: '#FF5A6E' , to: 'n' });
+decal('计算机房', 36, 12.05, 2.6, 0.6, { sub: '509 · GPU CLUSTER' , to: 'n' });
+decal('报告厅', 6, 13.95, 2.4, 0.6, { sub: '502 · 200 SEATS' , to: 's' });
+decal('会议室', 16, 13.95, 2.2, 0.6, { sub: '504 · MEETING' , to: 's' });
+decal('院办', 23, 13.95, 1.9, 0.6, { sub: '506 · OFFICE' , to: 's' });
+decal('茶水间', 29, 13.95, 2.1, 0.6, { sub: '508 · PANTRY' , to: 's' });
+decal('洗手间', 34, 13.95, 1.9, 0.6, { sub: 'WC' , to: 's' });
 decal('物理楼 5F', 20, 13.0, 4.4, 0.85, { bg: 'rgba(34,81,255,.9)', accent: '#00A9F4', sub: 'PHYSICS BUILDING · FLOOR 5' });
 
 /* =========================================================
@@ -2188,7 +2209,7 @@ function perimeter(kind = 'window') { hWall(0, 0, W, [], kind); hWall(D, 0, W, [
 function elevatorLobby() {
   [17.5, 20.5].forEach(z => { box(0.1, 2.1, 1.5, mat('#bcc8d3', { metalness: 0.9, roughness: 0.18 }), 39.9, 0, z); plane(0.28, 0.14, glow('#FFB547', 2.4), 39.84, 2.3, z, { ry: -Math.PI / 2 }); plane(0.08, 0.08, glow('#00A9F4', 3), 39.84, 1.1, z + 0.95, { ry: -Math.PI / 2 }); });
   blockRect(39.6, 16.2, 40, 21.8);
-  decal(`${FLOOR_LABEL[Z.id]} · 电梯厅`, 37.5, 15.6, 2.4, 0.55, { sub: 'ELEVATOR' });
+  decal(`${FLOOR_LABEL[Z.id]} · 电梯厅`, 37.5, 15.6, 2.4, 0.55, { sub: 'ELEVATOR', to: 's' });
   Z.portals.push({ kind: 'elevator', x: ELEV.x, z: ELEV.z }); Z.spawn = { x: 38, z: 18.6 };
 }
 function tree(x, z, s = 1, kind = 0) {
@@ -2245,7 +2266,7 @@ function sportNPC(id, look, x, z, lx, lz) { look._id = id; const p = makeChar(lo
   /* main door to campus */
   [18, 22].forEach(x => box(0.2, 2.6, 0.3, frameM, x, 0, 26));
   seg(20, 25.9, true, 4, 2.3, 0.3, 0.3, frameM); plane(4, 0.1, thresholdM, 20, 0.012, 25.6, { rx: -Math.PI / 2 });
-  decal('出口 · 校园', 20, 24.3, 2.4, 0.55, { sub: 'EXIT → CAMPUS', accent: '#3DDC97' });
+  decal('出口 · 校园', 20, 24.3, 2.4, 0.55, { sub: 'EXIT · CAMPUS', accent: '#3DDC97', to: 's' });
   Z.portals.push({ kind: 'door', x: 20, z: 25.2, to: 'campus', spawn: { x: 30, z: 31.2 }, label: '走出物理楼' });
   elevatorLobby();
   Z.rooms = { lobby: { x0: 0, z0: 0, x1: 22, z1: 26, name: '大厅' }, canteen: { x0: 22, z0: 0, x1: 40, z1: 12, name: '食堂' }, lobby2: { x0: 22, z0: 12, x1: 40, z1: 26, name: '大厅' } };
@@ -2267,7 +2288,7 @@ function sportNPC(id, look, x, z, lx, lz) { look._id = id; const p = makeChar(lo
   roomNames.forEach(([n, x0]) => {
     for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) { const x = x0 + 1.6 + c * 2.6, z = 2.6 + r * 2.4; box(1.6, 0.05, 0.6, mat('#e8dcc4', { roughness: 0.5 }), x, 0.72, z, { block: true, round: 0.02 }); box(0.08, 0.72, 0.5, mat('#9aa7b3'), x - 0.7, 0, z); box(0.08, 0.72, 0.5, mat('#9aa7b3'), x + 0.7, 0, z); chair(x, z + 0.65, Math.PI, '#2b4a72'); }
     const bd = whiteboard(x0 + 4.5, 1.3, 0.14, 0, 5, 1.0, boardTex(640, 128, (g) => { g.fillStyle = '#0A2436'; g.font = `700 36px ${CN_FONT}`; g.fillText(['∇·E = ρ/ε₀', 'F = dp/dt', 'E = γmc²', 'ψ(x,t)'][+n[2] - 1], 24, 80); }));
-    decal(`教室 ${n}`, x0 + 4.5, 11.9, 1.8, 0.5, { sub: 'CLASSROOM' });
+    decal(`教室 ${n}`, x0 + 4.5, 11.9, 1.8, 0.5, { sub: 'CLASSROOM', to: 'n' });
   });
   for (let k = 0; k < 2; k++) { const x0 = k * 18; box(5.5, 0.06, 1.8, mat('#f3f1ec'), x0 + 9, 0.74, 21, { block: true, round: 0.03 }); box(0.4, 0.74, 1.4, mat('#9aa7b3'), x0 + 9, 0, 21); for (let i = 0; i < 5; i++) { chair(x0 + 6.8 + i * 1.1, 19.9, 0, '#3a2d4a'); chair(x0 + 6.8 + i * 1.1, 22.1, Math.PI, '#3a2d4a'); } decal(k ? '讨论室 206' : '讨论室 205', x0 + 9, 14.4, 2.4, 0.5, { sub: 'SEMINAR' }); }
   box(0.9, 1.9, 0.7, mat('#1d2a38', { roughness: 0.35, metalness: 0.4 }), 37.5, 0, 12.5, { block: true, round: 0.04 });
@@ -2437,7 +2458,7 @@ function sportNPC(id, look, x, z, lx, lz) { look._id = id; const p = makeChar(lo
   lightPool(9, 8, 5, '#ffd9a0', 0.14); lightPool(18, 15, 10, '#ffe2a8', 0.08); addLamp(9, 7, '#ffd9a0'); addLamp(18, 15, '#ffe2a8', 14);
   /* elevator door in the machine room */
   box(0.1, 2.1, 1.5, mat('#bcc8d3', { metalness: 0.9, roughness: 0.18 }), 36.95, 0, 18.6); plane(0.28, 0.14, glow('#FFB547', 2.4), 36.9, 2.3, 18.6, { ry: -Math.PI / 2 });
-  blockRect(37, 16.8, 40, 21.2); decal('R · 电梯', 36, 15.7, 1.8, 0.5, { sub: 'ELEVATOR' });
+  blockRect(37, 16.8, 40, 21.2); decal('R · 电梯', 36, 15.7, 1.8, 0.5, { sub: 'ELEVATOR', to: 's' });
   Z.portals.push({ kind: 'elevator', x: 36.2, z: 18.6 }); Z.spawn = { x: 35.4, z: 18.6 };
   Z.rooms = { cafe: { x0: 4, z0: 0, x1: 16, z1: 9, name: '咖啡馆' }, terrace: { x0: 0, z0: 0, x1: 40, z1: 26, name: '天台' } };
 })();
@@ -2461,7 +2482,7 @@ function sportNPC(id, look, x, z, lx, lz) { look._id = id; const p = makeChar(lo
   const nameplate = plane(14, 2.2, new THREE.MeshBasicMaterial({ toneMapped: false, map: canvasTex(1024, 160, (g, w, h) => { g.fillStyle = '#0A2436'; g.fillRect(0, 0, w, h); g.fillStyle = '#00A9F4'; g.fillRect(0, 0, 14, h); g.fillStyle = '#EAF4FB'; g.font = `900 92px ${CN_FONT}`; g.fillText('物 理 楼', 60, 110); g.fillStyle = '#CDEEFF'; g.font = `600 40px ${CN_FONT}`; g.fillText('PHYSICS BUILDING', 520, 105); }) }), 30, 20.5, 27.08); nameplate.material.color.setScalar(1.3);
   [26, 34].forEach(x => box(0.4, 3.2, 0.5, frameM, x, 0, 27.2)); box(8.4, 0.4, 0.6, frameM, 30, 3.2, 27.2); seg(30, 27.1, true, 7.6, 0, 2.9, 0.1, glassM, false);
   box(10, 0.3, 3, mat('#9aa39a'), 30, 0, 28.5, { cast: false }); plane(7, 0.12, thresholdM, 30, 0.32, 29.9, { rx: -Math.PI / 2 });
-  decal('物理楼 · 正门', 30, 33, 3.2, 0.6, { sub: 'MAIN ENTRANCE → 1F' });
+  decal('物理楼 · 正门', 30, 33, 3.2, 0.6, { sub: 'MAIN ENTRANCE · 1F', to: 'n' });
   Z.portals.push({ kind: 'door', x: 30, z: 30.6, to: 'f1', spawn: { x: 20, z: 24.4 }, label: '进入物理楼' }); Z.spawn = { x: 30, z: 31.2 };
   /* gym building */
   const gwin = windowsTex(0.3); gwin.repeat.set(6, 2);
@@ -2469,7 +2490,7 @@ function sportNPC(id, look, x, z, lx, lz) { look._id = id; const p = makeChar(lo
   const roofG = new THREE.Mesh(new THREE.CylinderGeometry(9.2, 9.2, 28.4, 24, 1, false, 0, Math.PI), mat('#2b3d52', { roughness: 0.5 })); roofG.rotation.z = Math.PI / 2; roofG.rotation.y = 0; roofG.position.set(72, 9, 11); roofG.scale.set(0.5, 1, 1); roofG.castShadow = true; Z.group.add(roofG);
   const gymSign = plane(10, 1.6, new THREE.MeshBasicMaterial({ toneMapped: false, map: canvasTex(800, 128, (g, w, h) => { g.fillStyle = '#1b2430'; g.fillRect(0, 0, w, h); g.fillStyle = '#FFB547'; g.font = `900 70px ${CN_FONT}`; g.fillText('体育馆 · GYMNASIUM', 40, 90); }) }), 72, 7.2, 20.08); gymSign.material.color.setScalar(1.3);
   [67, 73].forEach(x => box(0.4, 3.0, 0.5, frameM, x, 0, 20.2)); seg(70, 20.1, true, 5.6, 0, 2.8, 0.1, glassM, false); plane(5, 0.12, thresholdM, 70, 0.012, 21.2, { rx: -Math.PI / 2 });
-  decal('体育馆 · 羽毛球馆', 70, 24.5, 3.4, 0.6, { sub: 'BADMINTON HALL' });
+  decal('体育馆 · 羽毛球馆', 70, 24.5, 3.4, 0.6, { sub: 'BADMINTON HALL', to: 'n' });
   Z.portals.push({ kind: 'door', x: 70, z: 21.8, to: 'gym', spawn: { x: 20, z: 24.2 }, label: '进入体育馆' });
   /* soccer field */
   const fieldTex = canvasTex(1024, 640, (g, w, h) => { for (let i = 0; i < 10; i++) { g.fillStyle = i % 2 ? '#3f8a3a' : '#469a40'; g.fillRect(i * w / 10, 0, w / 10, h); } g.strokeStyle = '#ffffff'; g.lineWidth = 6; g.strokeRect(30, 30, w - 60, h - 60); g.beginPath(); g.moveTo(w / 2, 30); g.lineTo(w / 2, h - 30); g.stroke(); g.beginPath(); g.arc(w / 2, h / 2, 80, 0, 7); g.stroke(); g.strokeRect(30, h / 2 - 150, 150, 300); g.strokeRect(w - 180, h / 2 - 150, 150, 300); g.strokeRect(30, h / 2 - 70, 60, 140); g.strokeRect(w - 90, h / 2 - 70, 60, 140); });
@@ -2518,7 +2539,7 @@ function sportNPC(id, look, x, z, lx, lz) { look._id = id; const p = makeChar(lo
   lightPool(20, 13, 14, '#ffffff', 0.08); addLamp(8, 13, '#ffffff', 14); addLamp(32, 13, '#ffffff', 14);
   /* door to campus */
   [18, 22].forEach(x => box(0.2, 2.6, 0.3, frameM, x, 0, 26)); seg(20, 25.9, true, 4, 2.3, 0.3, 0.3, frameM); plane(4, 0.1, thresholdM, 20, 0.012, 25.6, { rx: -Math.PI / 2 });
-  decal('出口 · 校园', 20, 24.0, 2.4, 0.55, { sub: 'EXIT → CAMPUS', accent: '#3DDC97' });
+  decal('出口 · 校园', 20, 24.0, 2.4, 0.55, { sub: 'EXIT · CAMPUS', accent: '#3DDC97', to: 's' });
   Z.portals.push({ kind: 'door', x: 20, z: 25.2, to: 'campus', spawn: { x: 70, z: 23.2 }, label: '走出体育馆' }); Z.spawn = { x: 20, z: 24.2 };
   Z.rooms = { c1: { x0: 2, z0: 5, x1: 12, z1: 21, name: '1 号场' }, c2: { x0: 15, z0: 5, x1: 25, z1: 21, name: '2 号场' }, c3: { x0: 28, z0: 5, x1: 38, z1: 21, name: '3 号场' }, hall: { x0: 0, z0: 0, x1: 40, z1: 26, name: '羽毛球馆' } };
 })();
