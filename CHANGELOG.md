@@ -1,5 +1,9 @@
 # Changelog
 
+## v10.1.1 — Fixes (2026-10-22)
+- **Badminton courts follow the BWF Laws (Law 1).** The old texture was drawn sideways and squashed into a 6.6 m court. Now: 13.40 × 6.10 m, 40 mm lines counted inside the area they bound, singles sidelines 0.46 m in, short service lines 1.98 m from the net, doubles long service lines 0.76 m inside the back boundary, centre lines from the short service line to the back. Posts stand on the doubles sidelines at 1.55 m; the net is 6.1 m long, 760 mm deep, 1.524 m high at the centre (the match physics uses 1.524 m too).
+- **Navigator chip no longer overlaps the clock panel** on desktop: it now sits 8 px below the panel, whatever the panel's height.
+
 ## v10.1-step5 — Badminton training (2026-10-22)
 - "直接打一局羽毛球" on the title page now opens a small menu in the gym: play 阿强 or 小吴, or train. Nothing here touches the career save.
 - **后场头顶区 (round-the-head corner)**: 10 feeds to your rear backhand corner, high-and-slow or flat-and-fast in a fixed mix. Points for a return that lands in (3/2/1 by timing) plus 2 for the right footwork: 马来步 on the slow ones, 中国跳 on the fast ones. The Malaysian step now needs 0.75 s to spare, so it genuinely fails on the fast feeds.

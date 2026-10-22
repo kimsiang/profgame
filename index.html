@@ -2531,13 +2531,28 @@ function sportNPC(id, look, x, z, lx, lz) { look._id = id; const p = makeChar(lo
   slab(40, 26, 20, 13);
   floorPlane(0, 0, 40, 26, mat('#ffffff', { map: T.wood(10, 6.5), roughness: 0.45, envMapIntensity: 0.6 }));
   perimeter('window');
-  const courtTex = canvasTex(512, 256, (g, w, h) => { g.fillStyle = '#2f8f5a'; g.fillRect(0, 0, w, h); g.strokeStyle = '#fff'; g.lineWidth = 5; g.strokeRect(16, 16, w - 32, h - 32); g.beginPath(); g.moveTo(16, 34); g.lineTo(w - 16, 34); g.moveTo(16, h - 34); g.lineTo(w - 16, h - 34); g.moveTo(w / 2, 16); g.lineTo(w / 2, h - 16); g.moveTo(w / 2 - 76, 16); g.lineTo(w / 2 - 76, h - 16); g.moveTo(w / 2 + 76, 16); g.lineTo(w / 2 + 76, h - 16); g.moveTo(16, h / 2); g.lineTo(w / 2 - 76, h / 2); g.moveTo(w / 2 + 76, h / 2); g.lineTo(w - 16, h / 2); g.stroke(); });
+  /* BWF court (Laws of Badminton, Law 1): 13.40 × 6.10 m, lines 40 mm wide and part of the area they bound.
+     Singles sidelines 0.46 m inside the doubles sidelines; short service lines 1.98 m from the net;
+     doubles long service lines 0.76 m inside the back boundary; centre line from short service line to back boundary.
+     Canvas x = court width (world x), canvas y = court length (world z), 80 px per metre. */
+  const courtTex = canvasTex(488, 1072, (g, w, h) => {
+    const k = 80, L = 0.04 * k, net = h / 2;
+    g.fillStyle = '#2f7f5a'; g.fillRect(0, 0, w, h);
+    g.fillStyle = '#ffffff';
+    const hl = (y) => g.fillRect(0, y, w, L), vl = (x, y0, y1) => g.fillRect(x, y0, L, y1 - y0);
+    hl(0); hl(h - L);                                   // back boundary lines
+    vl(0, 0, h); vl(w - L, 0, h);                       // doubles sidelines
+    vl(0.46 * k, 0, h); vl(w - 0.46 * k - L, 0, h);     // singles sidelines
+    hl(0.76 * k - L); hl(h - 0.76 * k);                 // doubles long service lines (outer edge 0.76 m from the back)
+    hl(net - 1.98 * k); hl(net + 1.98 * k - L);         // short service lines (edge nearest the net at 1.98 m)
+    vl(w / 2 - L / 2, 0, net - 1.98 * k); vl(w / 2 - L / 2, net + 1.98 * k, h);   // centre lines
+  }); courtTex.anisotropy = 8;
   const netTex = canvasTex(128, 32, (g) => { g.clearRect(0, 0, 128, 32); g.strokeStyle = 'rgba(255,255,255,.85)'; for (let i = 0; i < 128; i += 4) { g.beginPath(); g.moveTo(i, 0); g.lineTo(i, 32); g.stroke(); } for (let j = 0; j < 32; j += 4) { g.beginPath(); g.moveTo(0, j); g.lineTo(128, j); g.stroke(); } g.fillStyle = '#fff'; g.fillRect(0, 0, 128, 3); }); netTex.wrapS = THREE.RepeatWrapping; netTex.repeat.set(8, 1);
   [7, 20, 33].forEach((cx, i) => {
-    floorPlane(cx - 3.3, 6.3, cx + 3.3, 19.7, mat('#ffffff', { map: courtTex, roughness: 0.6 }), 0.006);
-    const net = new THREE.Mesh(new THREE.PlaneGeometry(6.4, 0.76), new THREE.MeshStandardMaterial({ map: netTex, transparent: true, side: THREE.DoubleSide, alphaTest: 0.2 })); net.position.set(cx, 1.17, 13); Z.group.add(net);
-    [cx - 3.25, cx + 3.25].forEach(x => cyl(0.04, 0.04, 1.55, mat('#1b2430', { metalness: 0.6 }), x, 0, 13, { seg: 8 }));
-    blockRect(cx - 3.3, 12.85, cx + 3.3, 13.15, 0.1);
+    floorPlane(cx - 3.05, 6.3, cx + 3.05, 19.7, mat('#ffffff', { map: courtTex, roughness: 0.6 }), 0.006);
+    const net = new THREE.Mesh(new THREE.PlaneGeometry(6.1, 0.76), new THREE.MeshStandardMaterial({ map: netTex, transparent: true, side: THREE.DoubleSide, alphaTest: 0.2 })); net.position.set(cx, 1.524 - 0.38, 13); Z.group.add(net);
+    [cx - 3.05, cx + 3.05].forEach(x => cyl(0.02, 0.02, 1.55, mat('#1b2430', { metalness: 0.6 }), x, 0, 13, { seg: 8 }));   // posts on the doubles sidelines, 1.55 m
+    blockRect(cx - 3.05, 12.85, cx + 3.05, 13.15, 0.1);
     if (i !== 1) { const a = makeChar({ shirt: ['#2251FF', '#3DDC97'][i / 2 | 0], hairStyle: 'short', pants: '#ffffff' }); a.position.set(cx, 0, 9); face(a, cx, 17); a.userData.state = 'play'; a.userData.baseState = 'play'; Z.npcs.push(a); const b = makeChar({ shirt: ['#c0392b', '#f2c574'][i / 2 | 0], hairStyle: 'pony', pants: '#ffffff' }); b.position.set(cx, 0, 17); face(b, cx, 9); b.userData.state = 'play'; b.userData.baseState = 'play'; Z.npcs.push(b); const sh = ball(cx, 1.6, 13, 0.07, '#ffffff', 'shuttle'); sh.from = [cx, 9.5]; sh.to = [cx, 16.5]; sh.active = true; }
   });
   sportNPC('grad1', { shirt: '#7a5cff', hairStyle: 'spiky', pants: '#ffffff', label: '研究生会 · 阿强' }, 20, 9.5, 20, 16);
@@ -5606,8 +5621,16 @@ function navMinutes(to) {
   return Math.round(m);
 }
 let navSig = '';
+// Desktop: the chip sits 8 px under the clock panel (the panel grows with the day-block bar, so a fixed top overlapped it).
+function placeNavChip() {
+  const chip = $('navChip'), pill = $('clockPill'); if (!chip || !pill) return;
+  if (innerWidth <= 900) { chip.style.top = ''; return; }
+  const r = pill.getBoundingClientRect(); if (r.height) chip.style.top = Math.round(r.bottom + 8) + 'px';
+}
+addEventListener('resize', placeNavChip);
 function renderNavChip() {
   if (!Z) return;
+  placeNavChip();
   const cur = player ? roomAt(player.position.x, player.position.z) : '';
   const room = cur && Z.rooms[cur] ? Z.rooms[cur].name : (Z.outdoor ? '' : (Z.name.split(' · ')[1] || '走廊'));
   const by = navEvents(), off = Object.entries(by).filter(([z]) => z !== Z.id).reduce((a, [, o]) => a + o.n, 0);

@@ -1,6 +1,6 @@
 {
   "_comment": "v10 badminton match. Units: metres, seconds. Court 2 in the gym is centred at x=20, net at z=13; the player plays the near half (z > 13).",
-  "court": { "cx": 20, "net": 13, "len": 6.7, "sx": 2.59, "netH": 1.55, "shortLine": 1.98 },
+  "court": { "cx": 20, "net": 13, "len": 6.7, "sx": 2.59, "netH": 1.524, "shortLine": 1.98 },
   "physics": { "drag": 0.212, "_drag": "k = g / v_t^2 with terminal velocity v_t = 6.8 m/s: the shuttle slows sharply, so clears rise and then fall almost straight down" },
   "match": { "points": 7, "winBy": 2, "cap": 9, "pointPause": 1.7, "aiServeDelay": 1.1 },
   "player": { "speed": 4.2, "speedEnergy": 0.35, "reaction": 0.16, "reach": 0.85, "maxY": 2.65, "minY": 0.25 },
