@@ -1,5 +1,11 @@
 # Changelog
 
+## v10.1-step3 — Badminton: placement, tactics and the post-match review (2026-10-22)
+- **Choose the corner.** Diagonal swipes pick the side: up-left / up-right clear to a rear corner, down-left / down-right drop to a front corner; straight up or down still plays to the open space. Keyboard: Q/E and Z/C. Tap with the shuttle overhead is still the smash.
+- **Every shot gets a tactical tag** from `assets/data/badminton-tactics.json`: 拉吊四角, 打空档, 被动过渡, 冒险进攻 (forcing a smash from the baseline off balance), 攻反手后场, 杀后上网. The tag shows next to "完美 / 好球".
+- **Every rally is classified**: your winner, opponent's winner (you could not reach it), unforced error (no pressure, still net or out), forced error, or a timing miss (early/late). Swing timing is recorded to the millisecond.
+- **Post-match review** (quick play and career): one headline finding, a court map of where every shot landed (green your winners, red your errors, amber the opponent's winners), the numbers (winners, unforced/forced errors, average timing offset and spread, longest rally), two coaching cues, and the trend over your last 5 games (kept in this browser only, not in the save). In a career the clock waits until you press 继续.
+
 ## v10.0-step2.1 — Quick badminton from the title page (2026-10-22)
 - Title page: "直接打一局羽毛球" goes straight to court 2 for a game to 7 against 阿强, without starting a career. Nothing is saved; your career save is untouched.
 - After the game: play again, switch opponent (阿强 casual, or 小吴, chemistry postdoc and varsity player), or go back to the title page.

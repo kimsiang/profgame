@@ -76,8 +76,12 @@
       t: 0, phase: 'serve', score: { P: 0, O: 0 }, server: 'P', ch: { P: mkCh('P'), O: mkCh('O') },
       fl: null, inc: null, phaseT: 0, ev: [], W, energy, opp: opts.opp,
       stats: { shots: 0, perfect: 0, smashes: 0, smashWin: 0, rally: 0, longest: 0, rallies: 0, misses: 0 },
+      log: [],      // every shot: who, what, where it landed, under how much pressure, tactical tags
+      points: [],   // every rally: who won, how, and whose error it was
+      timing: [],   // the player's swing offsets from the ideal moment (s; negative = early)
+      tags: {},     // tag id -> count, player shots only
     };
-    const emit = (e) => m.ev.push(e);
+    const emit = (e) => { if (e.type === 'miss') m.lastMiss = e; m.ev.push(e); };
 
     function flightPos(t) {
       const f = m.fl; if (!f) return null;
@@ -135,13 +139,38 @@
       const v = solve(from, etx, etz, Object.assign({}, S, { angle: ang + gauss() * { perfect: 0.4, good: 0.9, fair: 2, bad: 4 }[q] }), smashSpd);
       const f = fly(from, v, true);
       m.fl = Object.assign(f, { t0: m.t, hitter: side, shot: shotId, q, speed: v.spd });
+      const prevInc = m.inc, margin = o.serve || !prevInc || !prevInc.c ? 9 : prevInc.c.margin;
+      const inSpd = o.serve || !prevInc || !prevInc.c ? 0 : Math.hypot(prevInc.c.vx, prevInc.c.vy, prevInc.c.vz);
+      const rec = { side, shot: shotId, q, serve: !!o.serve, from: { x: from.x, y: from.y, z: from.z }, land: { x: f.land.x, z: f.land.z }, net: f.netHit,
+        margin, inSpd, opp: { x: R.x, z: R.z }, foot: o.foot || null, tags: [] };
+      tagShot(rec);
+      m.log.push(rec); m.fl.rec = rec;
       m.stats.rally++;
       if (side === 'P') { m.stats.shots++; if (q === 'perfect') m.stats.perfect++; if (shotId === 'smash') m.stats.smashes++; }
       const H = m.ch[side]; H.swingT = m.t;
       // Recover toward base, shaded to the side the shuttle went.
       const b = base(side); H.tx = b.x + (etx - C.cx) * 0.3; H.tz = b.z; H.mvT = m.t + 0.25;
-      emit({ type: 'hit', side, shot: shotId, q, speed: v.spd, serve: !!o.serve });
+      emit({ type: 'hit', side, shot: shotId, q, speed: v.spd, serve: !!o.serve, tags: rec.tags });
       plan(recv);
+    }
+
+    /* ---------- tactical tags (thresholds in D.tactics.rules) ---------- */
+    const T = (D.tactics && D.tactics.rules) || {};
+    const par = (id, k, d) => (T[id] && T[id][k] != null ? T[id][k] : d);
+    function lastOf(side, before) { for (let i = m.log.length - 1; i >= 0; i--) { const r = m.log[i]; if (r === before) continue; if (r.side === side) return r; } return null; }
+    function tagShot(r) {
+      if (r.serve) return;
+      const sg = sideSign(r.side), add = (id) => { r.tags.push(id); if (r.side === 'P') m.tags[id] = (m.tags[id] || 0) + 1; };
+      const depthLand = Math.abs(r.land.z - C.net), depthFrom = Math.abs(r.from.z - C.net);
+      const prev = lastOf(r.side, r);
+      if (prev && !prev.net && (Math.abs(prev.land.z - r.land.z) >= par('spread', 'dz', 3) || Math.abs(prev.land.x - r.land.x) >= par('spread', 'dx', 3))) add('spread');
+      if (Math.hypot(r.land.x - r.opp.x, r.land.z - r.opp.z) >= par('space', 'dist', 2.5)) add('space');
+      if (r.margin < par('transition', 'margin', 0.2) && (r.shot === 'lift' || r.shot === 'clear') && depthLand >= par('transition', 'depth', 5)) add('transition');
+      if (r.shot === 'smash' && depthFrom > par('risky', 'depth', 5) && r.margin < par('risky', 'margin', 0.25)) add('risky');
+      // Backhand rear corner of a right-handed receiver: their left. Facing +z (far side) that is +x; facing -z, -x.
+      if (depthLand >= par('backhand', 'depth', 4.5) && (r.land.x - C.cx) * sg > par('backhand', 'x', 1.0)) add('backhand');
+      // Smash, then follow in: this shot is at the net and the player's previous shot was a smash.
+      if (prev && prev.shot === 'smash' && depthFrom < D.netZone) add('smashNet');
     }
 
     function down(q, n) { let i = ORDER.indexOf(q); i = Math.min(ORDER.length - 1, i + (n || 1)); return ORDER[i]; }
@@ -160,12 +189,16 @@
     }
 
     // Player gesture → shot, from the contact height and distance to the net.
+    // Gestures: up / down / left / right / tap, and the diagonals upleft, upright, downleft, downright.
+    // A diagonal (or left/right) fixes the side the shuttle goes to (x sign as seen from the player); straight up or
+    // down plays to the open space automatically.
     function shotFor(g, c) {
       const z = zoneOf(c), nearNet = Math.abs(c.z - C.net) < D.netZone;
-      if (g === 'up') return { shot: c.y < 1.1 ? 'lift' : 'clear' };
-      if (g === 'down') return { shot: c.y < 1.1 && nearNet ? 'netdrop' : 'drop' };
-      if (g === 'left' || g === 'right') return { shot: c.y < 1.1 && nearNet ? 'push' : 'drive', aim: g === 'right' ? 1 : -1 };
-      return { shot: z === 'high' ? 'smash' : 'push' };
+      const aim = /left$/.test(g) ? -1 : /right$/.test(g) ? 1 : 0;
+      if (g === 'left' || g === 'right') return { shot: c.y < 1.1 && nearNet ? 'push' : 'drive', aim };
+      if (/^up/.test(g)) return { shot: c.y < 1.1 ? 'lift' : 'clear', aim };
+      if (/^down/.test(g)) return { shot: c.y < 1.1 && nearNet ? 'netdrop' : 'drop', aim };
+      return { shot: z === 'high' ? 'smash' : 'push', aim };
     }
 
     /* ---------- serving ---------- */
@@ -183,7 +216,22 @@
       hit(s, kind, q || 'good', { from, tx: Rr.x + (rnd() - 0.5) * 0.4, serve: true });
     }
 
+    // Whose point, and why: a winner, an unforced error (no pressure), a forced error, or a timing miss.
+    function classify(w, why) {
+      const f = m.fl, r = f && f.rec, loser = other(w);
+      let kind, by;
+      if (why === 'in') {
+        const miss = m.lastMiss && m.lastMiss.side === loser ? m.lastMiss.why : 'far';
+        by = miss === 'far' ? w : loser; kind = miss === 'far' ? 'winner' : 'timing';
+      } else {
+        by = r ? r.side : loser;
+        const calm = r && r.margin >= par('unforced', 'margin', 0.25) && r.inSpd < D.smashSpeed;
+        kind = calm ? 'unforced' : 'forced';
+      }
+      return { w, why, by, kind, shot: r ? r.shot : null, rally: m.stats.rally, rec: r || null, miss: m.lastMiss ? m.lastMiss.why : null };
+    }
     function pointTo(w, why) {
+      m.points.push(classify(w, why)); m.lastMiss = null;
       m.score[w]++; m.phase = 'point'; m.phaseT = m.t; m.stats.longest = Math.max(m.stats.longest, m.stats.rally);
       if (m.fl && m.fl.hitter === 'P' && m.fl.shot === 'smash' && w === 'P') m.stats.smashWin++;
       m.server = w;
@@ -199,14 +247,15 @@
       if (m.phase === 'serve' && m.server === 'P') { serve(g === 'down' ? 'short' : 'high', 'good'); return { r: 'serve' }; }
       if (m.phase !== 'rally' || !m.inc || m.inc.recv !== 'P' || m.inc.done) return null;
       const c = m.inc.c, dt = m.t - c.t;
-      if (dt < -W.fair) { if (dt < -0.7) return null; m.inc.done = true; m.stats.misses++; emit({ type: 'miss', side: 'P', why: 'early' }); return { r: 'early' }; }
+      if (dt < -W.fair) { if (dt < -0.7) return null; m.timing.push(dt); m.inc.done = true; m.stats.misses++; emit({ type: 'miss', side: 'P', why: 'early' }); return { r: 'early' }; }
       if (!c.reach) { m.inc.done = true; m.stats.misses++; emit({ type: 'miss', side: 'P', why: 'far' }); return { r: 'far' }; }
+      m.timing.push(dt);
       let q = Math.abs(dt) <= W.perfect ? 'perfect' : Math.abs(dt) <= W.good ? 'good' : 'fair';
       if (Math.hypot(c.vx, c.vy, c.vz) > D.smashSpeed) q = down(q);   // a smash is hard to return cleanly
       if (c.margin < 0.05) q = down(q);
       const sf = shotFor(g, c);
       m.inc.done = true;
-      hit('P', sf.shot, q, { aim: sf.aim });
+      hit('P', sf.shot, q, { aim: sf.aim || 0 });
       return { r: q, shot: sf.shot };
     }
 
@@ -232,7 +281,7 @@
         if (inc && !inc.done && inc.recv === 'P' && m.t > inc.c.t + W.fair) {
           inc.done = true;
           if (inc.out) emit({ type: 'miss', side: 'P', why: 'leave' });
-          else { m.stats.misses++; emit({ type: 'miss', side: 'P', why: inc.c.reach ? 'late' : 'far' }); }
+          else { m.stats.misses++; if (inc.c.reach) m.timing.push(W.fair + 0.05); emit({ type: 'miss', side: 'P', why: inc.c.reach ? 'late' : 'far' }); }
         }
         const f = m.fl;
         if (f && m.t >= f.t0 + f.land.t) {
@@ -258,6 +307,43 @@
     m.ev = [];
     return { m, swing, update, ring, pos: () => (m.fl ? flightPos(m.t) : null), W, PAR, inBounds, shotFor, D };
   }
+
+  /* Post-match review: one headline finding, evidence, two cues. Pure: takes the finished match state. */
+  BMCore.review = (m, D, lang) => {
+    const T = D.tactics || { rules: {}, cues: {}, findings: {}, words: {} }, L = lang === 'en' ? 'en' : 'zh';
+    const fill = (tpl, o) => tpl.replace(/\{(\w+)\}/g, (_, k) => (o[k] != null ? o[k] : ''));
+    const pts = m.points, lost = pts.filter((p) => p.w === 'O'), won = pts.filter((p) => p.w === 'P');
+    const unforced = pts.filter((p) => p.by === 'P' && p.kind === 'unforced'), forced = pts.filter((p) => p.by === 'P' && p.kind === 'forced');
+    const timingMiss = pts.filter((p) => p.by === 'P' && p.kind === 'timing'), far = pts.filter((p) => p.w === 'O' && p.kind === 'winner');
+    const winners = pts.filter((p) => p.w === 'P' && p.kind === 'winner');
+    const tm = m.timing, n = tm.length, mean = n ? tm.reduce((a, b) => a + b, 0) / n : 0;
+    const sd = n > 1 ? Math.sqrt(tm.reduce((a, b) => a + (b - mean) * (b - mean), 0) / (n - 1)) : 0;
+    const shots = m.log.filter((r) => r.side === 'P' && !r.serve).length, tags = m.tags;
+    const mode = (arr, f) => { const c = {}; arr.forEach((x) => { const k = f(x); c[k] = (c[k] || 0) + 1; }); return Object.keys(c).sort((a, b) => c[b] - c[a])[0]; };
+    const items = [], cue = (id) => { const r = T.rules[id] || T.cues[id]; return r ? { id, text: r['cue_' + L] || r[L] } : null; };
+    if (unforced.length >= 2 && unforced.length / Math.max(1, lost.length) >= 0.35) {
+      const shot = mode(unforced, (p) => p.shot), why = mode(unforced, (p) => p.why);
+      items.push({ id: 'unforced', text: fill(T.findings.unforced[L], { lost: lost.length, n: unforced.length, shot: (D.shots[shot] || {})[L] || shot, why: (T.words[why] || {})[L] || why }),
+        cues: [shot === 'smash' && (tags.risky || 0) > 0 ? 'risky' : why === 'net' ? 'netClear' : 'inside'] });
+    }
+    if (n >= 5 && Math.abs(mean) >= 0.05) items.push({ id: 'timing', text: fill(T.findings.timing[L], { dir: (T.words[mean < 0 ? 'early' : 'late'] || {})[L], ms: Math.round(Math.abs(mean) * 1000) }), cues: ['shadow'] });
+    if (far.length >= 3) items.push({ id: 'far', text: fill(T.findings.far[L], { n: far.length }), cues: ['transition', 'base'] });
+    if (shots >= 8 && (tags.spread || 0) / shots < 0.25) items.push({ id: 'spread', text: fill(T.findings.spread[L], { shots, n: tags.spread || 0 }), cues: ['spread'] });
+    items.push({ id: 'good', text: fill(T.findings.good[L], { w: winners.length, n: unforced.length }), cues: [(tags.backhand || 0) < 2 ? 'backhand' : 'smashNet', 'space'] });
+    const cues = []; items.forEach((it) => it.cues.forEach((c) => { if (!cues.find((x) => x.id === c)) { const q = cue(c); if (q) cues.push(q); } }));
+    // Court map: every shot's landing point, coloured by what that shot did.
+    const end = new Set(pts.map((p) => p.rec).filter(Boolean));
+    const dots = m.log.filter((r) => !r.serve).map((r) => {
+      const p = end.has(r) ? pts.find((q) => q.rec === r) : null;
+      return { side: r.side, x: r.land.x, z: r.land.z, net: r.net, kind: p ? (p.w === r.side ? 'win' : 'err') : 'rally' };
+    });
+    return {
+      headline: items[0].text, items, cues: cues.slice(0, 2),
+      nums: { won: won.length, lost: lost.length, winners: winners.length, unforced: unforced.length, forced: forced.length, timingMiss: timingMiss.length, far: far.length,
+        meanMs: Math.round(mean * 1000), sdMs: Math.round(sd * 1000), swings: n, longest: m.stats.longest, perfect: m.stats.perfect, shots },
+      tags, dots,
+    };
+  };
 
   // Win probability for "just play it out", interpolated on energy (numbers come from the balance runs).
   BMCore.autoWin = (D, opp, energy) => { const a = D.autoWin[opp]; return a.e0 + (a.e100 - a.e0) * Math.max(0, Math.min(100, energy)) / 100; };

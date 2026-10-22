@@ -194,6 +194,12 @@ body.bm #hud,body.bm #prompt{display:none!important}
 #bmPop{position:absolute;top:38%;left:50%;transform:translate(-50%,-50%);font:900 34px/1 var(--serif,serif);color:#fff;text-shadow:0 2px 14px rgba(0,0,0,.6);pointer-events:none;opacity:0;transition:opacity .25s}
 #bmPop.on{opacity:1}#bmPop.good{color:#3DDC97}#bmPop.bad{color:#ff7a6b}
 #bmEndBox{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);padding:20px 22px;width:min(380px,calc(100vw - 32px));display:flex;flex-direction:column;gap:10px;text-align:center}
+#bmEndBox.rev{width:min(640px,calc(100vw - 24px));max-height:calc(100vh - 120px);overflow:auto;text-align:left}
+.bmRev{display:flex;gap:18px;align-items:flex-start}.bmRev svg{flex:0 0 auto}
+.bmRev .num{display:grid;grid-template-columns:auto auto;gap:3px 14px;font-size:13px;margin:6px 0}.bmRev .num b{font-family:var(--mono,monospace);text-align:right}
+.bmRev .head{font:800 16px/1.5 var(--serif-cn,serif);color:#fff;margin:4px 0 8px}.bmRev .cue{font-size:13px;line-height:1.6;border-left:2px solid #00A9F4;padding-left:10px;margin:6px 0;color:#CDEEFF}
+.bmRev .lg{font-size:11px;color:var(--muted)}.bmRev .lg i{display:inline-block;width:8px;height:8px;border-radius:50%;margin:0 4px 0 8px}
+@media (max-width:560px){.bmRev{flex-direction:column;align-items:center}}
 #bmEndBox h3{margin:0;font:900 26px var(--serif-cn,serif)}#bmEndBox p{margin:0 0 4px;font-size:13px;color:var(--muted);line-height:1.6}
 #bmQuit{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:16px}
 #dlg{position:fixed;z-index:20;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));width:min(1180px,calc(100vw - 28px));height:min(50vh,480px);display:flex;animation:din .35s cubic-bezier(.2,.9,.3,1)}
@@ -4767,7 +4773,7 @@ function bmFx() {
 const BM_COL = { green: new THREE.Color('#3DDC97').multiplyScalar(1.6), amber: new THREE.Color('#FFB547').multiplyScalar(1.4), white: new THREE.Color('#ffffff'), red: new THREE.Color('#ff6b5e').multiplyScalar(1.3), smash: new THREE.Color('#FFB547').multiplyScalar(1.8) };
 async function bmStart(opp) {
   if (!window.BMCore) { toast('羽毛球脚本没加载上，先按原来的方式打。'); return ACT.badminton(30); }
-  if (!BM.data) { try { const r = await fetch('assets/data/badminton.json'); if (!r.ok) throw 0; BM.data = await r.json(); } catch (e) { toast('球场数据没加载上，先按原来的方式打。'); return ACT.badminton(30); } }
+  if (!BM.data) { try { const r = await fetch('assets/data/badminton.json'); if (!r.ok) throw 0; const d = await r.json(); try { const t = await fetch('assets/data/badminton-tactics.json'); if (t.ok) d.tactics = await t.json(); } catch (e) { /* review falls back to plain numbers */ } BM.data = d; } catch (e) { toast('球场数据没加载上，先按原来的方式打。'); return ACT.badminton(30); } }
   const D = BM.data, O = D.opponents[opp], npc = NPC[O.npc];
   const core = BMCore(D, { opp, energy: S.v.energy });
   const decor = Z.balls.filter(b => b.kind === 'shuttle' && b.from[0] === 20);
@@ -4791,7 +4797,7 @@ function bmScore() {
 function bmHint() {
   const m = BM.m.core.m;
   $('bmHint').innerHTML = m.phase === 'serve' && m.server === 'P' ? '发球：上滑 / <span class="key">W</span> 高远球 · 下滑 / <span class="key">S</span> 网前球'
-    : '上滑 <span class="key">W</span> 高远 · 下滑 <span class="key">S</span> 吊球 · 左右 <span class="key">A</span><span class="key">D</span> 平抽 · 头顶点击 <span class="key">空格</span> 杀球';
+    : '上滑 <span class="key">W</span> 高远 · 下滑 <span class="key">S</span> 吊球 · 斜滑 <span class="key">Q</span><span class="key">E</span><span class="key">Z</span><span class="key">C</span> 选左右角 · 左右 <span class="key">A</span><span class="key">D</span> 平抽 · 头顶点击 <span class="key">空格</span> 杀球';
 }
 function bmPop(text, cls, sec = 0.9) { const el = $('bmPop'); el.textContent = text; el.className = 'on ' + (cls || ''); BM.m.pop = sec; }
 function bmSwing(g) {
@@ -4799,11 +4805,11 @@ function bmSwing(g) {
   const r = B.core.swing(g); if (!r) return;
   const D = B.D;
   if (r.r === 'serve') { SFX.click(); bmHint(); return; }
-  if (D.quality[r.r]) { bmPop(`${D.quality[r.r].label_zh} ${D.shots[r.shot].zh}`, r.r === 'perfect' ? 'good' : ''); SFX[r.r === 'perfect' ? 'good' : 'click'](); }
+  if (D.quality[r.r]) { const lg = B.core.m.log[B.core.m.log.length - 1], tg = (lg && lg.tags || []).map(t => D.tactics && D.tactics.rules[t] ? D.tactics.rules[t].zh : '').filter(Boolean)[0]; bmPop(`${D.quality[r.r].label_zh} ${D.shots[r.shot].zh}${tg ? ' · ' + tg : ''}`, r.r === 'perfect' ? 'good' : (lg && lg.tags.includes('risky') ? 'bad' : '')); SFX[r.r === 'perfect' ? 'good' : 'click'](); }
   else { bmPop(D.misses[r.r].zh, 'bad'); SFX.bad(); }
 }
 function bmKey(e) {
-  const map = { KeyW: 'up', ArrowUp: 'up', KeyS: 'down', ArrowDown: 'down', KeyA: 'left', ArrowLeft: 'left', KeyD: 'right', ArrowRight: 'right', Space: 'tap', KeyJ: 'tap' };
+  const map = { KeyW: 'up', ArrowUp: 'up', KeyS: 'down', ArrowDown: 'down', KeyA: 'left', ArrowLeft: 'left', KeyD: 'right', ArrowRight: 'right', Space: 'tap', KeyJ: 'tap', KeyQ: 'upleft', KeyE: 'upright', KeyZ: 'downleft', KeyC: 'downright' };
   if (map[e.code]) { e.preventDefault(); if (!e.repeat) bmSwing(map[e.code]); }
   else if (e.code === 'Escape') bmEnd(false);
 }
@@ -4813,7 +4819,10 @@ function bmKey(e) {
   el.addEventListener('pointerup', (e) => {
     if (!down || down.id !== e.pointerId) return;
     const dx = e.clientX - down.x, dy = e.clientY - down.y; down = null;
-    bmSwing(Math.hypot(dx, dy) < 24 ? 'tap' : Math.abs(dy) >= Math.abs(dx) ? (dy < 0 ? 'up' : 'down') : (dx > 0 ? 'right' : 'left'));
+    if (Math.hypot(dx, dy) < 24) return bmSwing('tap');
+    // Eight 45° sectors, screen up = -y.
+    const a = Math.atan2(-dy, dx) * 180 / Math.PI, i = ((Math.round(a / 45) % 8) + 8) % 8;
+    bmSwing(['right', 'upright', 'up', 'upleft', 'left', 'downleft', 'down', 'downright'][i]);
   });
   el.addEventListener('pointercancel', () => { down = null; });
   el.addEventListener('contextmenu', (e) => e.preventDefault());
@@ -4870,6 +4879,40 @@ function bmVisuals(dt, p) {
   // A short swing pose is already shown for 0.35 s after each hit; lean the player toward the shuttle while it is coming.
   if (rg && rg.reach && player.userData.state !== 'play') player.rotation.y = Math.PI + Math.max(-0.5, Math.min(0.5, (rg.c.x - player.position.x) * 0.4));
 }
+/* Step 3: post-match review (analysis in BMCore.review, words in badminton-tactics.json). History: last 10 games, local only. */
+const BM_HIST = 'prof-bm-hist-v1';
+function bmHist(add) {
+  let h = []; try { h = JSON.parse(localStorage.getItem(BM_HIST) || '[]'); } catch (e) { h = []; }
+  if (add) { h.push(add); h = h.slice(-10); try { localStorage.setItem(BM_HIST, JSON.stringify(h)); } catch (e) { /* storage blocked */ } }
+  return h;
+}
+function bmCourtSVG(dots, cx) {
+  const s = 17, W = 6.1 * s, H = 13.4 * s, X = (x) => (x - cx + 3.05) * s + 6, Y = (z) => (z - 6.3) * s + 6;
+  const ln = (x1, y1, x2, y2) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;
+  const sx = 0.46 * s, ss = 1.98 * s, net = 6.7 * s + 6;
+  const col = { win: '#3DDC97', err: '#ff6b5e', rally: '#00A9F4' };
+  const dd = dots.map(d => `<circle cx="${X(d.x).toFixed(1)}" cy="${Y(d.z).toFixed(1)}" r="${d.kind === 'rally' ? 2.4 : 3.6}" fill="${d.side === 'P' ? col[d.kind] : (d.kind === 'win' ? '#FFB547' : 'rgba(205,238,255,.35)')}" ${d.kind === 'err' && d.side === 'P' ? 'stroke="#fff" stroke-width=".8"' : ''}/>`).join('');
+  return `<svg width="${W + 12}" height="${H + 12}" viewBox="0 0 ${W + 12} ${H + 12}" role="img" aria-label="落点图"><g stroke="rgba(234,244,251,.55)" stroke-width="1" fill="none">
+    <rect x="6" y="6" width="${W}" height="${H}"/>${ln(6 + sx, 6, 6 + sx, H + 6)}${ln(W + 6 - sx, 6, W + 6 - sx, H + 6)}
+    ${ln(6, net - ss, W + 6, net - ss)}${ln(6, net + ss, W + 6, net + ss)}${ln(W / 2 + 6, 6, W / 2 + 6, net - ss)}${ln(W / 2 + 6, net + ss, W / 2 + 6, H + 6)}</g>
+    <line x1="2" y1="${net}" x2="${W + 10}" y2="${net}" stroke="#fff" stroke-width="2"/>${dd}
+    <text x="${W / 2 + 6}" y="${net - 4}" fill="rgba(205,238,255,.6)" font-size="9" text-anchor="middle">对手半场</text><text x="${W / 2 + 6}" y="${net + 12}" fill="rgba(205,238,255,.6)" font-size="9" text-anchor="middle">你的半场</text></svg>`;
+}
+function bmReviewHTML(B, done) {
+  const m = B.core.m, w = done && m.winner === 'P';
+  const title = `<h3>${done ? (w ? '你赢了' : '输了') : '没打完'} ${m.score.P}:${m.score.O}</h3><p>${done ? esc(w ? B.O.lines.win_zh : B.O.lines.lose_zh) : ''}</p>`;
+  if (!window.BMCore.review || m.points.length < 3) return title + `<p>完美 ${m.stats.perfect} 次 · 杀球 ${m.stats.smashes} 次 · 最长回合 ${m.stats.longest} 拍</p>`;
+  const R = BMCore.review(m, B.D, 'zh'), n = R.nums;
+  const h = bmHist(done ? { t: Date.now(), opp: B.opp, P: m.score.P, O: m.score.O, u: n.unforced, ms: n.meanMs } : null).slice(-5);
+  const trend = h.length > 1 ? `<div class="lg" style="margin-top:6px">最近 ${h.length} 局主动失误：${h.map(x => x.u).join(' · ')}　出手偏差：${h.map(x => (x.ms > 0 ? '+' : '') + x.ms).join(' · ')} ms</div>` : '';
+  const ms = n.meanMs === 0 ? '准' : `${n.meanMs < 0 ? '早' : '晚'} ${Math.abs(n.meanMs)} ms`;
+  return title + `<div class="bmRev">${bmCourtSVG(R.dots, B.D.court.cx)}<div style="min-width:0">
+    <div class="head">${esc(R.headline)}</div>
+    <div class="num"><span>制胜球</span><b>${n.winners}</b><span>主动失误</span><b>${n.unforced}</b><span>被动失误</span><b>${n.forced}</b><span>时机失误（早/晚）</span><b>${n.timingMiss}</b><span>被调动够不到</span><b>${n.far}</b><span>出手平均偏差</span><b>${ms}</b><span>稳定度（±）</span><b>${n.sdMs} ms</b><span>最长回合</span><b>${n.longest} 拍</b></div>
+    ${R.cues.map(c => `<div class="cue">${esc(c.text)}</div>`).join('')}
+    <div class="lg"><i style="background:#3DDC97"></i>你的得分球<i style="background:#ff6b5e"></i>你的失误<i style="background:#00A9F4"></i>你的来回球<i style="background:#FFB547"></i>对手得分球</div>${trend}
+  </div></div>`;
+}
 function bmEnd(done) {
   const B = BM.m; if (!B) return;
   BM.m = null;
@@ -4883,8 +4926,17 @@ function bmEnd(done) {
   if (S.quick) return quickEnd(B, done);
   if (!done) { pose('idle', 20, 17.5, Math.PI); toast('不打了，收拍。'); return; }
   const w = m.winner === 'P';
-  toast(`${w ? '赢了' : '输了'} ${m.score.P}:${m.score.O} · ${(w ? B.O.lines.win_zh : B.O.lines.lose_zh)}`, w ? 'good' : '');
-  ACT.badminton(30);
+  // Career: the review comes first, with the clock held; "继续" runs the usual 30-minute activity.
+  const wasPaused = S.paused; S.paused = true;
+  document.body.classList.add('bm'); $('bm').classList.remove('hidden'); $('bmQuit').classList.add('hidden'); $('bmHint').textContent = '赛后复盘 · 看完再走';
+  const box = $('bmEndBox'); box.className = 'panel rev';
+  box.innerHTML = bmReviewHTML(B, true) + '<button class="btn gold" type="button" id="bmGo">收拍 · 继续（30 分钟） <span class="key" style="border-color:rgba(0,0,0,.4);color:#1a1205">Enter</span></button>';
+  $('bmGo').onclick = () => {
+    box.className = 'panel hidden'; document.body.classList.remove('bm'); $('bm').classList.add('hidden'); S.paused = wasPaused;
+    toast(`${w ? '赢了' : '输了'} ${m.score.P}:${m.score.O} · ${(w ? B.O.lines.win_zh : B.O.lines.lose_zh)}`, w ? 'good' : '');
+    ACT.badminton(30);
+  };
+  $('bmGo').focus({ preventScroll: true });
 }
 /* Quick play from the title page: one match in the gym, no career, nothing saved. */
 function quickBadminton(opp = 'aqiang') {
@@ -4905,7 +4957,8 @@ function quickEnd(B, done) {
   $('bmScore').innerHTML = `<span>你</span><b>${m.score.P}</b><span>:</span><b>${m.score.O}</b><span>${esc(B.O.name_zh)}</span>`;
   $('bmHint').textContent = '这是快速对局，不影响职业生涯存档。';
   const box = $('bmEndBox');
-  box.innerHTML = `<h3>${done ? (w ? '你赢了' : '输了') : '没打完'}</h3><p>${done ? esc((w ? B.O.lines.win_zh : B.O.lines.lose_zh)) : ''}<br>完美 ${st.perfect} 次 · 杀球 ${st.smashes} 次 · 最长回合 ${st.longest} 拍</p>
+  box.className = 'panel rev';
+  box.innerHTML = bmReviewHTML(B, done) + `
     <button class="btn gold" type="button" data-o="${B.opp}">再来一局</button>
     <button class="btn" type="button" data-o="${B.opp === 'wu' ? 'aqiang' : 'wu'}">${B.opp === 'wu' ? '换阿强（研究生 · 业余）' : '挑战小吴（化学系博士后 · 校队）'}</button>
     <button class="btn ghost" type="button" id="bmHome">回首页</button>`;
