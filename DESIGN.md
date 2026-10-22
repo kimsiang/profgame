@@ -58,6 +58,12 @@ Games last about 2 minutes (84–138 s). Energy 95 vs 25 is a 32–59 point swin
 - **Sharpness (v10.3.1).** While the venue is on: pixel ratio boosted (`PR_BOOST`, high 1.5–2×, mid 1.25–1.6×), tilt-shift and grain off, shadow camera ±11 m with a 4096² (high) / 2048² (mid) map. Falls back to normal resolution if the 150-frame average is below 45 fps.
 - **Rules untouched.** `badminton.js` is unchanged; balance numbers below still hold.
 
+## v12.1 — content files
+- `assets/data/content/week.json` — scripted events in script order; each object is the old `C()` call: day, time, loc, who, tag, title, line, open, ch, plus options (id, u, win, exp, req, reqNot, st, card, mood, pro, rubric, ach, achOn, alarm).
+- `events.json` — quick messages, admin (posts), academy week, the hat event, finance (incl. `shocks`), home scenes. `people.json` — students, memory lines. `calendar.json` — days, intentions. `codex.json` — cards, achievements, quiz.
+- `loadContent()` (end of the main script) fetches them in parallel and fills the existing containers (`WEEK` via `C()`, `QUICK`, `STUDENTS`, …), so the rules did not change. `needContent(fn)` gates the entry points. `tr()` resolves `{zh, en, ja, ms}` text by `LANG`.
+- Still in code (they carry functions or build 3D): `buildEvents` (events with mini games), crisis/data/family event templates, the tutorial, the lecture slides, hotspots.
+
 ## v12.0 — balance harness
 - `?sim` (const `SIM` at the top of the main script): `frame()` returns at once, `fadeTo` is synchronous, toasts and audio are off, models are not loaded, mini games return a fixed skill (`window.__simMini`). `window.__sim` exposes state and the real rule functions; `endWeek` stores `S.weekResult`.
 - `tools/balance/agent.js` (injected by `tools/e2e/balance.mjs`) plays a week: morning intention, then a loop of dialog → choice, activity → tick minutes, free time → policy action. Walking is charged as minutes (5 on a floor, lift time + 7 between floors). `Math.random` is seeded per career, so a row can be replayed.
