@@ -1,9 +1,9 @@
-// v10.4 sharpness: a 5F frame while walking. PORT picks the build (8123 = working tree); OUT names the file.
+// 5F frame while walking (v10.4 sharpness, v11 art styles: ART=real|diorama). PORT picks the build (8123 = working tree); OUT names the file.
 const SHOT = new URL('./out/', import.meta.url).pathname;
 export default async ({ page, sleep }) => {
   const ev = (code) => page.evaluate((c) => window.__prof(c), code);
   const port = process.env.PORT || 8123;
-  await page.evaluateOnNewDocument((q) => { try { localStorage.clear(); localStorage.setItem('prof-day-q', q); } catch (e) {} }, process.env.Q || 'high');
+  await page.evaluateOnNewDocument((q) => { try { localStorage.clear(); localStorage.setItem('prof-day-q', q[0]); if (q[1]) localStorage.setItem('prof-art', q[1]); } catch (e) {} }, [process.env.Q || 'high', process.env.ART || '']);
   await page.goto(`http://localhost:${port}/index.html?debug`, { waitUntil: 'load', timeout: 180000 });
   await sleep(3000);
   await ev(`setup.mode = 'basic'; startGame();`); await sleep(2500);

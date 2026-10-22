@@ -1,5 +1,14 @@
 # Changelog
 
+## v11.1 — Realistic people, and a choice of art style (2026-10-23)
+- **Art style setting: 写实 (realistic) or 微缩模型 (stylized diorama).** On the title page next to 画质, and in the top bar (tap twice; the page reloads, like the quality setting). Remembered in this browser. Realistic is the default.
+  - Realistic: v11.0 real materials and HDRI lighting, plus the new realistic cast.
+  - Diorama: the v10 look: chibi cast, procedural floors, glowing cyan trim and thresholds, navy slab, blue floor signs, tinted light pools.
+- **Realistic cast** (Microsoft Rocketbox, MIT, see `assets/characters/real/LICENSE-Rocketbox.md`): all 21 named characters plus 8 generic extras who fill the lecture hall, corridors, campus and gym courts. Shared animation packs per gender (idle, walk, run, sit, type, talk, think, point, cheer, read, present and more), re-targeted by bone name; hip height scaled per body. Dialogue portraits baked from the same models.
+- **Badminton** works with the realistic players at life size (racket in the palm, strokes posed on the Biped rig).
+- Pipeline: `tools/rocketbox/` (cast.json, build.py, finish.mjs, pack.mjs, portrait.html; `tools/e2e/portraits.mjs`).
+- Known limits: the library has few East Asian faces, so the cast is mixed; no facial expressions yet (portraits repeat one pose); seated people sit slightly off some chairs; racket grip still rough. About 50 MB of character assets, loaded per floor.
+
 ## v11.0 — Real materials on 5F (2026-10-22)
 First step of the realistic look (design note `v11-realistic-look`: grounded realism, not photoreal). Characters are unchanged until v11.1.
 - **Real floors on 5F** (Poly Haven, CC0, in `assets/textures/`): porcelain tiles in the corridor, pantry and washrooms, wood laminate in the offices, office carpet in the open offices and meeting rooms, grey epoxy in the muon lab and server room, terrazzo by the elevators. Patterns run continuously across rooms (UVs in world metres).

@@ -58,6 +58,12 @@ Games last about 2 minutes (84–138 s). Energy 95 vs 25 is a 32–59 point swin
 - **Sharpness (v10.3.1).** While the venue is on: pixel ratio boosted (`PR_BOOST`, high 1.5–2×, mid 1.25–1.6×), tilt-shift and grain off, shadow camera ±11 m with a 4096² (high) / 2048² (mid) map. Falls back to normal resolution if the 150-frame average is below 45 fps.
 - **Rules untouched.** `badminton.js` is unchanged; balance numbers below still hold.
 
+## v11.1 Art style and realistic cast — how it works
+- `ART` ('real' | 'diorama', localStorage `prof-art`, default real) and `REAL` are read once at start; `setArt()` reloads. Switch points: F5 floors, wall/trim/glass/frame/threshold materials, slab, light pools, floor decals, oak desks, HDRI env, the real character manifest and generic extras. The badminton venue is shared.
+- Characters: `assets/characters/real/manifest.json` overrides the stylised manifest per id when REAL. `loadRealFor()` clones the GLB, keeps its PBR materials, and plays clips from `anim_m.glb` / `anim_f.glb`, filtered to the body's bones (a missing bone would bind to the scene root) and with the root height scaled to the body.
+- Extras: `makeChar()` without a named model gets `genericModel()` from `GEN_POOL` (by hair style → gender), after the caller's own `attachModel`.
+- Gotcha: the old sRGB vertex-colour pass in `gltfFor()` must skip interleaved attributes: FBX2glTF interleaves colours with skin indices, and the pass corrupted them (exploding bodies).
+
 ## v11.0 Real materials — how they work
 - `pbr(id, o)` makes a MeshStandardMaterial from `assets/textures/<id>_{diff,nor_gl,arm}_1k.jpg`, loaded lazily and shared; until a file loads (or if it is missing) `o.fallback` shows. `o.tile` = metres per repeat; `o.noDiff` uses only the relief and roughness over a flat paint colour (walls, epoxy floors, washroom tiles).
 - `floorPlane` rewrites UVs to world metres for pbr materials; `seg` does the same per box face (`boxUVMetres`); kit desks get projected UVs (`planarUV`) and oak (`deskOak`).

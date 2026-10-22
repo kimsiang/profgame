@@ -1,0 +1,1394 @@
+{
+ "player_m": {
+  "url": "assets/characters/real/player_m.glb",
+  "real": true,
+  "anims": "assets/characters/real/anim_m.glb",
+  "clips": {
+   "idle": "idle",
+   "walk": "walk",
+   "run": "run",
+   "sit": "sit",
+   "sittalk": "sittalk",
+   "type": "type",
+   "talk": "talk",
+   "panic": "panic",
+   "think": "think",
+   "point": "point",
+   "celebrate": "celebrate",
+   "disappointed": "disappointed",
+   "raise_hand": "raise_hand",
+   "read": "read",
+   "play": "play",
+   "present": "present"
+  },
+  "speed": {
+   "walk": 1.0,
+   "run": 1.0
+  },
+  "src": "Microsoft Rocketbox Business_Male_02",
+  "portrait": {
+   "url": "assets/characters/real/portraits/player_m.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    110,
+    10,
+    180,
+    180
+   ]
+  }
+ },
+ "player_f": {
+  "url": "assets/characters/real/player_f.glb",
+  "real": true,
+  "anims": "assets/characters/real/anim_f.glb",
+  "clips": {
+   "idle": "idle",
+   "walk": "walk",
+   "run": "run",
+   "sit": "sit",
+   "sittalk": "sittalk",
+   "type": "type",
+   "talk": "talk",
+   "panic": "panic",
+   "think": "think",
+   "point": "point",
+   "celebrate": "celebrate",
+   "disappointed": "disappointed",
+   "raise_hand": "raise_hand",
+   "read": "read",
+   "play": "play",
+   "present": "present"
+  },
+  "speed": {
+   "walk": 1.0,
+   "run": 1.0
+  },
+  "src": "Microsoft Rocketbox Business_Female_03",
+  "portrait": {
+   "url": "assets/characters/real/portraits/player_f.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    110,
+    10,
+    180,
+    180
+   ]
+  }
+ },
+ "wang": {
+  "url": "assets/characters/real/wang.glb",
+  "real": true,
+  "anims": "assets/characters/real/anim_f.glb",
+  "clips": {
+   "idle": "idle",
+   "walk": "walk",
+   "run": "run",
+   "sit": "sit",
+   "sittalk": "sittalk",
+   "type": "type",
+   "talk": "talk",
+   "panic": "panic",
+   "think": "think",
+   "point": "point",
+   "celebrate": "celebrate",
+   "disappointed": "disappointed",
+   "raise_hand": "raise_hand",
+   "read": "read",
+   "play": "play",
+   "present": "present"
+  },
+  "speed": {
+   "walk": 1.0,
+   "run": 1.0
+  },
+  "src": "Microsoft Rocketbox Female_Adult_11",
+  "portrait": {
+   "url": "assets/characters/real/portraits/wang.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    110,
+    10,
+    180,
+    180
+   ]
+  }
+ },
+ "chen": {
+  "url": "assets/characters/real/chen.glb",
+  "real": true,
+  "anims": "assets/characters/real/anim_m.glb",
+  "clips": {
+   "idle": "idle",
+   "walk": "walk",
+   "run": "run",
+   "sit": "sit",
+   "sittalk": "sittalk",
+   "type": "type",
+   "talk": "talk",
+   "panic": "panic",
+   "think": "think",
+   "point": "point",
+   "celebrate": "celebrate",
+   "disappointed": "disappointed",
+   "raise_hand": "raise_hand",
+   "read": "read",
+   "play": "play",
+   "present": "present"
+  },
+  "speed": {
+   "walk": 1.0,
+   "run": 1.0
+  },
+  "src": "Microsoft Rocketbox Male_Adult_10",
+  "portrait": {
+   "url": "assets/characters/real/portraits/chen.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    110,
+    10,
+    180,
+    180
+   ]
+  }
+ },
+ "zhou": {
+  "url": "assets/characters/real/zhou.glb",
+  "real": true,
+  "anims": "assets/characters/real/anim_f.glb",
+  "clips": {
+   "idle": "idle",
+   "walk": "walk",
+   "run": "run",
+   "sit": "sit",
+   "sittalk": "sittalk",
+   "type": "type",
+   "talk": "talk",
+   "panic": "panic",
+   "think": "think",
+   "point": "point",
+   "celebrate": "celebrate",
+   "disappointed": "disappointed",
+   "raise_hand": "raise_hand",
+   "read": "read",
+   "play": "play",
+   "present": "present"
+  },
+  "speed": {
+   "walk": 1.0,
+   "run": 1.0
+  },
+  "src": "Microsoft Rocketbox Female_Adult_03",
+  "portrait": {
+   "url": "assets/characters/real/portraits/zhou.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    110,
+    10,
+    180,
+    180
+   ]
+  }
+ },
+ "yu": {
+  "url": "assets/characters/real/yu.glb",
+  "real": true,
+  "anims": "assets/characters/real/anim_f.glb",
+  "clips": {
+   "idle": "idle",
+   "walk": "walk",
+   "run": "run",
+   "sit": "sit",
+   "sittalk": "sittalk",
+   "type": "type",
+   "talk": "talk",
+   "panic": "panic",
+   "think": "think",
+   "point": "point",
+   "celebrate": "celebrate",
+   "disappointed": "disappointed",
+   "raise_hand": "raise_hand",
+   "read": "read",
+   "play": "play",
+   "present": "present"
+  },
+  "speed": {
+   "walk": 1.0,
+   "run": 1.0
+  },
+  "src": "Microsoft Rocketbox Female_Adult_05",
+  "portrait": {
+   "url": "assets/characters/real/portraits/yu.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    110,
+    10,
+    180,
+    180
+   ]
+  }
+ },
+ "lin": {
+  "url": "assets/characters/real/lin.glb",
+  "real": true,
+  "anims": "assets/characters/real/anim_m.glb",
+  "clips": {
+   "idle": "idle",
+   "walk": "walk",
+   "run": "run",
+   "sit": "sit",
+   "sittalk": "sittalk",
+   "type": "type",
+   "talk": "talk",
+   "panic": "panic",
+   "think": "think",
+   "point": "point",
+   "celebrate": "celebrate",
+   "disappointed": "disappointed",
+   "raise_hand": "raise_hand",
+   "read": "read",
+   "play": "play",
+   "present": "present"
+  },
+  "speed": {
+   "walk": 1.0,
+   "run": 1.0
+  },
+  "src": "Microsoft Rocketbox Medical_Male_01",
+  "portrait": {
+   "url": "assets/characters/real/portraits/lin.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    110,
+    10,
+    180,
+    180
+   ]
+  }
+ },
+ "zhao": {
+  "url": "assets/characters/real/zhao.glb",
+  "real": true,
+  "anims": "assets/characters/real/anim_m.glb",
+  "clips": {
+   "idle": "idle",
+   "walk": "walk",
+   "run": "run",
+   "sit": "sit",
+   "sittalk": "sittalk",
+   "type": "type",
+   "talk": "talk",
+   "panic": "panic",
+   "think": "think",
+   "point": "point",
+   "celebrate": "celebrate",
+   "disappointed": "disappointed",
+   "raise_hand": "raise_hand",
+   "read": "read",
+   "play": "play",
+   "present": "present"
+  },
+  "speed": {
+   "walk": 1.0,
+   "run": 1.0
+  },
+  "src": "Microsoft Rocketbox Male_Adult_09",
+  "portrait": {
+   "url": "assets/characters/real/portraits/zhao.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    110,
+    10,
+    180,
+    180
+   ]
+  }
+ },
+ "dean": {
+  "url": "assets/characters/real/dean.glb",
+  "real": true,
+  "anims": "assets/characters/real/anim_m.glb",
+  "clips": {
+   "idle": "idle",
+   "walk": "walk",
+   "run": "run",
+   "sit": "sit",
+   "sittalk": "sittalk",
+   "type": "type",
+   "talk": "talk",
+   "panic": "panic",
+   "think": "think",
+   "point": "point",
+   "celebrate": "celebrate",
+   "disappointed": "disappointed",
+   "raise_hand": "raise_hand",
+   "read": "read",
+   "play": "play",
+   "present": "present"
+  },
+  "speed": {
+   "walk": 1.0,
+   "run": 1.0
+  },
+  "src": "Microsoft Rocketbox Business_Male_07",
+  "portrait": {
+   "url": "assets/characters/real/portraits/dean.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    110,
+    10,
+    180,
+    180
+   ]
+  }
+ },
+ "rep": {
+  "url": "assets/characters/real/rep.glb",
+  "real": true,
+  "anims": "assets/characters/real/anim_f.glb",
+  "clips": {
+   "idle": "idle",
+   "walk": "walk",
+   "run": "run",
+   "sit": "sit",
+   "sittalk": "sittalk",
+   "type": "type",
+   "talk": "talk",
+   "panic": "panic",
+   "think": "think",
+   "point": "point",
+   "celebrate": "celebrate",
+   "disappointed": "disappointed",
+   "raise_hand": "raise_hand",
+   "read": "read",
+   "play": "play",
+   "present": "present"
+  },
+  "speed": {
+   "walk": 1.0,
+   "run": 1.0
+  },
+  "src": "Microsoft Rocketbox Business_Female_04",
+  "portrait": {
+   "url": "assets/characters/real/portraits/rep.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    110,
+    10,
+    180,
+    180
+   ]
+  }
+ },
+ "s1": {
+  "url": "assets/characters/real/s1.glb",
+  "real": true,
+  "anims": "assets/characters/real/anim_m.glb",
+  "clips": {
+   "idle": "idle",
+   "walk": "walk",
+   "run": "run",
+   "sit": "sit",
+   "sittalk": "sittalk",
+   "type": "type",
+   "talk": "talk",
+   "panic": "panic",
+   "think": "think",
+   "point": "point",
+   "celebrate": "celebrate",
+   "disappointed": "disappointed",
+   "raise_hand": "raise_hand",
+   "read": "read",
+   "play": "play",
+   "present": "present"
+  },
+  "speed": {
+   "walk": 1.0,
+   "run": 1.0
+  },
+  "src": "Microsoft Rocketbox Male_Adult_06",
+  "portrait": {
+   "url": "assets/characters/real/portraits/s1.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    110,
+    10,
+    180,
+    180
+   ]
+  }
+ },
+ "s2": {
+  "url": "assets/characters/real/s2.glb",
+  "real": true,
+  "anims": "assets/characters/real/anim_f.glb",
+  "clips": {
+   "idle": "idle",
+   "walk": "walk",
+   "run": "run",
+   "sit": "sit",
+   "sittalk": "sittalk",
+   "type": "type",
+   "talk": "talk",
+   "panic": "panic",
+   "think": "think",
+   "point": "point",
+   "celebrate": "celebrate",
+   "disappointed": "disappointed",
+   "raise_hand": "raise_hand",
+   "read": "read",
+   "play": "play",
+   "present": "present"
+  },
+  "speed": {
+   "walk": 1.0,
+   "run": 1.0
+  },
+  "src": "Microsoft Rocketbox Female_Adult_12",
+  "portrait": {
+   "url": "assets/characters/real/portraits/s2.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    110,
+    10,
+    180,
+    180
+   ]
+  }
+ },
+ "partner_ling": {
+  "url": "assets/characters/real/partner_ling.glb",
+  "real": true,
+  "anims": "assets/characters/real/anim_f.glb",
+  "clips": {
+   "idle": "idle",
+   "walk": "walk",
+   "run": "run",
+   "sit": "sit",
+   "sittalk": "sittalk",
+   "type": "type",
+   "talk": "talk",
+   "panic": "panic",
+   "think": "think",
+   "point": "point",
+   "celebrate": "celebrate",
+   "disappointed": "disappointed",
+   "raise_hand": "raise_hand",
+   "read": "read",
+   "play": "play",
+   "present": "present"
+  },
+  "speed": {
+   "walk": 1.0,
+   "run": 1.0
+  },
+  "src": "Microsoft Rocketbox Sports_Female_02",
+  "portrait": {
+   "url": "assets/characters/real/portraits/partner_ling.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    110,
+    10,
+    180,
+    180
+   ]
+  }
+ },
+ "child_xiaoyu": {
+  "url": "assets/characters/real/child_xiaoyu.glb",
+  "real": true,
+  "anims": "assets/characters/real/anim_m.glb",
+  "clips": {
+   "idle": "idle",
+   "walk": "walk",
+   "run": "run",
+   "sit": "sit",
+   "sittalk": "sittalk",
+   "type": "type",
+   "talk": "talk",
+   "panic": "panic",
+   "think": "think",
+   "point": "point",
+   "celebrate": "celebrate",
+   "disappointed": "disappointed",
+   "raise_hand": "raise_hand",
+   "read": "read",
+   "play": "play",
+   "present": "present"
+  },
+  "speed": {
+   "walk": 1.0,
+   "run": 1.0
+  },
+  "src": "Microsoft Rocketbox Male_Child_01",
+  "portrait": {
+   "url": "assets/characters/real/portraits/child_xiaoyu.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    110,
+    10,
+    180,
+    180
+   ]
+  }
+ },
+ "grad1": {
+  "url": "assets/characters/real/grad1.glb",
+  "real": true,
+  "anims": "assets/characters/real/anim_m.glb",
+  "clips": {
+   "idle": "idle",
+   "walk": "walk",
+   "run": "run",
+   "sit": "sit",
+   "sittalk": "sittalk",
+   "type": "type",
+   "talk": "talk",
+   "panic": "panic",
+   "think": "think",
+   "point": "point",
+   "celebrate": "celebrate",
+   "disappointed": "disappointed",
+   "raise_hand": "raise_hand",
+   "read": "read",
+   "play": "play",
+   "present": "present"
+  },
+  "speed": {
+   "walk": 1.0,
+   "run": 1.0
+  },
+  "src": "Microsoft Rocketbox Male_Adult_02",
+  "portrait": {
+   "url": "assets/characters/real/portraits/grad1.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    110,
+    10,
+    180,
+    180
+   ]
+  }
+ },
+ "barista": {
+  "url": "assets/characters/real/barista.glb",
+  "real": true,
+  "anims": "assets/characters/real/anim_f.glb",
+  "clips": {
+   "idle": "idle",
+   "walk": "walk",
+   "run": "run",
+   "sit": "sit",
+   "sittalk": "sittalk",
+   "type": "type",
+   "talk": "talk",
+   "panic": "panic",
+   "think": "think",
+   "point": "point",
+   "celebrate": "celebrate",
+   "disappointed": "disappointed",
+   "raise_hand": "raise_hand",
+   "read": "read",
+   "play": "play",
+   "present": "present"
+  },
+  "speed": {
+   "walk": 1.0,
+   "run": 1.0
+  },
+  "src": "Microsoft Rocketbox Female_Adult_08",
+  "portrait": {
+   "url": "assets/characters/real/portraits/barista.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    110,
+    10,
+    180,
+    180
+   ]
+  }
+ },
+ "coach": {
+  "url": "assets/characters/real/coach.glb",
+  "real": true,
+  "anims": "assets/characters/real/anim_m.glb",
+  "clips": {
+   "idle": "idle",
+   "walk": "walk",
+   "run": "run",
+   "sit": "sit",
+   "sittalk": "sittalk",
+   "type": "type",
+   "talk": "talk",
+   "panic": "panic",
+   "think": "think",
+   "point": "point",
+   "celebrate": "celebrate",
+   "disappointed": "disappointed",
+   "raise_hand": "raise_hand",
+   "read": "read",
+   "play": "play",
+   "present": "present"
+  },
+  "speed": {
+   "walk": 1.0,
+   "run": 1.0
+  },
+  "src": "Microsoft Rocketbox Sports_Male_04",
+  "portrait": {
+   "url": "assets/characters/real/portraits/coach.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    110,
+    10,
+    180,
+    180
+   ]
+  }
+ },
+ "cook": {
+  "url": "assets/characters/real/cook.glb",
+  "real": true,
+  "anims": "assets/characters/real/anim_f.glb",
+  "clips": {
+   "idle": "idle",
+   "walk": "walk",
+   "run": "run",
+   "sit": "sit",
+   "sittalk": "sittalk",
+   "type": "type",
+   "talk": "talk",
+   "panic": "panic",
+   "think": "think",
+   "point": "point",
+   "celebrate": "celebrate",
+   "disappointed": "disappointed",
+   "raise_hand": "raise_hand",
+   "read": "read",
+   "play": "play",
+   "present": "present"
+  },
+  "speed": {
+   "walk": 1.0,
+   "run": 1.0
+  },
+  "src": "Microsoft Rocketbox Chef_Female_01",
+  "portrait": {
+   "url": "assets/characters/real/portraits/cook.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    110,
+    10,
+    180,
+    180
+   ]
+  }
+ },
+ "guard": {
+  "url": "assets/characters/real/guard.glb",
+  "real": true,
+  "anims": "assets/characters/real/anim_m.glb",
+  "clips": {
+   "idle": "idle",
+   "walk": "walk",
+   "run": "run",
+   "sit": "sit",
+   "sittalk": "sittalk",
+   "type": "type",
+   "talk": "talk",
+   "panic": "panic",
+   "think": "think",
+   "point": "point",
+   "celebrate": "celebrate",
+   "disappointed": "disappointed",
+   "raise_hand": "raise_hand",
+   "read": "read",
+   "play": "play",
+   "present": "present"
+  },
+  "speed": {
+   "walk": 1.0,
+   "run": 1.0
+  },
+  "src": "Microsoft Rocketbox Security_Male_01",
+  "portrait": {
+   "url": "assets/characters/real/portraits/guard.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    110,
+    10,
+    180,
+    180
+   ]
+  }
+ },
+ "librarian": {
+  "url": "assets/characters/real/librarian.glb",
+  "real": true,
+  "anims": "assets/characters/real/anim_f.glb",
+  "clips": {
+   "idle": "idle",
+   "walk": "walk",
+   "run": "run",
+   "sit": "sit",
+   "sittalk": "sittalk",
+   "type": "type",
+   "talk": "talk",
+   "panic": "panic",
+   "think": "think",
+   "point": "point",
+   "celebrate": "celebrate",
+   "disappointed": "disappointed",
+   "raise_hand": "raise_hand",
+   "read": "read",
+   "play": "play",
+   "present": "present"
+  },
+  "speed": {
+   "walk": 1.0,
+   "run": 1.0
+  },
+  "src": "Microsoft Rocketbox Business_Female_02",
+  "portrait": {
+   "url": "assets/characters/real/portraits/librarian.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    110,
+    10,
+    180,
+    180
+   ]
+  }
+ },
+ "oldprof": {
+  "url": "assets/characters/real/oldprof.glb",
+  "real": true,
+  "anims": "assets/characters/real/anim_m.glb",
+  "clips": {
+   "idle": "idle",
+   "walk": "walk",
+   "run": "run",
+   "sit": "sit",
+   "sittalk": "sittalk",
+   "type": "type",
+   "talk": "talk",
+   "panic": "panic",
+   "think": "think",
+   "point": "point",
+   "celebrate": "celebrate",
+   "disappointed": "disappointed",
+   "raise_hand": "raise_hand",
+   "read": "read",
+   "play": "play",
+   "present": "present"
+  },
+  "speed": {
+   "walk": 1.0,
+   "run": 1.0
+  },
+  "src": "Microsoft Rocketbox Male_Adult_03",
+  "portrait": {
+   "url": "assets/characters/real/portraits/oldprof.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    110,
+    10,
+    180,
+    180
+   ]
+  }
+ },
+ "gen_m1": {
+  "url": "assets/characters/real/gen_m1.glb",
+  "real": true,
+  "anims": "assets/characters/real/anim_m.glb",
+  "clips": {
+   "idle": "idle",
+   "walk": "walk",
+   "run": "run",
+   "sit": "sit",
+   "sittalk": "sittalk",
+   "type": "type",
+   "talk": "talk",
+   "panic": "panic",
+   "think": "think",
+   "point": "point",
+   "celebrate": "celebrate",
+   "disappointed": "disappointed",
+   "raise_hand": "raise_hand",
+   "read": "read",
+   "play": "play",
+   "present": "present"
+  },
+  "speed": {
+   "walk": 1.0,
+   "run": 1.0
+  },
+  "src": "Microsoft Rocketbox Male_Adult_01",
+  "portrait": {
+   "url": "assets/characters/real/portraits/gen_m1.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    110,
+    10,
+    180,
+    180
+   ]
+  }
+ },
+ "gen_m2": {
+  "url": "assets/characters/real/gen_m2.glb",
+  "real": true,
+  "anims": "assets/characters/real/anim_m.glb",
+  "clips": {
+   "idle": "idle",
+   "walk": "walk",
+   "run": "run",
+   "sit": "sit",
+   "sittalk": "sittalk",
+   "type": "type",
+   "talk": "talk",
+   "panic": "panic",
+   "think": "think",
+   "point": "point",
+   "celebrate": "celebrate",
+   "disappointed": "disappointed",
+   "raise_hand": "raise_hand",
+   "read": "read",
+   "play": "play",
+   "present": "present"
+  },
+  "speed": {
+   "walk": 1.0,
+   "run": 1.0
+  },
+  "src": "Microsoft Rocketbox Male_Adult_07",
+  "portrait": {
+   "url": "assets/characters/real/portraits/gen_m2.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    110,
+    10,
+    180,
+    180
+   ]
+  }
+ },
+ "gen_m3": {
+  "url": "assets/characters/real/gen_m3.glb",
+  "real": true,
+  "anims": "assets/characters/real/anim_m.glb",
+  "clips": {
+   "idle": "idle",
+   "walk": "walk",
+   "run": "run",
+   "sit": "sit",
+   "sittalk": "sittalk",
+   "type": "type",
+   "talk": "talk",
+   "panic": "panic",
+   "think": "think",
+   "point": "point",
+   "celebrate": "celebrate",
+   "disappointed": "disappointed",
+   "raise_hand": "raise_hand",
+   "read": "read",
+   "play": "play",
+   "present": "present"
+  },
+  "speed": {
+   "walk": 1.0,
+   "run": 1.0
+  },
+  "src": "Microsoft Rocketbox Male_Adult_11",
+  "portrait": {
+   "url": "assets/characters/real/portraits/gen_m3.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    110,
+    10,
+    180,
+    180
+   ]
+  }
+ },
+ "gen_m4": {
+  "url": "assets/characters/real/gen_m4.glb",
+  "real": true,
+  "anims": "assets/characters/real/anim_m.glb",
+  "clips": {
+   "idle": "idle",
+   "walk": "walk",
+   "run": "run",
+   "sit": "sit",
+   "sittalk": "sittalk",
+   "type": "type",
+   "talk": "talk",
+   "panic": "panic",
+   "think": "think",
+   "point": "point",
+   "celebrate": "celebrate",
+   "disappointed": "disappointed",
+   "raise_hand": "raise_hand",
+   "read": "read",
+   "play": "play",
+   "present": "present"
+  },
+  "speed": {
+   "walk": 1.0,
+   "run": 1.0
+  },
+  "src": "Microsoft Rocketbox Sports_Male_02",
+  "portrait": {
+   "url": "assets/characters/real/portraits/gen_m4.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    110,
+    10,
+    180,
+    180
+   ]
+  }
+ },
+ "gen_f1": {
+  "url": "assets/characters/real/gen_f1.glb",
+  "real": true,
+  "anims": "assets/characters/real/anim_f.glb",
+  "clips": {
+   "idle": "idle",
+   "walk": "walk",
+   "run": "run",
+   "sit": "sit",
+   "sittalk": "sittalk",
+   "type": "type",
+   "talk": "talk",
+   "panic": "panic",
+   "think": "think",
+   "point": "point",
+   "celebrate": "celebrate",
+   "disappointed": "disappointed",
+   "raise_hand": "raise_hand",
+   "read": "read",
+   "play": "play",
+   "present": "present"
+  },
+  "speed": {
+   "walk": 1.0,
+   "run": 1.0
+  },
+  "src": "Microsoft Rocketbox Female_Adult_14",
+  "portrait": {
+   "url": "assets/characters/real/portraits/gen_f1.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    110,
+    10,
+    180,
+    180
+   ]
+  }
+ },
+ "gen_f2": {
+  "url": "assets/characters/real/gen_f2.glb",
+  "real": true,
+  "anims": "assets/characters/real/anim_f.glb",
+  "clips": {
+   "idle": "idle",
+   "walk": "walk",
+   "run": "run",
+   "sit": "sit",
+   "sittalk": "sittalk",
+   "type": "type",
+   "talk": "talk",
+   "panic": "panic",
+   "think": "think",
+   "point": "point",
+   "celebrate": "celebrate",
+   "disappointed": "disappointed",
+   "raise_hand": "raise_hand",
+   "read": "read",
+   "play": "play",
+   "present": "present"
+  },
+  "speed": {
+   "walk": 1.0,
+   "run": 1.0
+  },
+  "src": "Microsoft Rocketbox Female_Adult_07",
+  "portrait": {
+   "url": "assets/characters/real/portraits/gen_f2.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    110,
+    10,
+    180,
+    180
+   ]
+  }
+ },
+ "gen_f3": {
+  "url": "assets/characters/real/gen_f3.glb",
+  "real": true,
+  "anims": "assets/characters/real/anim_f.glb",
+  "clips": {
+   "idle": "idle",
+   "walk": "walk",
+   "run": "run",
+   "sit": "sit",
+   "sittalk": "sittalk",
+   "type": "type",
+   "talk": "talk",
+   "panic": "panic",
+   "think": "think",
+   "point": "point",
+   "celebrate": "celebrate",
+   "disappointed": "disappointed",
+   "raise_hand": "raise_hand",
+   "read": "read",
+   "play": "play",
+   "present": "present"
+  },
+  "speed": {
+   "walk": 1.0,
+   "run": 1.0
+  },
+  "src": "Microsoft Rocketbox Female_Adult_13",
+  "portrait": {
+   "url": "assets/characters/real/portraits/gen_f3.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    110,
+    10,
+    180,
+    180
+   ]
+  }
+ },
+ "gen_f4": {
+  "url": "assets/characters/real/gen_f4.glb",
+  "real": true,
+  "anims": "assets/characters/real/anim_f.glb",
+  "clips": {
+   "idle": "idle",
+   "walk": "walk",
+   "run": "run",
+   "sit": "sit",
+   "sittalk": "sittalk",
+   "type": "type",
+   "talk": "talk",
+   "panic": "panic",
+   "think": "think",
+   "point": "point",
+   "celebrate": "celebrate",
+   "disappointed": "disappointed",
+   "raise_hand": "raise_hand",
+   "read": "read",
+   "play": "play",
+   "present": "present"
+  },
+  "speed": {
+   "walk": 1.0,
+   "run": 1.0
+  },
+  "src": "Microsoft Rocketbox Medical_Female_01",
+  "portrait": {
+   "url": "assets/characters/real/portraits/gen_f4.webp",
+   "cell": [
+    400,
+    500
+   ],
+   "exprs": [
+    "normal",
+    "happy",
+    "worried",
+    "shock",
+    "sleepy"
+   ],
+   "head": [
+    110,
+    10,
+    180,
+    180
+   ]
+  }
+ }
+}

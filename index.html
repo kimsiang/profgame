@@ -601,6 +601,7 @@ body.talking #lbT,body.talking #lbB{height:7vh}
       <button class="ib on" id="bSound" type="button" title="音效"><svg class="ic"><use href="#i-sound"/></svg></button>
       <button class="ib" id="bAI" type="button" title="AI 设置"><span>AI</span></button>
       <button class="ib" id="bQual" type="button" title="画质"><span id="qualLbl">画质 高</span></button>
+      <button class="ib" id="bArt" type="button" title="画风：写实 / 微缩模型"><span id="artLbl">写实</span></button>
       <button class="ib" id="bSave" type="button" title="存档 / 读档 (O)"><span>存档</span></button>
       <button class="ib" id="bEnd" type="button" title="下班"><svg class="ic"><use href="#i-exit"/></svg><span class="lbl">下班</span></button>
     </div>
@@ -685,6 +686,8 @@ body.talking #lbT,body.talking #lbB{height:7vh}
     </div>
     <div class="qualRow">画质
       <button class="ib" type="button" data-q="high">高</button><button class="ib" type="button" data-q="mid">中</button><button class="ib" type="button" data-q="low">低</button>
+      <span style="margin-left:14px">画风</span>
+      <button class="ib" type="button" data-art="real" title="写实：真实材质、真实光照、写实人物">写实</button><button class="ib" type="button" data-art="diorama" title="微缩模型：风格化场景和 Q 版人物">微缩模型</button>
     </div>
     <p class="foot">教育模拟游戏，人物与情节均为虚构。科普卡中的数据来自公开资料；实验室安全与心理健康内容仅为常识性介绍，遇到真实情况请联系所在单位的安全与心理支持部门。</p>
   </div>
@@ -956,6 +959,11 @@ function setZone(id) {
 }
 const HAS_POST = !!(THREE.EffectComposer && THREE.RenderPass && THREE.ShaderPass && THREE.UnrealBloomPass);
 const IS_TOUCH = matchMedia('(pointer:coarse)').matches;
+// v11.1: art style. 'real' = real materials, HDRI light and the Rocketbox cast (v11); 'diorama' = the stylised v10 look
+// (chibi cast, procedural floors, cyan trim). Chosen on the title page or the top bar; reloads like the quality setting.
+const ART = (() => { try { const a = localStorage.getItem('prof-art'); if (a === 'real' || a === 'diorama') return a; } catch (e) { /* storage blocked */ } return 'real'; })();
+const REAL = ART === 'real';
+function setArt(a) { try { localStorage.setItem('prof-art', a); } catch (e) { /* storage blocked */ } location.reload(); }
 let QUALITY = (() => { try { const q = localStorage.getItem('prof-day-q'); if (q) return q; } catch (e) { /* storage blocked */ } return IS_TOUCH || innerWidth < 900 ? 'mid' : 'high'; })();
 if (!HAS_POST && QUALITY !== 'low') QUALITY = 'low';
 
@@ -997,7 +1005,7 @@ function envLoad(key, file) {
   }, undefined, () => { /* keep the studio room */ });
 }
 function setEnvFor(z) { const k = z && z.outdoor ? 'outdoor' : 'indoor'; ENV.want = k; scene.environment = ENV.hdr[k] || ENV.room; }
-envLoad('indoor', 'blender_institute_1k.hdr'); envLoad('outdoor', 'kloofendal_48d_partly_cloudy_puresky_1k.hdr');
+if (REAL) { envLoad('indoor', 'blender_institute_1k.hdr'); envLoad('outdoor', 'kloofendal_48d_partly_cloudy_puresky_1k.hdr'); }
 
 /* ---------- camera (perspective, orbit around the player) ---------- */
 const cam = new THREE.PerspectiveCamera(30, 1, 1, 900);
@@ -1243,11 +1251,11 @@ function pbr(id, o = {}) {
 /* =========================================================
    ARCHITECTURE
    ========================================================= */
-function slab(w, d, cx, cz, color = '#7a7b7c') {   // v11.0: a concrete floor slab in section (was dark navy)
+function slab(w, d, cx, cz, color = REAL ? '#7a7b7c' : '#1b2c3d') {   // v11.0: a concrete floor slab in section (diorama: dark navy)
   // The slab's top sits 3 cm below the floor (y = 0). It used to be exactly at y = 0, coplanar with every
   // floor plane, so the GPU picked slab or tile at random per pixel per frame: the white/grey floor flicker.
   box(w + 1.2, 1.2, d + 1.2, mat(color, { roughness: 0.9 }), cx, -1.23, cz, { cast: false });
-  const e = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(w + 1.2, 0.02, d + 1.2)), new THREE.LineBasicMaterial({ color: '#4a4c4f' }));
+  const e = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(w + 1.2, 0.02, d + 1.2)), (REAL ? new THREE.LineBasicMaterial({ color: '#4a4c4f' }) : new THREE.LineBasicMaterial({ color: new THREE.Color('#00A9F4').multiplyScalar(2.5), toneMapped: false })));
   e.position.set(cx, -0.04, cz); Z.group.add(e);
 }
 /* ---------- v7.3: prop kit (assets/props/kit.glb, built by tools/blender/build_props.py) ----------
@@ -1307,7 +1315,7 @@ function kitApply(s) {
   switch (s.kind) {
     case 'desk': {   // top + four legs are the first five meshes; keyboard, mug and papers stay
       const [x, z, w = 1.5, d = 0.8, o = {}] = a;
-      hide(s.created.slice(0, 5)); m = kitClone('desk', o.top || '#f2efe8'); m.position.set(x, 0, z); m.scale.set(w / 1.5, 1, d / 0.8); zg.add(m); deskOak(m, o.top); break;
+      hide(s.created.slice(0, 5)); m = kitClone('desk', o.top || '#f2efe8'); m.position.set(x, 0, z); m.scale.set(w / 1.5, 1, d / 0.8); zg.add(m); if (REAL) deskOak(m, o.top); break;
     }
     case 'monitor':  // bezel, neck, base; the animated screen plane stays in front
       hide(grp.children.slice(0, 3)); m = kitClone('monitor'); grp.add(m); break;
@@ -1346,7 +1354,16 @@ const F5 = beginZone('f5', { name: '5F · 缪子物理组', floor: 5, spawn: { x
 slab(40, 26, 20, 13);
 
 // v11.0: real floors (Poly Haven). Fallbacks are the old procedural maps until a file arrives.
-const F5_FLOOR = {
+const F5_FLOOR = !REAL ? {
+  // diorama (v10): procedural maps and the glowing lab grid
+  corridor: mat('#ffffff', { map: T.concrete(10, 1), roughness: 0.32, envMapIntensity: 0.9 }),
+  office: mat('#ffffff', { map: T.wood(3, 4), roughness: 0.48 }), office2: mat('#ffffff', { map: T.wood(5, 5), roughness: 0.5 }),
+  carpet: mat('#ffffff', { map: T.carpet(5, 4), roughness: 0.95, envMapIntensity: 0.25 }), carpet2: mat('#ffffff', { map: T.carpet(4, 5, '#5b4a6e', '#524265'), roughness: 0.95, envMapIntensity: 0.25 }), carpet3: mat('#ffffff', { map: T.carpet(3, 5, '#4d6578', '#455c6e'), roughness: 0.95, envMapIntensity: 0.25 }),
+  lab: mat('#16283a', { roughness: 0.28, metalness: 0.15, emissive: '#ffffff', emissiveMap: T.labGrid(6, 5.5), emissiveIntensity: 0.32, envMapIntensity: 1 }),
+  server: mat('#ffffff', { map: T.tile(8, 11, '#2a3746', '#1b2531'), roughness: 0.4, metalness: 0.3 }),
+  pantry: mat('#ffffff', { map: T.tile(5, 9, '#e7e2d8', '#cfc6b7'), roughness: 0.35 }), wc: mat('#ffffff', { map: T.tile(4, 11, '#cfe0ea', '#a9c0cf'), roughness: 0.3 }),
+  lobby: mat('#ffffff', { map: T.concrete(2, 5), roughness: 0.3, envMapIntensity: 0.9 }),
+} : {
   corridor: pbr('interior_tiles', { tile: 1.6, tint: '#ece9e4', fallback: T.concrete(10, 1) }),
   office:   pbr('laminate_floor_02', { tile: 2, fallback: T.wood(3, 4) }),
   carpet:   pbr('dirty_carpet', { tile: 2, rough: 0.95, env: 0.15, fallback: T.carpet(5, 4) }),
@@ -1361,9 +1378,9 @@ floorPlane(0, 0, 8, 11, F5_FLOOR.office);
 floorPlane(8, 0, 20, 11, F5_FLOOR.carpet);
 floorPlane(20, 0, 32, 11, F5_FLOOR.lab);
 floorPlane(32, 0, 40, 11, F5_FLOOR.server);
-floorPlane(0, 15, 12, 26, F5_FLOOR.office);
-floorPlane(12, 15, 20, 26, F5_FLOOR.carpet);
-floorPlane(20, 15, 26, 26, F5_FLOOR.carpet);
+floorPlane(0, 15, 12, 26, F5_FLOOR.office2 || F5_FLOOR.office);
+floorPlane(12, 15, 20, 26, F5_FLOOR.carpet2 || F5_FLOOR.carpet);
+floorPlane(20, 15, 26, 26, F5_FLOOR.carpet3 || F5_FLOOR.carpet);
 floorPlane(26, 15, 32, 26, F5_FLOOR.pantry);
 floorPlane(32, 15, 36, 26, F5_FLOOR.wc);
 floorPlane(36, 15, 40, 26, F5_FLOOR.lobby);
@@ -1380,10 +1397,12 @@ wv(8, 0, 11); wv(20, 0, 11); wv(32, 0, 11, [], 'glass');
 wv(12, 15, 26); wv(20, 15, 26); wv(26, 15, 26); wv(32, 15, 26); wv(36, 15, 26);
 const WALL_H = 1.35;
 // v11.0: painted plaster walls, a grey wainscot and skirting, an aluminium cap. The neon trim is gone.
-const wallUpper = pbr('plastered_wall', { tile: 2.5, noDiff: true, ns: 0.4, env: 0.25, fallback: '#eeebe5' }), wallLower = pbr('white_stucco', { tile: 1.5, noDiff: true, ns: 0.5, env: 0.25, fallback: '#cfcac1' }), baseB = mat('#5d6166', { roughness: 0.6 }), capM = mat('#b9bec3', { roughness: 0.35, metalness: 0.75 });   // walls: clean paint over real plaster relief
-const trimGlow = mat('#c8cdd2', { roughness: 0.3, metalness: 0.85 });   // was glowing cyan; kept as a name so other zones pick up the metal trim too
-const glassM = new THREE.MeshStandardMaterial({ color: '#d6ebf2', roughness: 0.03, metalness: 0.1, transparent: true, opacity: 0.14, envMapIntensity: 1.4, depthWrite: false });   // v11.0: clear glass, less cyan
-const frameM = mat('#4a4f55', { roughness: 0.4, metalness: 0.65 });   // v11.0: anodised aluminium window and door frames
+const DIO_WALLS = () => { return { wallUpper: mat('#dfe5eb', { roughness: 0.9, envMapIntensity: 0.3 }), wallLower: mat('#9fb2c4', { roughness: 0.8, envMapIntensity: 0.3 }), baseB: mat('#22344a', { roughness: 0.5 }), capM: mat('#2b3d52', { roughness: 0.4, metalness: 0.4 }) }; };
+const REAL_WALLS = () => ({ wallUpper: pbr('plastered_wall', { tile: 2.5, noDiff: true, ns: 0.4, env: 0.25, fallback: '#eeebe5' }), wallLower: pbr('white_stucco', { tile: 1.5, noDiff: true, ns: 0.5, env: 0.25, fallback: '#cfcac1' }), baseB: mat('#5d6166', { roughness: 0.6 }), capM: mat('#b9bec3', { roughness: 0.35, metalness: 0.75 }) });   // walls: clean paint over real plaster relief
+const { wallUpper, wallLower, baseB, capM } = REAL ? REAL_WALLS() : DIO_WALLS();
+const trimGlow = REAL ? mat('#c8cdd2', { roughness: 0.3, metalness: 0.85 }) : glow('#00A9F4', 2.4);   // was glowing cyan; kept as a name so other zones pick up the metal trim too
+const glassM = REAL ? new THREE.MeshStandardMaterial({ color: '#d6ebf2', roughness: 0.03, metalness: 0.1, transparent: true, opacity: 0.14, envMapIntensity: 1.4, depthWrite: false }) : new THREE.MeshStandardMaterial({ color: '#a6e2ff', roughness: 0.04, metalness: 0.2, transparent: true, opacity: 0.16, envMapIntensity: 1.6, depthWrite: false });   // v11.0: clear glass, less cyan
+const frameM = REAL ? mat('#4a4f55', { roughness: 0.4, metalness: 0.65 }) : mat('#33475d', { roughness: 0.35, metalness: 0.6 });   // v11.0: anodised aluminium window and door frames
 // v11.0: give a box UVs in metres (per face), so a tiled real material keeps its scale on every wall length.
 function boxUVMetres(geo, w, h, d, tile) {
   const uv = geo.attributes.uv, dims = [[d, h], [d, h], [w, d], [w, d], [w, h], [w, h]];   // face order +x -x +y -y +z -z, 4 vertices each
@@ -1422,7 +1441,7 @@ for (const [x0, z0, x1, z1, kind] of WALLS) {
 }
 /* door frames with glowing thresholds */
 const DOORS = [[5, 7, 11, 'h'], [13, 16, 11, 'h'], [25, 27, 11, 'h'], [35, 37, 11, 'h'], [4.5, 7.5, 15, 'h'], [15, 17, 15, 'h'], [22, 24, 15, 'h'], [28, 30, 15, 'h'], [33, 35, 15, 'h']];
-const thresholdM = mat('#a9aeb3', { roughness: 0.3, metalness: 0.9 });   // v11.0: stainless door thresholds instead of glowing strips
+const thresholdM = REAL ? mat('#a9aeb3', { roughness: 0.3, metalness: 0.9 }) : glow('#00A9F4', 1.6, 0.9);   // v11.0: stainless door thresholds instead of glowing strips
 DOORS.forEach(([a, b, z]) => {
   [a, b].forEach(x => box(0.14, WALL_H + 0.12, 0.3, frameM, x, 0, z));
   plane(b - a, 0.08, thresholdM, (a + b) / 2, 0.012, z, { rx: -Math.PI / 2 });
@@ -1437,7 +1456,7 @@ function decal(text, x, z, w = 3.2, h = 0.7, o = {}) {
   const to = o.to || null, tipR = to === 'e', tipL = to === 'w';
   const tex = canvasTex(512, Math.round(512 * h / w), (g, cw, ch) => {
     const t = ch * 0.4;
-    g.fillStyle = 'rgba(46,50,56,.78)'; g.beginPath();   // v11.0: printed floor vinyl, one neutral colour (o.bg ignored)
+    g.fillStyle = REAL ? 'rgba(46,50,56,.78)' : (o.bg || 'rgba(5,28,44,.86)'); g.beginPath();   // realistic: printed floor vinyl, one neutral colour
     if (tipR) { g.moveTo(0, 0); g.lineTo(cw - t, 0); g.lineTo(cw, ch / 2); g.lineTo(cw - t, ch); g.lineTo(0, ch); }
     else if (tipL) { g.moveTo(t, 0); g.lineTo(cw, 0); g.lineTo(cw, ch); g.lineTo(t, ch); g.lineTo(0, ch / 2); }
     else { g.rect(0, 0, cw, ch); }
@@ -1454,7 +1473,7 @@ function decal(text, x, z, w = 3.2, h = 0.7, o = {}) {
     // Flat chevron just past the plate edge, apex toward the place.
     const sg = to === 'n' ? -1 : 1, a = 0.34, shp = new THREE.Shape();
     shp.moveTo(-a, 0); shp.lineTo(0, a * 0.9); shp.lineTo(a, 0); shp.lineTo(a * 0.55, 0); shp.lineTo(0, a * 0.5); shp.lineTo(-a * 0.55, 0); shp.closePath();
-    const c = new THREE.Mesh(new THREE.ShapeGeometry(shp), new THREE.MeshStandardMaterial({ color: o.accent || '#00A9F4', roughness: 0.5, transparent: true, opacity: 0.9, polygonOffset: true, polygonOffsetFactor: -2 }));
+    const c = new THREE.Mesh(new THREE.ShapeGeometry(shp), (REAL ? new THREE.MeshStandardMaterial({ color: o.accent || '#00A9F4', roughness: 0.5, transparent: true, opacity: 0.9, polygonOffset: true, polygonOffsetFactor: -2 }) : new THREE.MeshBasicMaterial({ color: new THREE.Color(o.accent || '#00A9F4').multiplyScalar(1.6), toneMapped: false, transparent: true, opacity: 0.95, polygonOffset: true, polygonOffsetFactor: -2 })));
     // Shape lies in XY with apex +y; lay it on the floor so the apex points to world -z (n) or +z (s).
     c.rotation.x = -Math.PI / 2; if (sg > 0) c.rotation.z = Math.PI;
     c.position.set(x, 0.016, z + sg * (h / 2 + 0.12)); Z.group.add(c);
@@ -1548,7 +1567,7 @@ function poster(x, y, z, ry, w, h, draw) {
 }
 const lightPools = [];
 function lightPool(x, z, r, color, base = 0.12) {
-  color = '#fff1dc'; base *= 0.55;   // v11.0: real ceiling light falls warm-white and soft, not tinted
+  if (REAL) { color = '#fff1dc'; base *= 0.55; }   // v11.0: real ceiling light falls warm-white and soft, not tinted
   const m = new THREE.Mesh(new THREE.PlaneGeometry(r * 2, r * 2), new THREE.MeshBasicMaterial({ map: radialTex, color, transparent: true, opacity: base, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }));
   m.rotation.x = -Math.PI / 2; m.position.set(x, 0.02, z); Z.group.add(m); lightPools.push({ m, base }); return m;
 }
@@ -1899,8 +1918,12 @@ function makeChar(o = {}, parent = Z.group) {
   if (o.label) { const s = nameTag(o.label); s.position.y = 1.86; root.add(s); root.userData.tag = s; }
   root.userData = Object.assign(root.userData, { P, faceM, face: o, state: 'idle', expr: 'normal', blinkT: 1 + Math.random() * 3, phase: Math.random() * 6, baseY: 0, emote: null });
   parent.add(root);
+  // v11.1: everyone without a named model gets a realistic extra from the generic pool (after the caller had its chance to attachModel)
+  if (REAL && !o.portrait) queueMicrotask(() => { if (!root.userData.modelId) attachModel(root, o.model || genericModel(o)); });
   return root;
 }
+const GEN_POOL = { m: ['gen_m1', 'gen_m2', 'gen_m3', 'gen_m4', 's1', 'grad1'], f: ['gen_f1', 'gen_f2', 'gen_f3', 'gen_f4', 's2', 'zhou'] }, GEN_N = { m: 0, f: 0 };
+function genericModel(o) { const g = ['pony', 'bob', 'bun', 'long'].includes(o.hairStyle) ? 'f' : 'm', L = GEN_POOL[g]; return L[GEN_N[g]++ % L.length]; }
 function setExpr(c, e) { const u = c.userData; if (u.expr === e) return; u.expr = e; if (u.model) return applyMorph(c); u.faceM.map = faceTex(e, u.face.eye, u.face.brow); u.faceM.needsUpdate = true; }
 function nameTag(text) {
   const fs = 34, c = document.createElement('canvas'), g = c.getContext('2d');
@@ -1997,18 +2020,21 @@ const EXPR_KEYS = ['blink', 'happy', 'worried', 'shock', 'sleepy'];
 (async () => {
   try {
     const r = await fetch('assets/characters/manifest.json'); if (!r.ok) return;
-    Object.assign(CHAR_MODELS, await r.json()); MODELS_READY = true;
+    Object.assign(CHAR_MODELS, await r.json());
+    // v11.1: realistic cast (Microsoft Rocketbox, MIT). Any id in the real manifest replaces its stylised model.
+    if (REAL) try { const rr = await fetch('assets/characters/real/manifest.json'); if (rr.ok) Object.assign(CHAR_MODELS, await rr.json()); } catch (e) { /* stylised cast only */ }
+    MODELS_READY = true;
     for (const [id, m] of Object.entries(CHAR_MODELS)) if (m.portrait) { const img = new Image(); img.onload = () => { PORTRAIT_IMG[id] = { img, p: m.portrait }; }; img.src = m.portrait.url; }
     loadVisibleModels();
   } catch (e) { /* no asset folder: procedural cast */ }
 })();
 function inActiveZone(c) { for (let p = c; p; p = p.parent) { if (p.name && p.name.startsWith('zone-')) return p.visible; } return true; }
 function loadVisibleModels() { if (MODELS_READY) MODEL_WANT.forEach(c => { if (!c.userData.model && !c.userData.modelLoading && c.parent && inActiveZone(c)) loadModelFor(c); }); }
-function attachModel(c, id) { c.userData.modelId = id; MODEL_WANT.push(c); if (MODELS_READY && inActiveZone(c)) loadModelFor(c); }
+function attachModel(c, id) { if (c.userData.modelId === id) return; c.userData.modelId = id; MODEL_WANT.push(c); if (MODELS_READY && inActiveZone(c)) loadModelFor(c); }
 function gltfFor(url) {
   if (!GLTF_CACHE[url]) GLTF_CACHE[url] = new Promise((ok, bad) => new THREE.GLTFLoader().load(url, (g) => {
     // vertex colours are linear in glTF; the procedural cast feeds hex values straight into toon materials, so match that.
-    g.scene.traverse(n => { const col = n.isMesh && n.geometry.attributes.color; if (col && !n.geometry.userData.srgb) { n.geometry.userData.srgb = 1; const k = col.normalized ? 255 : 1;
+    g.scene.traverse(n => { const col = n.isMesh && n.geometry.attributes.color; if (col && !col.isInterleavedBufferAttribute && !/\/real\//.test(url) && !n.geometry.userData.srgb) {   // v11.1: never on interleaved data (it shares a buffer with the skin indices) or the realistic cast n.geometry.userData.srgb = 1; const k = col.normalized ? 255 : 1;
       const toSRGB = (v) => v <= 0.0031308 ? v * 12.92 : 1.055 * Math.pow(v, 1 / 2.4) - 0.055;
       for (let i = 0; i < col.count; i++) for (let j = 0; j < Math.min(3, col.itemSize); j++) { const ix = i * col.itemSize + j, v = toSRGB(col.array[ix] / k); col.array[ix] = k === 1 ? v : Math.round(v * k); }
       col.needsUpdate = true; } });
@@ -2017,6 +2043,35 @@ function gltfFor(url) {
   return GLTF_CACHE[url];
 }
 const castMats = {};
+/* v11.1: a realistic (Rocketbox) character: its own PBR materials, no toon shading or outline, clips from the shared
+   per-gender animation pack (re-targeted by bone name). No face morphs yet: expressions show in the portraits only. */
+const REAL_H = 2.12, REAL_CLIPS = {};   // name tag height over a 1.8 m adult
+function loadRealFor(c, spec) {
+  Promise.all([gltfFor(spec.url), gltfFor(spec.anims)]).then(([g, a]) => {
+    if (!c.parent) return;
+    const m = THREE.SkeletonUtils.clone(g.scene); m.scale.setScalar(spec.scale || 1);
+    m.traverse(n => {
+      if (!n.isMesh) return;
+      n.castShadow = true; n.receiveShadow = true; n.frustumCulled = false;
+      const mt = n.material; if (mt && mt.isMeshStandardMaterial) { mt.envMapIntensity = 0.55; if (mt.alphaTest > 0) mt.alphaTest = 0.45; }
+    });
+    c.children.forEach(ch => { if (!ch.isSprite) ch.visible = false; else ch.position.y = REAL_H; });
+    c.add(m);
+    const mixer = new THREE.AnimationMixer(m), clips = {};
+    // Keep only tracks whose bone this body has: a track for a missing node would bind to the scene root and tip the body over.
+    const have = new Set(); m.traverse(n => have.add(n.name));
+    // The clips were captured on an adult: scale the hip height to this body (children), so nobody floats or sinks.
+    const hip = m.getObjectByName('Bip01'), restY = hip ? hip.position.y : 0.9;
+    (a.animations || []).forEach(an => {
+      const pt = an.tracks.find(t => t.name === 'Bip01.position'), k = pt ? restY / pt.values[1] : 1, kq = Math.abs(k - 1) > 0.04 ? +k.toFixed(2) : 1, key = spec.anims + an.name + kq;
+      const cl = REAL_CLIPS[key] || (REAL_CLIPS[key] = new THREE.AnimationClip(an.name, an.duration, an.tracks.filter(t => have.has(t.name.split('.')[0])).map(t => {
+        if (kq === 1 || t.name !== 'Bip01.position') return t; const c2 = t.clone(); for (let i = 0; i < c2.values.length; i++) c2.values[i] *= kq; return c2; })));
+      clips[an.name] = mixer.clipAction(cl);
+    });
+    c.userData.model = { mixer, clips, map: spec.clips || {}, cur: null, morphs: [], blinkT: 9e9, blinking: 0, real: true };
+    c.userData.real = true;
+  }).catch(() => { c.userData.modelLoading = false; });
+}
 function castMat(name, morph) {
   const k = name + (morph ? 'm' : '');
   if (!castMats[k]) castMats[k] = /emit/.test(name)
@@ -2033,6 +2088,7 @@ function outlineFor(morph) {
 function loadModelFor(c) {
   const spec = CHAR_MODELS[c.userData.modelId]; if (!spec || !THREE.GLTFLoader || !THREE.SkeletonUtils) return;
   c.userData.modelLoading = true;
+  if (spec.real) return loadRealFor(c, spec);
   gltfFor(spec.url).then((g) => {
     if (!c.parent) return;   // replaced (e.g. a new day made a new player) before the model arrived
     const m = THREE.SkeletonUtils.clone(g.scene); m.scale.setScalar(spec.scale || 1);
@@ -2290,7 +2346,7 @@ const portrait = (() => {
     try {
       if (!r) { r = new THREE.WebGLRenderer({ alpha: true, antialias: true, preserveDrawingBuffer: true }); r.outputEncoding = THREE.sRGBEncoding; r.setPixelRatio(1); }
       const W2 = framing === 'bust' ? 400 : 256, H2 = framing === 'bust' ? 500 : 256; r.setSize(W2, H2, false); pc.aspect = W2 / H2; pc.updateProjectionMatrix();
-      const c = makeChar(Object.assign({}, look, { label: null }), pScene); setExpr(c, expr); c.rotation.y = -0.28;
+      const c = makeChar(Object.assign({}, look, { label: null, portrait: true }), pScene); setExpr(c, expr); c.rotation.y = -0.28;
       if (look.mic) c.userData.P.shR.rotation.x = -1.2;
       if (framing === 'bust') { pc.position.set(0.0, 1.12, 3.0); pc.lookAt(0, 1.0, 0); } else { pc.position.set(0, 1.22, 1.55); pc.lookAt(0, 1.18, 0); }
       r.render(pScene, pc);
@@ -2671,8 +2727,8 @@ function sportNPC(id, look, x, z, lx, lz) { look._id = id; const p = makeChar(lo
     if (i !== 1) { const a = makeChar({ shirt: ['#2251FF', '#3DDC97'][i / 2 | 0], hairStyle: 'short', pants: '#ffffff' }); a.position.set(cx, 0, 9); face(a, cx, 17); a.userData.state = 'play'; a.userData.baseState = 'play'; Z.npcs.push(a); const b = makeChar({ shirt: ['#c0392b', '#f2c574'][i / 2 | 0], hairStyle: 'pony', pants: '#ffffff' }); b.position.set(cx, 0, 17); face(b, cx, 9); b.userData.state = 'play'; b.userData.baseState = 'play'; Z.npcs.push(b); const sh = ball(cx, 1.6, 13, 0.07, '#ffffff', 'shuttle'); sh.from = [cx, 9.5]; sh.to = [cx, 16.5]; sh.active = true; }
   });
   sportNPC('grad1', { shirt: '#7a5cff', hairStyle: 'spiky', pants: '#ffffff', label: '研究生会 · 阿强' }, 20, 9.5, 20, 16);
-  { const wu = makeChar({ shirt: '#f2c574', hair: '#1a1a1e', hairStyle: 'pony', pants: '#ffffff', accent: '#c0392b', label: '化学系 · 小吴' }); wu.position.set(24.4, 0, 9); face(wu, 20, 9); wu.userData.baseState = 'idle'; wu.visible = false; Z.npcs.push(wu); NPC.wu = wu; }
-  { const jay = makeChar({ shirt: '#FFCC00', hair: '#121216', hairStyle: 'spiky', pants: '#1b2430', accent: '#2251FF', label: '槟城 · 阿杰' }); jay.position.set(24.4, 0, 7.5); face(jay, 20, 7.5); jay.userData.baseState = 'idle'; jay.visible = false; Z.npcs.push(jay); NPC.jay = jay; }
+  { const wu = makeChar({ model: 'gen_f1', shirt: '#f2c574', hair: '#1a1a1e', hairStyle: 'pony', pants: '#ffffff', accent: '#c0392b', label: '化学系 · 小吴' }); wu.position.set(24.4, 0, 9); face(wu, 20, 9); wu.userData.baseState = 'idle'; wu.visible = false; Z.npcs.push(wu); NPC.wu = wu; }
+  { const jay = makeChar({ model: 'gen_m4', shirt: '#FFCC00', hair: '#121216', hairStyle: 'spiky', pants: '#1b2430', accent: '#2251FF', label: '槟城 · 阿杰' }); jay.position.set(24.4, 0, 7.5); face(jay, 20, 7.5); jay.userData.baseState = 'idle'; jay.visible = false; Z.npcs.push(jay); NPC.jay = jay; }
   const sh2 = ball(20, 1.6, 13, 0.07, '#ffffff', 'shuttle'); sh2.from = [20, 9.8]; sh2.to = [20, 16.6];
   bench(6, 2.4, 0); bench(20, 2.4, 0); bench(33, 2.4, 0); bench(6, 23.6, Math.PI); bench(33, 23.6, Math.PI);
   for (let i = 0; i < 6; i++) { box(0.5, 0.04, 0.02, mat(['#c0392b', '#2251FF', '#3DDC97'][i % 3]), 4.4 + i * 0.5, 0.52, 2.4, { cast: false }); }
@@ -4964,8 +5020,13 @@ function bmRig(c) {
   let r = null;
   if (u.model) {
     const bone = (n) => c.getObjectByName(n) || c.getObjectByName(n.replace('.', ''));   // GLTFLoader strips the dot from bone names
+    if (u.model.real) {   // v11.1 Rocketbox (3ds Max Biped): bones point along their child, whatever the local axis is
+      const ua = bone('Bip01_R_UpperArm'), fa = bone('Bip01_R_Forearm'), hd = bone('Bip01_R_Hand'), ul = bone('Bip01_L_UpperArm');
+      if (ua && fa && hd) r = { kind: 'glb', ua, fa, ul, hand: hd, axisU: fa.position.clone().normalize(), axisF: hd.position.clone().normalize(), axis: hd.position.clone().normalize() };
+    } else {
     const ua = bone('upper_arm.R'), fa = bone('forearm.R'), hd = bone('hand.R'), ul = bone('upper_arm.L');
     if (ua && fa && hd) r = { kind: 'glb', ua, fa, ul, hand: hd, axis: new THREE.Vector3(0, 1, 0) };
+    }
   } else if (u.P && u.P.shR && u.P.elR) r = { kind: 'proc', ua: u.P.shR, fa: u.P.elR, ul: u.P.shL, hand: u.P.elR, axis: new THREE.Vector3(0, -1, 0), off: -0.2 };
   if (!r) return null;
   if (u.bmRacket && u.bmRacket.parent) u.bmRacket.parent.remove(u.bmRacket);
@@ -4973,7 +5034,11 @@ function bmRig(c) {
   r.hand.add(rk); c.updateMatrixWorld(true);
   rk.position.set(0, r.off || 0.04, 0); rk.quaternion.identity();
   if (r.axis.y < 0) rk.rotation.x = Math.PI;   // the procedural forearm hangs along -Y
-  const ws = r.hand.getWorldScale(_bv1).x, cs = c.getWorldScale(_bv2).x; rk.scale.setScalar(cs / (ws || 1) * 1.6);   // chibi proportions: an oversized racket reads at broadcast distance
+  if (u.model && u.model.real) {   // Rocketbox: grip in the palm, shaft along the middle finger
+    const f = c.getObjectByName('Bip01_R_Finger2') || c.getObjectByName('Bip01_R_Finger1'), ax = f ? f.position.clone().normalize() : new THREE.Vector3(1, 0, 0);
+    rk.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), ax); rk.position.copy(ax).multiplyScalar(0.05);
+  }
+  const ws = r.hand.getWorldScale(_bv1).x, cs = c.getWorldScale(_bv2).x; rk.scale.setScalar(cs / (ws || 1) * (u.model && u.model.real ? 1.2 : 1.6));   // chibi proportions: an oversized racket reads at broadcast distance
   if (r.kind === 'proc') rk.position.y = r.off;
   // which local x is the racket side (the rig's right arm), measured once from the shoulder position
   c.worldToLocal(r.ua.getWorldPosition(_bv1)); r.sx = Math.sign(_bv1.x) || -1;
@@ -5006,10 +5071,10 @@ function bmPoseArms(c, side, m, B) {
   if (!type || w <= 0) return;
   c.updateMatrixWorld(true);
   const d1 = bmLocalDir(c, r, [a[0][0] + (b[0][0] - a[0][0]) * k, a[0][1] + (b[0][1] - a[0][1]) * k, a[0][2] + (b[0][2] - a[0][2]) * k], _bv1);
-  bmAim(r.ua, r.axis, d1, w);
+  bmAim(r.ua, r.axisU || r.axis, d1, w);
   const d2 = bmLocalDir(c, r, [a[1][0] + (b[1][0] - a[1][0]) * k, a[1][1] + (b[1][1] - a[1][1]) * k, a[1][2] + (b[1][2] - a[1][2]) * k], _bv2);
-  bmAim(r.fa, r.axis, d2, w);
-  if (r.ul) { const l = type.left, d3 = bmLocalDir(c, r, [-l[0], l[1], l[2]], _bv1); bmAim(r.ul, r.axis, d3, w * 0.8); }
+  bmAim(r.fa, r.axisF || r.axis, d2, w);
+  if (r.ul) { const l = type.left, d3 = bmLocalDir(c, r, [-l[0], l[1], l[2]], _bv1); bmAim(r.ul, r.axisU || r.axis, d3, w * 0.8); }
 }
 /* v10.3 juice: floating labels over the hitter, contact flashes, hit-stop and shake, speed lines, racket sounds. */
 BM.labels = [];
@@ -5130,7 +5195,8 @@ async function bmStart(opp, drillId, ctx) {
   bmVenueOn(); if (npc) bmVenueBorrow(npc); BM.camSnap = true; BMV.v && BMV.v.setEvent(!!(ctx && ctx.event));
   const sh = bmShuttle(); bmLayer().add(sh);
   const fx = bmFx(); bmLayer().add(fx.ring, fx.shadow, fx.mark, fx.trail, fx.ribbon, fx.goal, ...fx.flashes); fx.rhist.length = 0; fx.n = 0; fx.markT = 0; fx.mark.material.opacity = 0; fx.ring.visible = false;
-  player.scale.setScalar(BM_SCALE); if (npc) npc.scale.setScalar(BM_SCALE);   // players read at broadcast size
+  const bmS = (c) => c.userData.real ? 1 : BM_SCALE;   // realistic adults are already life size
+  player.scale.setScalar(bmS(player)); if (npc) npc.scale.setScalar(bmS(npc));   // players read at broadcast size
   BM.m = { sw: {}, core, D, O, opp, ctx: ctx || {}, drillId: drill ? drillId : null, drill, npc, sh, decor, npcHome: npc ? npc.position.clone() : null, npcRot: npc ? npc.rotation.y : 0, npcVis: npc ? npc.visible : true, pop: 0 };
   if (npc) npc.visible = true;
   bmShowRackets(true);
@@ -6644,6 +6710,11 @@ $('bSound').onclick = () => { soundOn = !soundOn; $('bSound').classList.toggle('
 const QNAME = { high: '高', mid: '中', low: '低' };
 $('qualLbl').textContent = '画质 ' + QNAME[QUALITY];
 $('bQual').onclick = () => { const order = ['high', 'mid', 'low']; const nq = order[(order.indexOf(QUALITY) + 1) % 3]; if ($('bQual').dataset.arm === nq) return setQuality(nq); $('bQual').dataset.arm = nq; $('qualLbl').textContent = `画质 ${QNAME[nq]}？`; toast(`再点一次切换到「${QNAME[nq]}」画质。页面会重新载入，今天的进度会清空。`); };
+// v11.1 art style: title-page pair and a top-bar toggle (two taps, as for quality: it reloads the page)
+const ARTNAME = { real: '写实', diorama: '微缩模型' };
+$('artLbl').textContent = ARTNAME[ART];
+$('bArt').onclick = () => { const na = REAL ? 'diorama' : 'real'; if ($('bArt').dataset.arm === na) return setArt(na); $('bArt').dataset.arm = na; $('artLbl').textContent = `${ARTNAME[na]}？`; toast(`再点一次切换到「${ARTNAME[na]}」画风。页面会重新载入，今天的进度会清空。`); };
+document.querySelectorAll('.qualRow [data-art]').forEach(b => { b.classList.toggle('on', b.dataset.art === ART); b.onclick = () => { if (b.dataset.art !== ART) setArt(b.dataset.art); }; });
 document.querySelectorAll('.qualRow [data-q]').forEach(b => { b.classList.toggle('on', b.dataset.q === QUALITY); b.onclick = () => { if (b.dataset.q !== QUALITY) setQuality(b.dataset.q); }; });
 $('bEnd').onclick = () => { if (S && S.running && !S.dialog) { if (S.activity && S.activity.cancelable) finishActivity(false); if (!S.activity) confirmHome(); } };
 $('btnE').onclick = () => { if (S && S.dialog && S.dialog.mini && S.dialog.mini.press) S.dialog.mini.press(); else interact(); };
