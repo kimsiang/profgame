@@ -58,6 +58,13 @@ Games last about 2 minutes (84–138 s). Energy 95 vs 25 is a 32–59 point swin
 - **Sharpness (v10.3.1).** While the venue is on: pixel ratio boosted (`PR_BOOST`, high 1.5–2×, mid 1.25–1.6×), tilt-shift and grain off, shadow camera ±11 m with a 4096² (high) / 2048² (mid) map. Falls back to normal resolution if the 150-frame average is below 45 fps.
 - **Rules untouched.** `badminton.js` is unchanged; balance numbers below still hold.
 
+## v11.2 — where the new parts live
+- Garden: `GardenKit.bed(THREE, {kind, x0, z0, x1, z1, y, seed, avoid})` in `assets/js/garden.js`; the f6 zone builds four beds (`ZONES6`). Leaves are bent planes (`leafGeo`) with canvas vein/frond textures; repeated parts are InstancedMesh.
+- Football: a small simulation in the campus `Z.anims` (ball with friction and gravity; chaser + shape-keeping players); the ball is flagged `sim` so the generic ball bobbing skips it.
+- Canteen: `CANTEEN` (data from `assets/data/canteen.json`), `canteenToday()` = six cuisines by day index (rotating through all 20), `canteenSigns()` redraws the stall signs on zone change and each new day, `canteenMenu()` is the stall choice dialog. `S.cuisines` (per run/week) tracks first tries. `FOOD_PANTRY` keeps the old food for the 5F pantry.
+- HUD folding: `FOLDABLE`, `foldSet(id, on)`, `foldAll()` (H); `.panel.folded` hides everything but `.foldKeep`; `placeLeftCol()` stacks the performance box under the player card. State in localStorage `prof-fold-v1`.
+- Music: `ProfMusic` (look-ahead scheduler on the audio clock; drums, bass, arpeggio, keys and pads synthesised). `MUSIC.pick` ('auto' | track id | 'off', localStorage `prof-music`); `musicWant()` picks by time of day, and the roof zone always plays `auto.cafe`. The old pad generator remains as a fallback if the JSON cannot load.
+
 ## v11.1 Art style and realistic cast — how it works
 - `ART` ('real' | 'diorama', localStorage `prof-art`, default real) and `REAL` are read once at start; `setArt()` reloads. Switch points: F5 floors, wall/trim/glass/frame/threshold materials, slab, light pools, floor decals, oak desks, HDRI env, the real character manifest and generic extras. The badminton venue is shared.
 - Characters: `assets/characters/real/manifest.json` overrides the stylised manifest per id when REAL. `loadRealFor()` clones the GLB, keeps its PBR materials, and plays clips from `anim_m.glb` / `anim_f.glb`, filtered to the body's bones (a missing bone would bind to the scene root) and with the root height scaled to the body.
