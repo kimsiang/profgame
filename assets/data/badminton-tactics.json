@@ -126,6 +126,10 @@
     "footTired": {
       "zh": "体力不够时跳了 {n} 次中国跳。",
       "en": "{n} China jumps on tired legs."
+    },
+    "opp": {
+      "zh": "对手靠「{pat}」拿了你 {n} 分。",
+      "en": "Your opponent won {n} points by {pat}."
     }
   },
   "words": {
@@ -144,6 +148,50 @@
     "late": {
       "zh": "晚",
       "en": "late"
+    }
+  },
+  "patterns": {
+    "spread": {
+      "zh": "拉吊四角",
+      "en": "moving you around"
+    },
+    "backhand": {
+      "zh": "压你的反手后场",
+      "en": "pressing your rear backhand"
+    },
+    "smashNet": {
+      "zh": "杀后上网",
+      "en": "smash and follow to the net"
+    },
+    "fake": {
+      "zh": "假动作变线",
+      "en": "disguise and change of line"
+    },
+    "jumpSmash": {
+      "zh": "起跳重杀",
+      "en": "jump smashes"
+    }
+  },
+  "counters": {
+    "vs_spread": {
+      "zh": "被拉吊时先打高远球，给自己回中心的时间。",
+      "en": "When they move you around, clear high and deep to get back to the centre."
+    },
+    "vs_backhand": {
+      "zh": "对手压你反手后场：头顶区的来球用马来步转身，用正手回。",
+      "en": "They are pressing your rear backhand: use the Malaysian step and take it on the forehand."
+    },
+    "vs_smashNet": {
+      "zh": "对手杀完会跟上网：接杀别挡网前，挑到后场让他退回去。",
+      "en": "They follow the smash in: don't block short, lift it deep and send them back."
+    },
+    "vs_fake": {
+      "zh": "对手有假动作：等球真正离拍再判断，看影子，不看拍子。",
+      "en": "They disguise their shots: wait until the shuttle leaves the racket, read the shadow, not the racket."
+    },
+    "vs_jumpSmash": {
+      "zh": "对手爱起跳重杀：别给他高而浅的球，挑就挑到底线。",
+      "en": "They love the jump smash: don't feed them short lifts; lift to the baseline or don't lift."
     }
   }
 }

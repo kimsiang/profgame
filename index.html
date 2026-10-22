@@ -2557,6 +2557,7 @@ function sportNPC(id, look, x, z, lx, lz) { look._id = id; const p = makeChar(lo
   });
   sportNPC('grad1', { shirt: '#7a5cff', hairStyle: 'spiky', pants: '#ffffff', label: '研究生会 · 阿强' }, 20, 9.5, 20, 16);
   { const wu = makeChar({ shirt: '#f2c574', hair: '#1a1a1e', hairStyle: 'pony', pants: '#ffffff', accent: '#c0392b', label: '化学系 · 小吴' }); wu.position.set(24.4, 0, 9); face(wu, 20, 9); wu.userData.baseState = 'idle'; wu.visible = false; Z.npcs.push(wu); NPC.wu = wu; }
+  { const jay = makeChar({ shirt: '#FFCC00', hair: '#121216', hairStyle: 'spiky', pants: '#1b2430', accent: '#2251FF', label: '槟城 · 阿杰' }); jay.position.set(24.4, 0, 7.5); face(jay, 20, 7.5); jay.userData.baseState = 'idle'; jay.visible = false; Z.npcs.push(jay); NPC.jay = jay; }
   const sh2 = ball(20, 1.6, 13, 0.07, '#ffffff', 'shuttle'); sh2.from = [20, 9.8]; sh2.to = [20, 16.6];
   bench(6, 2.4, 0); bench(20, 2.4, 0); bench(33, 2.4, 0); bench(6, 23.6, Math.PI); bench(33, 23.6, Math.PI);
   for (let i = 0; i < 6; i++) { box(0.5, 0.04, 0.02, mat(['#c0392b', '#2251FF', '#3DDC97'][i % 3]), 4.4 + i * 0.5, 0.52, 2.4, { cast: false }); }
@@ -4956,11 +4957,12 @@ function bmReviewHTML(B, done) {
   const title = `<h3>${done ? (w ? '你赢了' : '输了') : '没打完'} ${m.score.P}:${m.score.O}</h3><p>${done ? esc(w ? B.O.lines.win_zh : B.O.lines.lose_zh) : ''}</p>`;
   if (!window.BMCore.review || m.points.length < 3) return title + `<p>完美 ${m.stats.perfect} 次 · 杀球 ${m.stats.smashes} 次 · 最长回合 ${m.stats.longest} 拍</p>`;
   const R = BMCore.review(m, B.D, 'zh'), n = R.nums;
-  const h = bmHist(done ? { t: Date.now(), opp: B.opp, P: m.score.P, O: m.score.O, u: n.unforced, ms: n.meanMs } : null).slice(-5);
+  const h = bmHist(done ? { t: Date.now(), opp: B.opp, P: m.score.P, O: m.score.O, u: n.unforced, ms: n.meanMs } : null).slice(-10);
   const trend = h.length > 1 ? `<div class="lg" style="margin-top:6px">最近 ${h.length} 局主动失误：${h.map(x => x.u).join(' · ')}　出手偏差：${h.map(x => (x.ms > 0 ? '+' : '') + x.ms).join(' · ')} ms</div>` : '';
   const ms = n.meanMs === 0 ? '准' : `${n.meanMs < 0 ? '早' : '晚'} ${Math.abs(n.meanMs)} ms`;
   return title + `<div class="bmRev">${bmCourtSVG(R.dots, B.D.court.cx)}<div style="min-width:0">
-    <div class="head">${esc(R.headline)}</div>
+    <div class="head">${esc(R.headline)}</div>${R.items[1] ? `<div style="font-size:13px;color:#CDEEFF;margin:-4px 0 6px">${esc(R.items[1].text)}</div>` : ''}
+    ${Object.keys(R.oppPat || {}).length && B.D.tactics.patterns ? `<div class="lg" style="margin-bottom:6px">${esc(B.O.name_zh)}这局的套路：${Object.entries(R.oppPat).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${B.D.tactics.patterns[k] ? B.D.tactics.patterns[k].zh : k} ${v} 次`).join(' · ')}</div>` : ''}
     <div class="num"><span>制胜球</span><b>${n.winners}</b><span>主动失误</span><b>${n.unforced}</b><span>被动失误</span><b>${n.forced}</b><span>时机失误（早/晚）</span><b>${n.timingMiss}</b><span>被调动够不到</span><b>${n.far}</b><span>出手平均偏差</span><b>${ms}</b><span>稳定度（±）</span><b>${n.sdMs} ms</b><span>最长回合</span><b>${n.longest} 拍</b><span>马来步 / 中国跳</span><b>${n.malay} / ${n.china}</b></div>
     ${R.cues.map(c => `<div class="cue">${esc(c.text)}</div>`).join('')}
     <div class="lg"><i style="background:#3DDC97"></i>你的得分球<i style="background:#ff6b5e"></i>你的失误<i style="background:#00A9F4"></i>你的来回球<i style="background:#FFB547"></i>对手得分球</div>${trend}
@@ -5009,6 +5011,7 @@ function showQuickMenu() {
   box.innerHTML = `<h3>打一局，还是练一练？</h3>
     <button class="btn gold" type="button" data-o="aqiang">对阿强 · 研究生 · 业余</button>
     <button class="btn" type="button" data-o="wu">对小吴 · 化学系博士后 · 校队</button>
+    <button class="btn" type="button" data-o="jay">对阿杰 · 槟城来的交换博士后 · 快攻</button>
     <p style="margin-top:6px">训练 · 每组 10 球</p>
     <button class="btn" type="button" data-d="rearHead">后场头顶区 · 马来步还是中国跳${bmBest('rearHead') ? ` · 最好 ${bmBest('rearHead')} 分` : ''}</button>
     <button class="btn" type="button" data-d="defense">接杀 · 挡网前或挑后场${bmBest('defense') ? ` · 最好 ${bmBest('defense')} 分` : ''}</button>
@@ -5042,7 +5045,7 @@ function quickEnd(B, done) {
   box.className = 'panel rev';
   box.innerHTML = bmReviewHTML(B, done) + `
     <button class="btn gold" type="button" data-o="${B.opp}">再来一局</button>
-    <button class="btn" type="button" data-o="${B.opp === 'wu' ? 'aqiang' : 'wu'}">${B.opp === 'wu' ? '换阿强（研究生 · 业余）' : '挑战小吴（化学系博士后 · 校队）'}</button>
+    ${(() => { const nx = { aqiang: 'wu', wu: 'jay', jay: 'aqiang' }[B.opp] || 'aqiang', o = B.D.opponents[nx]; return `<button class="btn" type="button" data-o="${nx}">${nx === 'aqiang' ? '换' : '挑战'}${esc(o.name_zh)}（${esc(o.level_zh)}）</button>`; })()}
     <button class="btn ghost" type="button" id="bmMenu">回菜单</button><button class="btn ghost" type="button" id="bmHome">回首页</button>`;
   box.classList.remove('hidden');
   box.querySelectorAll('[data-o]').forEach(b => { b.onclick = () => { box.classList.add('hidden'); quickBadminton(b.dataset.o); }; });

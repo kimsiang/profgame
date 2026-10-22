@@ -1,5 +1,11 @@
 # Changelog
 
+## v10.1-step6 — Opponents with a game plan (2026-10-22)
+- Opponents now play patterns, set per opponent in `assets/data/badminton.json` (`tactics`): 拉吊四角 (move you front–back, away from where you stand), 压反手后场 (clears and lifts to your rear backhand), 杀后上网 (follow the smash in and kill the reply), 假动作变线 (a disguised shot: you start 0.15 s late, and the line changes to the side you are on).
+- 小吴 plays 拉吊四角, your backhand and smash-and-follow. 阿强 only moves you around now and then.
+- New opponent **阿杰**, an exchange postdoc from Penang (fictional): fast, China-jumps to meet the shuttle 0.4 m higher, heavy smashes (+10%), follows them in, and disguises about one shot in five. Hardest of the three.
+- The review says which patterns the opponent used and which one won the most points from you, with the counter (for example: "对手压你反手后场：头顶区的来球用马来步转身，用正手回"). The trend line now covers your last 10 games.
+
 ## v10.1.1 — Fixes (2026-10-22)
 - **Badminton courts follow the BWF Laws (Law 1).** The old texture was drawn sideways and squashed into a 6.6 m court. Now: 13.40 × 6.10 m, 40 mm lines counted inside the area they bound, singles sidelines 0.46 m in, short service lines 1.98 m from the net, doubles long service lines 0.76 m inside the back boundary, centre lines from the short service line to the back. Posts stand on the doubles sidelines at 1.55 m; the net is 6.1 m long, 760 mm deep, 1.524 m high at the centre (the match physics uses 1.524 m too).
 - **Navigator chip no longer overlaps the clock panel** on desktop: it now sits 8 px below the panel, whatever the panel's height.

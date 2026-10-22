@@ -80,6 +80,7 @@
       points: [],   // every rally: who won, how, and whose error it was
       timing: [],   // the player's swing offsets from the ideal moment (s; negative = early)
       tags: {},     // tag id -> count, player shots only
+      oppPat: {},   // opponent pattern id -> count
     };
     const emit = (e) => { if (e.type === 'miss') m.lastMiss = e; m.ev.push(e); };
 
@@ -102,8 +103,10 @@
       o = o || {};
       const f = m.fl, R = m.ch[recv], P = PAR[recv], sg = sideSign(recv), now = m.t - f.t0;
       if (f.netHit) { m.inc = { recv, none: true, done: true }; return; }
-      const maxY = P.maxY + (o.bonus ? o.bonus.maxY : 0), reachR = P.reach + (o.bonus ? o.bonus.reach : 0);
+      const jump = recv === 'O' && OP.jumpY ? OP.jumpY : 0;   // an opponent who China-jumps meets the shuttle higher
+      const maxY = P.maxY + jump + (o.bonus ? o.bonus.maxY : 0), reachR = P.reach + (o.bonus ? o.bonus.reach : 0);
       let react = o.replan ? 0.05 : P.reaction;
+      if (o.fake) react += D.fakeDelay;   // a disguised shot: the receiver starts late
       if (recv === 'P' && m.stumble && !o.replan) { react += D.footwork.stumbleDelay; m.stumble = false; }
       let best = null, need = 0, last = null;
       for (const p of f.pts) {
@@ -131,7 +134,7 @@
       if (o.tx != null) tx = o.tx;
       else if (o.aim) tx = C.cx + o.aim * S.width * (0.8 + 0.2 * rnd());
       else { const away = R.x >= C.cx ? -1 : 1; tx = C.cx + away * S.width * (0.55 + 0.45 * rnd()); }
-      const smashSpd = shotId === 'smash' ? (o.power || 1) * { perfect: 72, good: 60, fair: 46, bad: 40 }[q] : 0;
+      const smashSpd = shotId === 'smash' ? (o.power || 1) * (side === 'O' && OP.power ? OP.power : 1) * { perfect: 72, good: 60, fair: 46, bad: 40 }[q] : 0;
       // Intended aim: the noise-free shot must clear the tape by a margin. Lift the angle (or, for a smash,
       // aim deeper) until it does.
       let ang = o.angle != null ? o.angle : S.angle;
@@ -148,8 +151,9 @@
       const prevInc = m.inc, margin = o.serve || !prevInc || !prevInc.c ? 9 : prevInc.c.margin;
       const inSpd = o.serve || !prevInc || !prevInc.c ? 0 : Math.hypot(prevInc.c.vx, prevInc.c.vy, prevInc.c.vz);
       const rec = { side, shot: shotId, q, serve: !!o.serve, from: { x: from.x, y: from.y, z: from.z }, land: { x: f.land.x, z: f.land.z }, net: f.netHit,
-        margin, inSpd, opp: { x: R.x, z: R.z }, foot: o.foot || null, tags: o.footTag ? [o.footTag] : [] };
+        margin, inSpd, opp: { x: R.x, z: R.z }, foot: o.foot || null, pat: o.pat || null, tags: o.footTag ? [o.footTag] : [] };
       if (o.footTag && side === 'P') m.tags[o.footTag] = (m.tags[o.footTag] || 0) + 1;
+      if (o.pat && side === 'O') m.oppPat[o.pat] = (m.oppPat[o.pat] || 0) + 1;
       tagShot(rec);
       m.log.push(rec); m.fl.rec = rec;
       m.stats.rally++;
@@ -157,8 +161,9 @@
       const H = m.ch[side]; H.swingT = m.t;
       // Recover toward base, shaded to the side the shuttle went.
       const b = base(side); H.tx = b.x + (etx - C.cx) * 0.3; H.tz = b.z; H.mvT = m.t + 0.25;
+      if (o.follow) H.tz = C.net + sg * 2.2;   // smash and follow in to the net
       emit({ type: 'hit', side, shot: shotId, q, speed: v.spd, serve: !!o.serve, tags: rec.tags, foot: o.foot || null });
-      plan(recv);
+      plan(recv, { fake: !!o.fake });
     }
 
     /* ---------- tactical tags (thresholds in D.tactics.rules) ---------- */
@@ -192,7 +197,28 @@
       let shot = pickW(OP.w[z]);
       if (inSpd > D.smashSpeed) { shot = rnd() < 0.6 ? 'netdrop' : 'lift'; q = down(q); }   // blocking a smash
       if (shot === 'netdrop' && Math.abs(c.z - C.net) > D.netZone + 1) shot = 'drop';
-      hit('O', shot, q);
+      // Tactical patterns (opponents[].tactics): probabilities, tried in this order.
+      const tac = OP.tactics || {}, P = m.ch.P, o = {}, nearNet = Math.abs(c.z - C.net) < D.netZone;
+      const last = m.log.length ? m.log[m.log.length - 1] : null;
+      if (inSpd <= D.smashSpeed) {
+        if (last && last.side === 'P' && m.log.length > 1 && m.log[m.log.length - 2].side === 'O' && m.log[m.log.length - 2].shot === 'smash' && tac.smashNet && nearNet) {
+          shot = rnd() < 0.6 ? 'push' : 'netdrop'; o.pat = 'smashNet';      // the kill after the smash
+        } else if (tac.backhand && rnd() < tac.backhand) {
+          shot = c.y >= D.overhead ? 'clear' : 'lift'; o.tx = C.cx - 2.15; o.depth = 6.1; o.pat = 'backhand';   // player's rear backhand (-x)
+        } else if (tac.spread && rnd() < tac.spread) {
+          const deep = Math.abs(P.z - C.net) > 3.8; o.tx = C.cx + (P.x >= C.cx ? -1 : 1) * 1.9; o.pat = 'spread';
+          shot = deep ? (nearNet && c.y < 1.1 ? 'netdrop' : 'drop') : (c.y >= 1.1 ? 'clear' : 'lift');
+        }
+        if (tac.fake && rnd() < tac.fake) {
+          o.fake = true; o.pat = o.pat || 'fake';
+          if (!o.tx) o.tx = C.cx + (P.x >= C.cx ? 1 : -1) * 1.8;               // sudden change of line: to the side the player is on
+          if (shot === 'clear') shot = 'drop'; else if (shot === 'smash' && rnd() < 0.5) shot = 'drop';
+        }
+      }
+      if (shot === 'smash' && tac.smashNet && rnd() < tac.smashNet) o.follow = true;
+      if (shot === 'smash' && !o.pat) o.pat = c.y > OP.maxY - 0.05 && OP.jumpY ? 'jumpSmash' : null;
+      o.pat = o.pat || null;
+      hit('O', shot, q, o);
     }
 
     // Player gesture → shot, from the contact height and distance to the net.
@@ -391,7 +417,7 @@
     const sd = n > 1 ? Math.sqrt(tm.reduce((a, b) => a + (b - mean) * (b - mean), 0) / (n - 1)) : 0;
     const shots = m.log.filter((r) => r.side === 'P' && !r.serve).length, tags = m.tags;
     const mode = (arr, f) => { const c = {}; arr.forEach((x) => { const k = f(x); c[k] = (c[k] || 0) + 1; }); return Object.keys(c).sort((a, b) => c[b] - c[a])[0]; };
-    const items = [], cue = (id) => { const r = T.rules[id] || T.cues[id]; return r ? { id, text: r['cue_' + L] || r[L] } : null; };
+    const items = [], cue = (id) => { const r = T.rules[id] || T.cues[id] || (T.counters && T.counters[id]); return r ? { id, text: r['cue_' + L] || r[L] } : null; };
     if (unforced.length >= 2 && unforced.length / Math.max(1, lost.length) >= 0.35) {
       const shot = mode(unforced, (p) => p.shot), why = mode(unforced, (p) => p.why);
       items.push({ id: 'unforced', text: fill(T.findings.unforced[L], { lost: lost.length, n: unforced.length, shot: (D.shots[shot] || {})[L] || shot, why: (T.words[why] || {})[L] || why }),
@@ -402,8 +428,15 @@
     if (shots >= 8 && (tags.spread || 0) / shots < 0.25) items.push({ id: 'spread', text: fill(T.findings.spread[L], { shots, n: tags.spread || 0 }), cues: ['spread'] });
     if ((tags.footBad || 0) >= 2) items.push({ id: 'footBad', text: fill(T.findings.footBad[L], { n: tags.footBad }), cues: ['footBad'] });
     if ((tags.footTired || 0) >= 2) items.push({ id: 'footTired', text: fill(T.findings.footTired[L], { n: tags.footTired }), cues: ['footTired'] });
-    items.push({ id: 'good', text: fill(T.findings.good[L], { w: winners.length, n: unforced.length }), cues: [(tags.backhand || 0) < 2 ? 'backhand' : 'smashNet', 'space'] });
-    const cues = []; items.forEach((it) => it.cues.forEach((c) => { if (!cues.find((x) => x.id === c)) { const q = cue(c); if (q) cues.push(q); } }));
+    if (!items.length || winners.length >= 2 && won.length >= lost.length) items.push({ id: 'good', text: fill(T.findings.good[L], { w: winners.length, n: unforced.length }), cues: [(tags.backhand || 0) < 2 ? 'backhand' : 'smashNet', 'space'] });
+    // What the opponent did to you: their patterns, and how many of your lost points each one won.
+    const oppPat = m.oppPat || {}, patWins = {};
+    pts.forEach((p) => { if (p.w === 'O' && p.rec && p.rec.side === 'O' && p.rec.pat) patWins[p.rec.pat] = (patWins[p.rec.pat] || 0) + 1; });
+    const topPat = Object.keys(patWins).sort((a, b) => patWins[b] - patWins[a])[0];
+    if (topPat && patWins[topPat] >= 2 && T.patterns && T.patterns[topPat]) items.splice(Math.min(1, items.length), 0, { id: 'opp_' + topPat, text: fill(T.findings.opp[L], { pat: T.patterns[topPat][L], n: patWins[topPat] }), cues: ['vs_' + topPat] });
+    // Cues: the first cue of each finding first (so the counter to the opponent's pattern makes the cut), then the rest.
+    const cues = [], addC = (c) => { if (!cues.find((x) => x.id === c)) { const q = cue(c); if (q) cues.push(q); } };
+    items.forEach((it) => addC(it.cues[0])); items.forEach((it) => it.cues.slice(1).forEach(addC));
     // Court map: every shot's landing point, coloured by what that shot did.
     const end = new Set(pts.map((p) => p.rec).filter(Boolean));
     const dots = m.log.filter((r) => !r.serve).map((r) => {
@@ -415,7 +448,7 @@
       nums: { won: won.length, lost: lost.length, winners: winners.length, unforced: unforced.length, forced: forced.length, timingMiss: timingMiss.length, far: far.length,
         meanMs: Math.round(mean * 1000), sdMs: Math.round(sd * 1000), swings: n, longest: m.stats.longest, perfect: m.stats.perfect, shots,
         malay: (tags.footGood || 0) + (tags.footBad || 0) + (tags.footWaste || 0), china: (tags.footChina || 0) + (tags.footTired || 0), chinaUses: m.chinaUses || 0 },
-      tags, dots,
+      tags, dots, oppPat, patWins,
     };
   };
 

@@ -1,79 +1,419 @@
 {
   "_comment": "v10 badminton match. Units: metres, seconds. Court 2 in the gym is centred at x=20, net at z=13; the player plays the near half (z > 13).",
-  "court": { "cx": 20, "net": 13, "len": 6.7, "sx": 2.59, "netH": 1.524, "shortLine": 1.98 },
-  "physics": { "drag": 0.212, "_drag": "k = g / v_t^2 with terminal velocity v_t = 6.8 m/s: the shuttle slows sharply, so clears rise and then fall almost straight down" },
-  "match": { "points": 7, "winBy": 2, "cap": 9, "pointPause": 1.7, "aiServeDelay": 1.1 },
-  "player": { "speed": 4.2, "speedEnergy": 0.35, "reaction": 0.16, "reach": 0.85, "maxY": 2.65, "minY": 0.25 },
+  "court": {
+    "cx": 20,
+    "net": 13,
+    "len": 6.7,
+    "sx": 2.59,
+    "netH": 1.524,
+    "shortLine": 1.98
+  },
+  "physics": {
+    "drag": 0.212,
+    "_drag": "k = g / v_t^2 with terminal velocity v_t = 6.8 m/s: the shuttle slows sharply, so clears rise and then fall almost straight down"
+  },
+  "match": {
+    "points": 7,
+    "winBy": 2,
+    "cap": 9,
+    "pointPause": 1.7,
+    "aiServeDelay": 1.1
+  },
+  "player": {
+    "speed": 4.2,
+    "speedEnergy": 0.35,
+    "reaction": 0.16,
+    "reach": 0.85,
+    "maxY": 2.65,
+    "minY": 0.25
+  },
   "timing": [
-    { "minEnergy": 70, "perfect": 0.11, "good": 0.2, "fair": 0.3, "label_zh": "精力充沛 · 判定宽", "label_en": "Fresh · wide timing" },
-    { "minEnergy": 40, "perfect": 0.08, "good": 0.16, "fair": 0.25, "label_zh": "有点累 · 判定一般", "label_en": "A bit tired · normal timing" },
-    { "minEnergy": 0, "perfect": 0.05, "good": 0.11, "fair": 0.19, "label_zh": "很累 · 判定窄", "label_en": "Exhausted · tight timing" }
+    {
+      "minEnergy": 70,
+      "perfect": 0.11,
+      "good": 0.2,
+      "fair": 0.3,
+      "label_zh": "精力充沛 · 判定宽",
+      "label_en": "Fresh · wide timing"
+    },
+    {
+      "minEnergy": 40,
+      "perfect": 0.08,
+      "good": 0.16,
+      "fair": 0.25,
+      "label_zh": "有点累 · 判定一般",
+      "label_en": "A bit tired · normal timing"
+    },
+    {
+      "minEnergy": 0,
+      "perfect": 0.05,
+      "good": 0.11,
+      "fair": 0.19,
+      "label_zh": "很累 · 判定窄",
+      "label_en": "Exhausted · tight timing"
+    }
   ],
   "quality": {
-    "perfect": { "err": 0.15, "short": 0, "label_zh": "完美！", "label_en": "Perfect!" },
-    "good": { "err": 0.45, "short": 0.3, "label_zh": "好球", "label_en": "Good" },
-    "fair": { "err": 0.85, "short": 1.1, "label_zh": "勉强", "label_en": "Scrappy" },
-    "bad": { "err": 1.5, "short": 1.6, "label_zh": "失误", "label_en": "Error" }
+    "perfect": {
+      "err": 0.15,
+      "short": 0,
+      "label_zh": "完美！",
+      "label_en": "Perfect!"
+    },
+    "good": {
+      "err": 0.45,
+      "short": 0.3,
+      "label_zh": "好球",
+      "label_en": "Good"
+    },
+    "fair": {
+      "err": 0.85,
+      "short": 1.1,
+      "label_zh": "勉强",
+      "label_en": "Scrappy"
+    },
+    "bad": {
+      "err": 1.5,
+      "short": 1.6,
+      "label_zh": "失误",
+      "label_en": "Error"
+    }
   },
   "misses": {
-    "early": { "zh": "早了", "en": "Too early" },
-    "late": { "zh": "晚了", "en": "Too late" },
-    "far": { "zh": "够不到", "en": "Out of reach" },
-    "leave": { "zh": "好眼力：这球出界", "en": "Good leave — it's out" }
+    "early": {
+      "zh": "早了",
+      "en": "Too early"
+    },
+    "late": {
+      "zh": "晚了",
+      "en": "Too late"
+    },
+    "far": {
+      "zh": "够不到",
+      "en": "Out of reach"
+    },
+    "leave": {
+      "zh": "好眼力：这球出界",
+      "en": "Good leave — it's out"
+    }
   },
   "shots": {
-    "clear":   { "angle": 50, "depth": [5.6, 6.3], "width": 1.7, "zh": "高远球", "en": "Clear" },
-    "lift":    { "angle": 60, "depth": [5.4, 6.2], "width": 1.6, "zh": "挑球", "en": "Lift" },
-    "drop":    { "angle": 6,  "depth": [1.0, 1.9], "width": 1.6, "zh": "吊球", "en": "Drop" },
-    "netdrop": { "angle": 32, "depth": [0.5, 1.1], "width": 1.4, "zh": "放网", "en": "Net shot" },
-    "drive":   { "angle": 3,  "depth": [3.6, 4.8], "width": 2.0, "zh": "平抽", "en": "Drive" },
-    "push":    { "angle": 4,  "depth": [2.8, 3.8], "width": 1.6, "zh": "推球", "en": "Push" },
-    "smash":   { "angle": -13, "depth": [3.2, 5.0], "width": 1.9, "zh": "杀球", "en": "Smash" },
-    "high":    { "angle": 58, "depth": [6.0, 6.5], "width": 0.9, "zh": "高远发球", "en": "High serve" },
-    "short":   { "angle": 24, "depth": [2.05, 2.5], "width": 0.9, "zh": "网前发球", "en": "Short serve" }
+    "clear": {
+      "angle": 50,
+      "depth": [
+        5.6,
+        6.3
+      ],
+      "width": 1.7,
+      "zh": "高远球",
+      "en": "Clear"
+    },
+    "lift": {
+      "angle": 60,
+      "depth": [
+        5.4,
+        6.2
+      ],
+      "width": 1.6,
+      "zh": "挑球",
+      "en": "Lift"
+    },
+    "drop": {
+      "angle": 6,
+      "depth": [
+        1.0,
+        1.9
+      ],
+      "width": 1.6,
+      "zh": "吊球",
+      "en": "Drop"
+    },
+    "netdrop": {
+      "angle": 32,
+      "depth": [
+        0.5,
+        1.1
+      ],
+      "width": 1.4,
+      "zh": "放网",
+      "en": "Net shot"
+    },
+    "drive": {
+      "angle": 3,
+      "depth": [
+        3.6,
+        4.8
+      ],
+      "width": 2.0,
+      "zh": "平抽",
+      "en": "Drive"
+    },
+    "push": {
+      "angle": 4,
+      "depth": [
+        2.8,
+        3.8
+      ],
+      "width": 1.6,
+      "zh": "推球",
+      "en": "Push"
+    },
+    "smash": {
+      "angle": -13,
+      "depth": [
+        3.2,
+        5.0
+      ],
+      "width": 1.9,
+      "zh": "杀球",
+      "en": "Smash"
+    },
+    "high": {
+      "angle": 58,
+      "depth": [
+        6.0,
+        6.5
+      ],
+      "width": 0.9,
+      "zh": "高远发球",
+      "en": "High serve"
+    },
+    "short": {
+      "angle": 24,
+      "depth": [
+        2.05,
+        2.5
+      ],
+      "width": 0.9,
+      "zh": "网前发球",
+      "en": "Short serve"
+    }
   },
   "overhead": 2.0,
   "netZone": 2.6,
   "netMargin": 0.22,
   "smashSpeed": 22,
-  "footwork": { "_comment": "rear-court footwork; see design-notes/v10.1. Times in s, distances in m.",
-    "rearDepth": 4.5, "headX": 0.3, "prepLead": 0.25, "malayMargin": 0.75, "malayPower": 1.15, "backhandPower": 0.85,
-    "chinaPower": 1.1, "chinaY": 0.45, "chinaReach": 0.25, "chinaEnergy": 2, "tiredEnergy": 40, "stumbleP": 0.3, "stumbleDelay": 0.2,
-    "zh": { "malay": "马来步", "china": "中国跳", "front": "前场用不着后场步法", "late": "来不及准备步法", "backhand": "反手头顶，质量降一档", "noTime": "转身来不及", "forehand": "正手后场用不着转身", "stumble": "落地不稳" },
-    "en": { "malay": "Malaysian step", "china": "China jump", "front": "No rear-court footwork at the front", "late": "Too late to set your feet", "backhand": "Backhand overhead: one grade down", "noTime": "No time to turn", "forehand": "No need to turn on the forehand side", "stumble": "Shaky landing" } },
+  "footwork": {
+    "_comment": "rear-court footwork; see design-notes/v10.1. Times in s, distances in m.",
+    "rearDepth": 4.5,
+    "headX": 0.3,
+    "prepLead": 0.25,
+    "malayMargin": 0.75,
+    "malayPower": 1.15,
+    "backhandPower": 0.85,
+    "chinaPower": 1.1,
+    "chinaY": 0.45,
+    "chinaReach": 0.25,
+    "chinaEnergy": 2,
+    "tiredEnergy": 40,
+    "stumbleP": 0.3,
+    "stumbleDelay": 0.2,
+    "zh": {
+      "malay": "马来步",
+      "china": "中国跳",
+      "front": "前场用不着后场步法",
+      "late": "来不及准备步法",
+      "backhand": "反手头顶，质量降一档",
+      "noTime": "转身来不及",
+      "forehand": "正手后场用不着转身",
+      "stumble": "落地不稳"
+    },
+    "en": {
+      "malay": "Malaysian step",
+      "china": "China jump",
+      "front": "No rear-court footwork at the front",
+      "late": "Too late to set your feet",
+      "backhand": "Backhand overhead: one grade down",
+      "noTime": "No time to turn",
+      "forehand": "No need to turn on the forehand side",
+      "stumble": "Shaky landing"
+    }
+  },
   "opponents": {
     "aqiang": {
-      "npc": "grad1", "name_zh": "阿强", "name_en": "Ah Qiang", "level_zh": "研究生会 · 业余", "level_en": "Grad union · casual",
-      "reaction": 0.22, "speed": 4.5, "reach": 0.95, "maxY": 2.6,
-      "q": { "perfect": 0.3, "good": 0.48 }, "errP": 0.09, "leaveP": 0.5,
-      "w": { "high": { "smash": 3, "clear": 4, "drop": 3 }, "mid": { "drive": 4, "lift": 4, "drop": 2 }, "net": { "netdrop": 5, "lift": 5 } },
+      "npc": "grad1",
+      "name_zh": "阿强",
+      "name_en": "Ah Qiang",
+      "level_zh": "研究生会 · 业余",
+      "level_en": "Grad union · casual",
+      "reaction": 0.22,
+      "speed": 4.5,
+      "reach": 0.95,
+      "maxY": 2.6,
+      "q": {
+        "perfect": 0.3,
+        "good": 0.48
+      },
+      "errP": 0.09,
+      "leaveP": 0.5,
+      "w": {
+        "high": {
+          "smash": 3,
+          "clear": 4,
+          "drop": 3
+        },
+        "mid": {
+          "drive": 4,
+          "lift": 4,
+          "drop": 2
+        },
+        "net": {
+          "netdrop": 5,
+          "lift": 5
+        }
+      },
       "lines": {
-        "intro_zh": "阿强：老师，我让您三分？……开玩笑的，来吧！", "intro_en": "Ah Qiang: Shall I spot you three points? Kidding. Let's go!",
-        "win_zh": "阿强：老师您这杀球……下周我还要来！", "win_en": "Ah Qiang: That smash, Prof… I want a rematch next week!",
-        "lose_zh": "阿强：承让承让！老师写基金太累了吧？", "lose_en": "Ah Qiang: Thanks for the game! Grant writing wearing you out?",
-        "rematchWon_zh": "阿强：上次输给您之后，我回去练了一周反手。", "rematchWon_en": "Ah Qiang: After you beat me I practised my backhand all week.",
-        "rematchLost_zh": "阿强：老师，今天还让我赢吗？", "rematchLost_en": "Ah Qiang: Going to let me win again today, Prof?"
+        "intro_zh": "阿强：老师，我让您三分？……开玩笑的，来吧！",
+        "intro_en": "Ah Qiang: Shall I spot you three points? Kidding. Let's go!",
+        "win_zh": "阿强：老师您这杀球……下周我还要来！",
+        "win_en": "Ah Qiang: That smash, Prof… I want a rematch next week!",
+        "lose_zh": "阿强：承让承让！老师写基金太累了吧？",
+        "lose_en": "Ah Qiang: Thanks for the game! Grant writing wearing you out?",
+        "rematchWon_zh": "阿强：上次输给您之后，我回去练了一周反手。",
+        "rematchWon_en": "Ah Qiang: After you beat me I practised my backhand all week.",
+        "rematchLost_zh": "阿强：老师，今天还让我赢吗？",
+        "rematchLost_en": "Ah Qiang: Going to let me win again today, Prof?"
+      },
+      "tactics": {
+        "spread": 0.15
       }
     },
     "wu": {
-      "npc": "wu", "name_zh": "小吴", "name_en": "Xiao Wu", "level_zh": "化学系博士后 · 校队", "level_en": "Chemistry postdoc · varsity",
-      "reaction": 0.17, "speed": 4.9, "reach": 1.0, "maxY": 2.7,
-      "q": { "perfect": 0.4, "good": 0.42 }, "errP": 0.065, "leaveP": 0.85,
-      "w": { "high": { "smash": 5, "clear": 2, "drop": 3 }, "mid": { "drive": 4, "lift": 3, "drop": 3 }, "net": { "netdrop": 6, "lift": 4 } },
+      "npc": "wu",
+      "name_zh": "小吴",
+      "name_en": "Xiao Wu",
+      "level_zh": "化学系博士后 · 校队",
+      "level_en": "Chemistry postdoc · varsity",
+      "reaction": 0.17,
+      "speed": 4.9,
+      "reach": 1.0,
+      "maxY": 2.7,
+      "q": {
+        "perfect": 0.4,
+        "good": 0.42
+      },
+      "errP": 0.065,
+      "leaveP": 0.85,
+      "w": {
+        "high": {
+          "smash": 5,
+          "clear": 2,
+          "drop": 3
+        },
+        "mid": {
+          "drive": 4,
+          "lift": 3,
+          "drop": 3
+        },
+        "net": {
+          "netdrop": 6,
+          "lift": 4
+        }
+      },
       "lines": {
-        "intro_zh": "小吴：听说物理系请了教授出山。我不会手下留情的。", "intro_en": "Xiao Wu: So physics sent a professor. I won't go easy.",
-        "win_zh": "小吴：……好吧，物理系赢了。今晚的奶茶我请。", "win_en": "Xiao Wu: …Fine, physics wins. Bubble tea is on me tonight.",
-        "lose_zh": "小吴：化学系拿下！教授打得不错，就是步子慢了点。", "lose_en": "Xiao Wu: Chemistry takes it! Good game, Prof — a step slow, though.",
-        "rematchWon_zh": "小吴：上次是我状态不好。", "rematchWon_en": "Xiao Wu: I was off my game last time.",
-        "rematchLost_zh": "小吴：又来送分？", "rematchLost_en": "Xiao Wu: Back for more points?"
+        "intro_zh": "小吴：听说物理系请了教授出山。我不会手下留情的。",
+        "intro_en": "Xiao Wu: So physics sent a professor. I won't go easy.",
+        "win_zh": "小吴：……好吧，物理系赢了。今晚的奶茶我请。",
+        "win_en": "Xiao Wu: …Fine, physics wins. Bubble tea is on me tonight.",
+        "lose_zh": "小吴：化学系拿下！教授打得不错，就是步子慢了点。",
+        "lose_en": "Xiao Wu: Chemistry takes it! Good game, Prof — a step slow, though.",
+        "rematchWon_zh": "小吴：上次是我状态不好。",
+        "rematchWon_en": "Xiao Wu: I was off my game last time.",
+        "rematchLost_zh": "小吴：又来送分？",
+        "rematchLost_en": "Xiao Wu: Back for more points?"
+      },
+      "tactics": {
+        "spread": 0.35,
+        "backhand": 0.3,
+        "smashNet": 0.6
+      }
+    },
+    "jay": {
+      "npc": "jay",
+      "name_zh": "阿杰",
+      "name_en": "Jay",
+      "level_zh": "槟城来的交换博士后 · 快攻",
+      "level_en": "Exchange postdoc from Penang · attacker",
+      "reaction": 0.16,
+      "speed": 5.0,
+      "reach": 1.0,
+      "maxY": 2.7,
+      "jumpY": 0.4,
+      "power": 1.1,
+      "q": {
+        "perfect": 0.42,
+        "good": 0.38
+      },
+      "errP": 0.07,
+      "leaveP": 0.8,
+      "w": {
+        "high": {
+          "smash": 7,
+          "clear": 1,
+          "drop": 3
+        },
+        "mid": {
+          "drive": 5,
+          "lift": 2,
+          "drop": 3
+        },
+        "net": {
+          "netdrop": 5,
+          "lift": 3
+        }
+      },
+      "tactics": {
+        "spread": 0.2,
+        "backhand": 0.15,
+        "smashNet": 0.8,
+        "fake": 0.22
+      },
+      "lines": {
+        "intro_zh": "阿杰：教授，我们槟城人打球，就是一个字——快！",
+        "intro_en": "Jay: Prof, in Penang we play one way: fast!",
+        "win_zh": "阿杰：wah，教授厉害！下次请你吃炒粿条。",
+        "win_en": "Jay: Wah, Prof, not bad! Char kway teow on me next time.",
+        "lose_zh": "阿杰：教授，跟上我的节奏先啦！",
+        "lose_en": "Jay: Keep up with the tempo first, Prof!",
+        "rematchWon_zh": "阿杰：上次是我太嚣张了。今天认真打。",
+        "rematchWon_en": "Jay: I got cocky last time. Serious today.",
+        "rematchLost_zh": "阿杰：又来？好，我慢一点给你看清楚。",
+        "rematchLost_en": "Jay: Again? Fine, I'll slow down so you can see."
       }
     }
   },
-  "autoWin": { "_comment": "win probability for 'just play it out' by opponent, interpolated on energy; filled from tools/bm_balance.js",
-    "aqiang": { "e100": 0.7, "e0": 0.4 }, "wu": { "e100": 0.4, "e0": 0.12 } },
+  "autoWin": {
+    "_comment": "win probability for 'just play it out' by opponent, interpolated on energy; filled from tools/bm_balance.js",
+    "aqiang": {
+      "e100": 0.7,
+      "e0": 0.4
+    },
+    "wu": {
+      "e100": 0.4,
+      "e0": 0.12
+    },
+    "jay": {
+      "e100": 0.3,
+      "e0": 0.08
+    }
+  },
   "tutorial": {
-    "title_zh": "一只手就能打", "title_en": "One hand is enough",
-    "lines_zh": ["跑位是自动的，你只管出手。", "上滑：高远球 · 下滑：吊球 / 放网 · 左右滑：平抽", "球在头顶时点一下：杀球", "脚下的圈收紧变绿时松手，就是完美时机。", "电脑：W/S/A/D 和空格；体力越低，判定越窄。"],
-    "lines_en": ["Movement is automatic: you only swing.", "Swipe up: clear · down: drop / net shot · left/right: drive", "Tap when it's overhead: smash", "Release as the ring at your feet closes and turns green.", "Keyboard: W/S/A/D and Space. The more tired you are, the tighter the timing."]
-  }
+    "title_zh": "一只手就能打",
+    "title_en": "One hand is enough",
+    "lines_zh": [
+      "跑位是自动的，你只管出手。",
+      "上滑：高远球 · 下滑：吊球 / 放网 · 左右滑：平抽",
+      "球在头顶时点一下：杀球",
+      "脚下的圈收紧变绿时松手，就是完美时机。",
+      "电脑：W/S/A/D 和空格；体力越低，判定越窄。"
+    ],
+    "lines_en": [
+      "Movement is automatic: you only swing.",
+      "Swipe up: clear · down: drop / net shot · left/right: drive",
+      "Tap when it's overhead: smash",
+      "Release as the ring at your feet closes and turns green.",
+      "Keyboard: W/S/A/D and Space. The more tired you are, the tighter the timing."
+    ]
+  },
+  "fakeDelay": 0.15
 }
