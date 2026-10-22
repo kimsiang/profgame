@@ -1,5 +1,18 @@
 # Changelog
 
+## v12.1 — Content as data (2026-10-23)
+- **The week is data now.** The 136 scripted events, the quick messages, admin, academy, money and home scenes, the students and their memory lines, the days and intentions, science cards, achievements and the lecture quiz moved out of `index.html` into `assets/data/content/` (week, events, people, calendar, codex). `index.html` is ~790 lines shorter.
+- **Same game, proven:** 120 harness weeks (3 careers × 10 weeks × 4 policies) match the v12.0 baseline row for row (`tools/balance/compare.mjs`).
+- `tools/validate-data.mjs` checks every event's shape, fx tokens, hotspots, flags (every `req` must be set somewhere), cards, achievements and follow-on activities. Run `node tools/validate-data.mjs` after editing content.
+- Text in content files may be a plain string or `{ "zh": …, "en": …, "ja": …, "ms": … }`; the language comes from `localStorage prof-lang` (default 中文, which is also the fallback). The HUD itself is not translated yet.
+- Starting, continuing, the next week and loading a slot wait for the content; if it fails to load (offline), a banner offers a retry.
+- Fix: the player character is reused each morning instead of rebuilt (a new one every day leaked meshes and textures over a long career).
+
+## v12.0 — Balance harness (2026-10-23)
+- **Bots play the game.** With `?sim` in the URL nothing renders and the week runs on the real rules, driven by `tools/balance/agent.js`. Four policies: grinder (grant first, never home), mentor (students first), balanced (the intended play) and random.
+- `cd tools/e2e && WEEKS=10 RUNS=10 node run.mjs balance.mjs` plays 10 careers of 10 weeks per policy and prints the design note's table; `tools/balance/out/baseline.json` is this version's result.
+- **Baseline finding:** the week is too easy for sensible play. Balanced and mentor bots get S every week (100/100), fund every grant, go home every night and end on wellbeing ~100 with all six KPIs at 100. Only the grinder (D, wellbeing 0, students lost) and random play struggle; the paper is never accepted as is. v12.3 tunes this.
+
 ## v11.2 — Garden, café, football, world kitchens, folding HUD, new music (2026-10-23)
 - **Botanical garden (6F): four climate zones**, one per corner, each signed: tropical rainforest (banana plants, monstera, tree ferns, bromeliads, orchids, a little mist), desert (saguaro, barrel cacti with yellow crowns, prickly pear with fruit, agave, rocks on rippled sand), temperate forest (oak, an autumn maple, a birch, ferns, foxgloves, moss, a fallen log with mushrooms) and alpine (granite boulders, dwarf pines, cushion plants, edelweiss, gentians, old snow) round the pond. `assets/js/garden.js`.
 - **Rooftop café**: slatted oak cladding, pendant lamps, a chalkboard of the day's pour-overs, a lounge corner (sofas, rug, low table, lanterns) under a pergola with hanging plants, potted olives, and an art wall of three abstract canvases. The café always plays a relaxed jazz track.

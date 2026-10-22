@@ -1,0 +1,65 @@
+grinder #1: 23.3 s
+grinder #2: 22.6 s
+grinder #3: 23.2 s
+grinder #4: 21.3 s
+grinder #5: 22.1 s
+grinder #6: 22.8 s
+grinder #7: 30.1 s
+grinder #8: 33.6 s
+grinder #9: 31.1 s
+grinder #10: 30.6 s
+mentor #1: 63.8 s
+mentor #2: 90.1 s
+mentor #3: 86.0 s
+mentor #4: 84.8 s
+mentor #5: 83.4 s
+mentor #6: 88.1 s
+mentor #7: 86.2 s
+mentor #8: 64.8 s
+mentor #9: 63.8 s
+mentor #10: 64.1 s
+balanced #1: 57.3 s
+balanced #2: 55.8 s
+balanced #3: 60.0 s
+balanced #4: 58.2 s
+balanced #5: 59.9 s
+balanced #6: 61.6 s
+balanced #7: 60.6 s
+balanced #8: 59.9 s
+balanced #9: 58.6 s
+balanced #10: 57.0 s
+random #1: 38.0 s
+random #2: 38.5 s
+random #3: 38.6 s
+random #4: 36.2 s
+random #5: 34.4 s
+random #6: 32.4 s
+random #7: 32.2 s
+random #8: 27.5 s
+random #9: 26.2 s
+random #10: 26.2 s
+metric                          grinder      mentor       balanced     random    
+------------------------------  -----------  -----------  -----------  ----------
+weeks played                    100          100          100          100       
+grades S/A/B/C/D                0/0/0/0/100  100/0/0/0/0  100/0/0/0/0  0/0/0/1/99
+median grade                    D            S            S            D         
+median score                    39           97           90           34        
+grant submitted                 100%         100%         100%         99%       
+grant funded                    90%          100%         100%         51%       
+paper accepted as is            0%           0%           0%           1%        
+Sunday wellbeing (median)       0            97           100          98        
+weeks ending wellbeing < 40     100%         0%           0%           0%        
+collapses / week                0            0            0            0         
+avg student trust (median)      0            98           70           0         
+weeks with a student lost       100%         0%           0%           100%      
+home nights (avg)               0            7            7            6.1       
+lowest family meter (median)    0            98           100          69        
+cash > 0 at month end           100%         100%         100%         100%      
+consequential choices / day     1.2          16.4         13.9         1.8       
+events handled                  6%           68%          58%          13%       
+first day energy < 30 (median)  0            0            0            —         
+rank reached (max)              2            3            3            2         
+
+dominant-strategy test: pass (no policy beats balanced on both median score and wellbeing)
+--- console ---
+

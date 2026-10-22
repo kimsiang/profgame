@@ -163,3 +163,9 @@ Rules for Opus during the build: a design question that changes a number in §1 
 ## Implementation adjustments
 | Draft | Built | Why |
 |---|---|---|
+| §3.1 one file per day | `week.json` (all days, `day` field) + `events.json`, `people.json`, `calendar.json`, `codex.json` | Script order matters for same-time events; one file keeps it and is easier to diff. |
+| §3.1 zero game text in index.html | Event content moved; events with mini-game callbacks, crisis/family templates, outcome and HUD text stay in code | Those carry functions or format live state; moving them is a localisation job, not a data job. |
+| §3.3 "`t(key)` already exists for 270 HUD strings" | It does not exist: there was no string table at all. v12.1 adds content-level `{zh, en, ja, ms}` + `prof-lang` only | My draft misread a grep count. The HUD sweep is a separate localisation milestone. |
+| §3.3 every JSON string `{zh, en}` | Existing content stays 中文-only; new content (v12.2 table talks) is written zh + en | Translating 200 events is content work; the loader and validator accept both forms. |
+| §7 v12.1 saves v6 migration | No save change needed | Event ids and state keys are unchanged; v12.2's new state fields default in `newState`. |
+| Harness: one page for all runs | A fresh page per career | Memory grew to 4 GB over 400 weeks (the player was rebuilt every morning; also fixed). |
