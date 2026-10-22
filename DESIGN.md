@@ -58,6 +58,11 @@ Games last about 2 minutes (84–138 s). Energy 95 vs 25 is a 32–59 point swin
 - **Sharpness (v10.3.1).** While the venue is on: pixel ratio boosted (`PR_BOOST`, high 1.5–2×, mid 1.25–1.6×), tilt-shift and grain off, shadow camera ±11 m with a 4096² (high) / 2048² (mid) map. Falls back to normal resolution if the 150-frame average is below 45 fps.
 - **Rules untouched.** `badminton.js` is unchanged; balance numbers below still hold.
 
+## v12.0 — balance harness
+- `?sim` (const `SIM` at the top of the main script): `frame()` returns at once, `fadeTo` is synchronous, toasts and audio are off, models are not loaded, mini games return a fixed skill (`window.__simMini`). `window.__sim` exposes state and the real rule functions; `endWeek` stores `S.weekResult`.
+- `tools/balance/agent.js` (injected by `tools/e2e/balance.mjs`) plays a week: morning intention, then a loop of dialog → choice, activity → tick minutes, free time → policy action. Walking is charged as minutes (5 on a floor, lift time + 7 between floors). `Math.random` is seeded per career, so a row can be replayed.
+- `tools/balance/report.mjs` prints the §2.3 table of `design-notes/v12-week-with-weight.md`; `tools/balance/compare.mjs` checks two runs row by row (used to prove a refactor changes nothing).
+
 ## v11.2 — where the new parts live
 - Garden: `GardenKit.bed(THREE, {kind, x0, z0, x1, z1, y, seed, avoid})` in `assets/js/garden.js`; the f6 zone builds four beds (`ZONES6`). Leaves are bent planes (`leafGeo`) with canvas vein/frond textures; repeated parts are InstancedMesh.
 - Football: a small simulation in the campus `Z.anims` (ball with friction and gravity; chaser + shape-keeping players); the ball is flagged `sim` so the generic ball bobbing skips it.
