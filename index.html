@@ -1997,7 +1997,10 @@ const EXPR_KEYS = ['blink', 'happy', 'worried', 'shock', 'sleepy'];
 (async () => {
   try {
     const r = await fetch('assets/characters/manifest.json'); if (!r.ok) return;
-    Object.assign(CHAR_MODELS, await r.json()); MODELS_READY = true;
+    Object.assign(CHAR_MODELS, await r.json());
+    // v11.1: realistic cast (Microsoft Rocketbox, MIT). Any id in the real manifest replaces its stylised model.
+    try { const rr = await fetch('assets/characters/real/manifest.json'); if (rr.ok) Object.assign(CHAR_MODELS, await rr.json()); } catch (e) { /* stylised cast only */ }
+    MODELS_READY = true;
     for (const [id, m] of Object.entries(CHAR_MODELS)) if (m.portrait) { const img = new Image(); img.onload = () => { PORTRAIT_IMG[id] = { img, p: m.portrait }; }; img.src = m.portrait.url; }
     loadVisibleModels();
   } catch (e) { /* no asset folder: procedural cast */ }
@@ -2017,6 +2020,26 @@ function gltfFor(url) {
   return GLTF_CACHE[url];
 }
 const castMats = {};
+/* v11.1: a realistic (Rocketbox) character: its own PBR materials, no toon shading or outline, clips from the shared
+   per-gender animation pack (re-targeted by bone name). No face morphs yet: expressions show in the portraits only. */
+const REAL_H = 2.12;   // name tag height over a 1.8 m adult
+function loadRealFor(c, spec) {
+  Promise.all([gltfFor(spec.url), gltfFor(spec.anims)]).then(([g, a]) => {
+    if (!c.parent) return;
+    const m = THREE.SkeletonUtils.clone(g.scene); m.scale.setScalar(spec.scale || 1);
+    m.traverse(n => {
+      if (!n.isMesh) return;
+      n.castShadow = true; n.receiveShadow = true; n.frustumCulled = false;
+      const mt = n.material; if (mt && mt.isMeshStandardMaterial) { mt.envMapIntensity = 0.55; if (mt.alphaTest > 0) mt.alphaTest = 0.45; }
+    });
+    c.children.forEach(ch => { if (!ch.isSprite) ch.visible = false; else ch.position.y = REAL_H; });
+    c.add(m);
+    const mixer = new THREE.AnimationMixer(m), clips = {};
+    (a.animations || []).forEach(an => { clips[an.name] = mixer.clipAction(an); });
+    c.userData.model = { mixer, clips, map: spec.clips || {}, cur: null, morphs: [], blinkT: 9e9, blinking: 0, real: true };
+    c.userData.real = true;
+  }).catch(() => { c.userData.modelLoading = false; });
+}
 function castMat(name, morph) {
   const k = name + (morph ? 'm' : '');
   if (!castMats[k]) castMats[k] = /emit/.test(name)
@@ -2033,6 +2056,7 @@ function outlineFor(morph) {
 function loadModelFor(c) {
   const spec = CHAR_MODELS[c.userData.modelId]; if (!spec || !THREE.GLTFLoader || !THREE.SkeletonUtils) return;
   c.userData.modelLoading = true;
+  if (spec.real) return loadRealFor(c, spec);
   gltfFor(spec.url).then((g) => {
     if (!c.parent) return;   // replaced (e.g. a new day made a new player) before the model arrived
     const m = THREE.SkeletonUtils.clone(g.scene); m.scale.setScalar(spec.scale || 1);

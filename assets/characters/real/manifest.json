@@ -1,0 +1,30 @@
+{
+ "player_m": {
+  "url": "assets/characters/real/player_m.glb",
+  "real": true,
+  "anims": "assets/characters/real/anim_m.glb",
+  "clips": {
+   "idle": "idle",
+   "walk": "walk",
+   "run": "run",
+   "sit": "sit",
+   "sittalk": "sittalk",
+   "type": "type",
+   "talk": "talk",
+   "panic": "panic",
+   "think": "think",
+   "point": "point",
+   "celebrate": "celebrate",
+   "disappointed": "disappointed",
+   "raise_hand": "raise_hand",
+   "read": "read",
+   "play": "play",
+   "present": "present"
+  },
+  "speed": {
+   "walk": 1.0,
+   "run": 1.0
+  },
+  "src": "Microsoft Rocketbox Business_Male_02"
+ }
+}
