@@ -1,3 +1,4 @@
 { "name": "professor-week-e2e", "private": true, "type": "module",
   "description": "Headless browser checks. Serve the repo root on :8123 (python3 -m http.server 8123), then: npm i && node run.mjs save.mjs",
+  "scripts": { "balance": "node run.mjs balance.mjs", "validate": "node ../validate-data.mjs" },
   "dependencies": { "@sparticuz/chromium": "*", "puppeteer-core": "*", "three": "0.128.0" } }
