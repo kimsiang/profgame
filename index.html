@@ -3548,8 +3548,21 @@ const FAMILY = {
   child: { n: '小宇', en: 'Xiaoyu', role: '孩子 · 小学三年级', ic: '娃' },
   house: { n: '家', en: 'Home', role: '家务与账单', ic: '务' },
 };
+/* v12.3 balance (tools/balance): the numbers the harness tuned. See design-notes/v12-week-with-weight.md, adjustments. */
+const BAL = {
+  kpiGain: 0.4,                 // every KPI gain is scaled: the written rewards add up to +100–200 per KPI in a week
+  kpiSoft: [50, 105, 0.15],     // and shrinks above 50, toward 15% near 100 (a good week no longer pins every KPI at 100)
+  kpiNight: 0.05,               // each night every KPI slides 5% of the way back toward 50: standing is kept, not banked
+  wbDrain: [0.04, 0.045, 0.06],  // wellbeing per minute: working day, 19–21, after 21
+  wbMorning: [6, 4, 2, 0],      // overnight recovery by when you left: before 19, 21, 23, later
+  expiredWb: 2,                 // wellbeing lost per event that expired
+  grantNoise: 20,               // reviewer noise on the grant score: ± half of this
+  grantBar: 70, grantTop: 82,
+  wbFloor: 40, wbPenalty: 0.4,  // the grade counts how you came out of the week: each point of Sunday wellbeing under 40 costs 0.4
+  grades: [92, 84, 60, 46],     // S, A, B, C (was 82, 70, 58, 46: careful play got S every week)   // funded / funded with priority (was 58 / 75: a careful dossier always passed)
+};
 const FAM_DRIFT = 6;           // per night not at home (weekend ×2)
-const FAM_HOME_WB = 12;        // wellbeing restored by an evening at home
+const FAM_HOME_WB = 10;        // wellbeing restored by an evening at home
 /* Evening scenes: picked by the lowest meter, then by day. fx keys: partner child house wellbeing energy.
    [text, fx, feedback] — the second choice is never simply worse; it trades one meter for another. */
 const HOME_SCENES = [];   // v12.1: filled from assets/data/content by loadContent()
@@ -4020,7 +4033,7 @@ function applyFx(fx) {
     else if (k === 'partner' || k === 'child' || k === 'house') S.fam[k] = clamp(S.fam[k] + d);
     else if (k === 'gq') { if (S.submitted) continue; S.gq = clamp(S.gq + d); }
     else if (k === 'cash') { if (!S.fin) continue; finMove(d, applyFx.label); renderMoney(); }
-    else if (k in S.k) S.k[k] = clamp(S.k[k] + d);
+    else if (k in S.k) { const [lo, hi, min] = BAL.kpiSoft, f = d > 0 ? BAL.kpiGain * Math.max(min, Math.min(1, (hi - S.k[k]) / (hi - lo))) : 1, v0 = S.k[k]; S.k[k] = clamp(S.k[k] + d * f); if (Math.round(S.k[k] - v0) !== d) { const a = Math.round(S.k[k] - v0); if (!a) continue; out.push([k, a]); const el = document.createElement('div'); el.className = 'fx ' + (a > 0 ? 'p' : 'm'); el.textContent = `${a > 0 ? '+' : ''}${a} ${FXNAME[k]}`; $('fxStream').appendChild(el); setTimeout(() => el.remove(), 2500); if (a > 0) gainXP(a * 3); continue; } }
     else continue;
     out.push([k, d]);
     const el = document.createElement('div');
@@ -4085,7 +4098,7 @@ function minuteTick(dm) {
   if (a && a.perMin) a.perMin(dm);
   trackTime(dm);
   // Wellbeing: a working day wears you down slowly; evenings and overtime much faster.
-  S.wb = clamp(S.wb - (S.t >= hm(21) ? 0.06 : S.t >= hm(19) ? 0.025 : 0.008) * dm * (S.intent === 'self' ? 0.6 : 1));
+  S.wb = clamp(S.wb - (S.t >= hm(21) ? BAL.wbDrain[2] : S.t >= hm(19) ? BAL.wbDrain[1] : BAL.wbDrain[0]) * dm * (S.intent === 'self' ? 0.6 : 1));
   if (v.full < 15) S.wb = clamp(S.wb - 0.01 * dm);
   if (S.wb < 20) { v.energy = Math.min(v.energy, 70); if (!S.warned.w) { S.warned.w = 1; toast('身心只剩 20%：你开始烦躁、走神。去六楼植物园走走，或者今天早点回家。', 'bad'); } }
   if (S.wb > 30) S.warned.w = 0;
@@ -4123,7 +4136,7 @@ function updateEvents() {
       ev.state = 'expired'; settleEvent(ev);
       if (/^adm_/.test(ev.id) && ev.urgent) S.adminMissed = (S.adminMissed || 0) + 1;
       applyFx(ev.expire.fx); if (ev.expire.log) { logIt(ev.expire.log); toast(ev.expire.log, 'bad'); }
-      S.wb = clamp(S.wb - 1.5); remember(ev, 'ignored'); if (ev.npc && S.trust[ev.npc] !== undefined) S.trust[ev.npc] = clamp(S.trust[ev.npc] - 10);
+      S.wb = clamp(S.wb - BAL.expiredWb); remember(ev, 'ignored'); if (ev.npc && S.trust[ev.npc] !== undefined) S.trust[ev.npc] = clamp(S.trust[ev.npc] - 10);
       if (ev.expire.lose && ev.crisisOf) loseStudent(ev.crisisOf);
       if (ev.id === 'fin_consultMeet' && S.fin) S.fin.consultHalf = true;
       if (ev.id === 'fin_lease' && S.fin) finFlag('fin_renew');
@@ -4163,7 +4176,7 @@ function companionsFor(place) {
 function whoDialog(place, then) {
   const { ok, no } = companionsFor(place); if (!ok.length) return false;
   const cost = place === 'canteen' ? TABLE.treat.canteen : TABLE.treat.cafe;
-  const ch = ok.map(id => ({ t: `叫上${compName(id)}（请客 ${fmtY(cost)}）`, d: `多 10 分钟 · ${compPerk(id)}${STUDENTS[id] ? ` · 信任 ${Math.round(S.trust[id])}` : ''}`, run: () => then(id) }));
+  const ch = ok.map(id => ({ t: `叫上${compName(id)}（请客 ${fmtY(cost)}）`, d: `多 10 分钟 · ${compPerk(id)}${STUDENTS[id] ? `（现在 ${Math.round(S.trust[id])}）` : ''}`, run: () => then(id) }));
   ch.push({ t: '一个人吃', d: '快一点', run: () => then(null) });
   openDialog({ id: place + 'Who', loc: place === 'canteen' ? 'canteen' : 'roofcafe', who: '约人', tag: '吃饭', title: '叫谁一起？', synthetic: true, start: 'a',
     nodes: { a: { say: [['', '饭桌上，人会说办公室里不说的话。'], ...(no.length ? [['', no.join('；') + '。']] : [])], choices: ch } } });
@@ -5026,7 +5039,7 @@ function interact() {
 function openDesk() {
   const ch = [], gs = dossierScore('grant'), ps = dossierScore('paper');
   const missing = DOSSIER.grant.comps.filter(c => S.dos.grant[c.id] < 2).map(c => `${c.n}（${c.src}）`);
-  if (!S.submitted && S.day <= 4) ch.push(S.grant >= 100 ? (gs < 58 && S.day < 4 ? { t: '提交基金申请书', d: `评审预估只有 ${gs} 分 · 周五前还能补`, next: 'warn' } : { t: '提交基金申请书', d: `评审预估 ${gs} 分 · 周五 23:59 截止`, run: () => ACT.submit('grant') }) : { t: `写基金申请书到 ${fmt(commitEnd())}（${Math.floor(S.grant)}%）`, d: `一整段专注时间 · 中途停下会打断专注 · 周五 23:59 截止`, run: () => ACT.write('grant') });
+  if (!S.submitted && S.day <= 4) ch.push(S.grant >= 100 ? (gs < BAL.grantBar && S.day < 4 ? { t: '提交基金申请书', d: `评审预估只有 ${gs} 分 · 周五前还能补`, next: 'warn' } : { t: '提交基金申请书', d: `评审预估 ${gs} 分 · 周五 23:59 截止`, run: () => ACT.submit('grant') }) : { t: `写基金申请书到 ${fmt(commitEnd())}（${Math.floor(S.grant)}%）`, d: `一整段专注时间 · 中途停下会打断专注 · 周五 23:59 截止`, run: () => ACT.write('grant') });
   if (!S.submitted && S.day <= 3 && !S.dataReq && !S.lost.includes('chen')) ch.push({ t: `请小陈整理预实验数据（信任 ${Math.round(S.trust.chen)}）`, d: S.trust.chen >= 80 ? '他会做得很漂亮，明天给你' : S.trust.chen >= 60 ? '明天给你' : '他最近和你不太亲近：会晚一天，而且只是一张表', run: () => requestData('chen') });
   if (!S.paperSubmitted) ch.push(S.paper >= 100 ? { t: '提交论文修改稿', d: `审稿预估 ${ps} 分 · 周日 23:59 截止`, run: () => ACT.submit('paper') } : { t: `改论文修改稿到 ${fmt(commitEnd())}（${Math.floor(S.paper)}%）`, d: '一整段专注时间 · 中途停下会打断专注 · 周日 23:59 截止', run: () => ACT.write('paper') });
   if (S.fin && S.v.full < 70 && S.t >= hm(11) && S.t < hm(21)) ch.push({ t: `点外卖到办公室（${fmtY(FIN.takeout)}）`, d: '不用下楼，10 分钟吃完 · 身心 −2', run: () => { finSpend(FIN.takeout, '外卖', { full: 45, wellbeing: -2 }); S.meals++; S.mealsWeek++; simulate(10); logIt(`在办公桌上吃了外卖（${fmtY(FIN.takeout)}）。`); } });
@@ -5034,9 +5047,9 @@ function openDesk() {
   ch.push({ t: '只是坐一会儿', d: '回到楼层' });
   const starLine = (p) => DOSSIER[p].comps.map(c => `${c.n} ${STAR(S.dos[p][c.id])}`).join(' · ');
   openDialog({ id: 'desk', loc: 'desk', who: '503 · 你的办公桌', tag: '办公桌', title: '今天先做哪一件？', synthetic: true, start: 'a',
-    status: [['基金申请书', S.submitted ? '已提交' : (S.day > 4 ? '已截止' : Math.floor(S.grant) + '% · 预估 ' + gs), S.submitted ? 'good' : gs >= 58 ? 'good' : ''], ['论文修改稿', S.paperSubmitted ? '已提交' : Math.floor(S.paper) + '% · 预估 ' + ps, S.paperSubmitted ? 'good' : ps >= 55 ? 'good' : '']],
+    status: [['基金申请书', S.submitted ? '已提交' : (S.day > 4 ? '已截止' : Math.floor(S.grant) + '% · 预估 ' + gs), S.submitted ? 'good' : gs >= BAL.grantBar ? 'good' : ''], ['论文修改稿', S.paperSubmitted ? '已提交' : Math.floor(S.paper) + '% · 预估 ' + ps, S.paperSubmitted ? 'good' : ps >= 55 ? 'good' : '']],
     nodes: { a: { say: [['', '桌上堆着打印出来的审稿意见、基金书草稿，还有一杯早就凉了的咖啡。'], ['', `基金：${starLine('grant')}`], ['', `论文：${starLine('paper')}`]], choices: ch },
-      warn: { say: [['', `文本写完了，但评审预估只有 ${gs} 分（≥ 58 才可能获批）。还缺：${missing.join('、')}。`], ['', '现在提交就改不了了；周五 23:59 前都可以先补齐再交。']], choices: [{ t: '先不交，补齐再说', d: '回到办公桌', next: 'a' }, { t: '就这样交了', d: '提交后不可修改', run: () => ACT.submit('grant') }] },
+      warn: { say: [['', `文本写完了，但评审预估只有 ${gs} 分（≥ ${BAL.grantBar} 才可能获批）。还缺：${missing.join('、')}。`], ['', '现在提交就改不了了；周五 23:59 前都可以先补齐再交。']], choices: [{ t: '先不交，补齐再说', d: '回到办公桌', next: 'a' }, { t: '就这样交了', d: '提交后不可修改', run: () => ACT.submit('grant') }] },
       dos: { say: [['', '申请书清单 · 评审看四样东西：' + DOSSIER.grant.comps.map(c => `${c.n}（${c.w}%）${STAR(S.dos.grant[c.id])}——${c.src}`).join('；')], ['', '修改稿清单：' + DOSSIER.paper.comps.map(c => `${c.n}（${c.w}%）${STAR(S.dos.paper[c.id])}——${c.src}`).join('；')], ['', '只靠埋头写，评审分到不了及格线；光有想法没有写出来也一样。']], choices: [{ t: '回到办公桌', d: '', next: 'a' }] } } });
 }
 function openElevator() {
@@ -5280,7 +5293,7 @@ function renderMini(node) {
   const f = $('dlgFoot');
   const done = (r) => { if (!S.dialog) return; S.dialog.mini = null; const o = node.onMini(r); fxLine(applyFx(o.fx)); sayLines(o.fb); SFX.good(); gainXP(30);
     if (r.chi !== undefined && r.chi < 1.15) unlock('fit'); if (r.right === 3) unlock('lecture');
-    if (node.mini === 'fit' && r.chi < 1.4 && !S.flags.fit_ok) { S.flags.fit_ok = 1; applyFx({ paper: 5 }); bubble('', '这张拟合图可以直接放进论文修改稿（论文 +5）。'); }
+    if (node.mini === 'fit' && r.chi < 1.4 && !S.flags.fit_ok) { S.flags.fit_ok = 1; addStar(...FLAG_STARS.fit_ok); applyFx({ paper: 5 }); bubble('', '这张拟合图可以直接放进论文修改稿（论文 +5）。'); }
     if (node.mini === 'quiz' && r.right >= 2) S.flags.lecture_star = 1;
     logIt(`${S.dialog.ev.title} → 小游戏完成`); if (o.min) simulate(o.min); if (S.ended) return; if (o.next) gotoNode(o.next); else resolve(o.after); };
   if (SIM) return done(window.__simMini ? window.__simMini(node.mini) : { chi: 1.3, tau: 2.2, right: 2, acc: 0.75 });
@@ -5660,6 +5673,7 @@ function endDay(reason) {
   // v6: the family drifts on nights you are not home; weekends count double.
   if (!S.homeToday) { const k = d >= 5 ? 2 : 1; Object.keys(S.fam).forEach(f => { const m = S.fin && ((f === 'house' && S.fin.help) ? 0 : (f === 'child' && S.fin.tutor) ? 0.5 : 1); S.fam[f] = clamp(S.fam[f] - FAM_DRIFT * k * (m ?? 1)); }); S.famSkip++; logIt(d >= 5 ? '周末也没回家。' : '又是一个没回家的晚上。'); } else S.famSkip = 0;
   S.atHome = false;
+  KPI.forEach(([k]) => { S.k[k] = S.k[k] - (S.k[k] - 50) * BAL.kpiNight; });   // v12.3: standing fades a little overnight
   // Attention is a resource: people you did not help today drift a little.
   Object.keys(S.trust).forEach(id => { if (!S.lost.includes(id) && !(S.mem[id] || []).some(m => m.day === d && m.kind === 'good')) S.trust[id] = clamp(S.trust[id] - 4); });
   // v5: students whose trust fell below 30 ask to talk tomorrow; a second slide means they leave.
@@ -5868,11 +5882,11 @@ function weekOutcomes() {
   if (!S.submitted) out.push(['bad', '基金：没有提交', `停在 ${Math.floor(S.grant)}%。申报系统周五 23:59 准时关闭。`, 0]);
   else {
     // v6: the verdict is the dossier. Reviewer noise is seeded by the week so a reload cannot reroll it.
-    const g = S.dos.grant, noise = Math.round((rng(S.week * 7919 + 17)() - 0.5) * 8);
+    const g = S.dos.grant, noise = Math.round((rng(S.week * 7919 + 17)() - 0.5) * BAL.grantNoise);
     const q = clamp(dossierScore('grant') + noise + (S.k.research >= 60 ? 3 : 0) + ((S.subWb ?? S.wb) < 40 ? -4 : 0));
     const why = [g.idea >= 2 ? '创新点清楚' : '创新性论证不足', g.data >= 2 ? '预实验数据有说服力' : g.data === 1 ? '预实验数据单薄' : '没有预实验数据', g.letter >= 2 && '化学系陈老师的合作意向', g.write >= 3 ? '写作完整、逻辑连贯' : g.write <= 1 ? '文本仓促、前后不一致' : null, (S.subWb ?? S.wb) < 40 && '赶工的痕迹（交稿时身心透支）'].filter(Boolean);
     const stars = DOSSIER.grant.comps.map(c => `${c.n}${STAR(g[c.id])}`).join(' ');
-    out.push(q >= 75 ? ['ok', '基金：优先资助 · 三个月后', `评审综合分 ${q}（≥ 58 获批）。${stars}。评审意见：${why.join('、')}。`, 5] : q >= 58 ? ['ok', '基金：获批 · 三个月后', `评审综合分 ${q}（≥ 58 获批）。${stars}。评审意见：${why.join('、')}。`, 4] : ['bad', '基金：未获资助 · 三个月后', `评审综合分 ${q}（≥ 58 获批）。${stars}。评审意见：${why.join('、')}${g.write >= 2 && g.idea + g.data === 0 ? '——“写得不错，但新在哪里？”' : ''}。`, 0]);
+    out.push(q >= BAL.grantTop ? ['ok', '基金：优先资助 · 三个月后', `评审综合分 ${q}（≥ ${BAL.grantBar} 获批）。${stars}。评审意见：${why.join('、')}。`, 5] : q >= BAL.grantBar ? ['ok', '基金：获批 · 三个月后', `评审综合分 ${q}（≥ ${BAL.grantBar} 获批）。${stars}。评审意见：${why.join('、')}。`, 4] : ['bad', '基金：未获资助 · 三个月后', `评审综合分 ${q}（≥ ${BAL.grantBar} 获批）。${stars}。评审意见：${why.join('、')}${g.write >= 2 && g.idea + g.data === 0 ? '——“写得不错，但新在哪里？”' : ''}。`, 0]);
   }
   if (!S.paperSubmitted) out.push(['bad', '论文：被标记为撤回', '修改稿没能在周日截止前提交。', 0]);
   else {
@@ -5936,10 +5950,11 @@ function endWeek(reason) {
   // v6: the epilogue (grant, paper, students, family) carries the grade; the KPI average is half-weighted.
   let score = avg * 0.5 + pts * 3.2 + (T.done / Math.max(1, T.all)) * 8 - S.collapses * 4;
   // v6: a week that never went home cannot grade above B, however the grant went.
-  const homeCap = S.homeNights < 2; if (homeCap) score = Math.min(score, 69);
-  const G = score >= 82 ? ['S', '院士候选人的一周'] : score >= 70 ? ['A', '稳健的长聘教授'] : score >= 58 ? ['B', '忙而不乱的青年教师'] : score >= 46 ? ['C', '被截止日追着跑的一周'] : ['D', '下周，请先睡一觉'];
+  const wbCost = Math.max(0, BAL.wbFloor - S.wb) * BAL.wbPenalty; score -= wbCost;
+  const [gS, gA, gB, gC] = BAL.grades, homeCap = S.homeNights < 2; if (homeCap) score = Math.min(score, gA - 1);
+  const G = score >= gS ? ['S', '院士候选人的一周'] : score >= gA ? ['A', '稳健的长聘教授'] : score >= gB ? ['B', '忙而不乱的青年教师'] : score >= gC ? ['C', '被截止日追着跑的一周'] : ['D', '下周，请先睡一觉'];
   // career
-  S.weekResult = { grade: G[0], score: Math.round(score), pts, homeCap, outs: outs.map(o => [o[0], o[1], o[3]]) };
+  S.weekResult = { grade: G[0], score: Math.round(score), pts, homeCap, kAvg: Math.round(avg), grantQ: S.submitted ? dossierScore('grant') : null, paperQ: S.paperSubmitted ? dossierScore('paper') : null, outs: outs.map(o => [o[0], o[1], o[3]]) };
   const c = S.career, rank0 = c.rank, post0 = c.post;
   c.pts += pts;
   c.history.push({ week: S.week, grade: G[0], pts, grant: outs[0][1], paper: outs[1][1], lost: S.lost.length, grantOk: outs[0][0] === 'ok', accept: /直接接收/.test(outs[1][1]), trust: Math.round(avgTrust()) });
@@ -5993,7 +6008,7 @@ function endWeek(reason) {
   $('endCareer').innerHTML = `<div class="crTop"><b>${RANKS[c.rank].n}${postLabel(c)}</b><span>${RANKS[c.rank].en}${c.post ? ' · ' + POSTS[c.post].en : ''}</span></div><div class="crBar"><i style="width:${pct}%"></i></div><div class="crSub">本周 +${pts} 分 · 职业生涯累计 ${c.pts} 分${nxt ? ` · 距离「${nxt.n}」还差 ${Math.max(0, nxt.pts - c.pts)} 分${nextReq.length ? '，以及' + nextReq.join('、') : ''}` : ' · 职称已到顶'}${acadLine} · 累计基金获批 ${st.grants} 次、论文直接接收 ${st.accepts} 篇</div><div class="crHist">${c.history.slice(-8).map(h => `<span title="${esc(h.grant + ' / ' + h.paper)}">W${h.week} <b>${h.grade}</b> +${h.pts}</span>`).join('')}</div>`;
   const tw = S.timeWeek, totMin = Object.values(tw).reduce((a, b) => a + b, 0) || 1, waste = ((tw.travel || 0) + (tw.idle || 0)) / totMin;
   $('endTime').innerHTML = catBars(tw);
-  $('endMetrics').innerHTML = [['过期事件比例', Math.round(T.missed / Math.max(1, T.all) * 100) + '%', '目标 20–35%：说明你在取舍'], ['完整专注时段', S.focusBlocks + ' 段', '≥ 90 分钟不被打断'], ['时间利用率', Math.round((1 - waste) * 100) + '%', '走路、等电梯和发呆以外的时间'], ['平均学生信任', Math.round(avgTrust()), ''], ['在家的晚上', S.homeNights + ' 晚', homeCap ? '少于 2 晚：评级上限 B' : '目标 3–4 晚']].map(([a, b, c2]) => `<tr><td>${a}<br><span class="note">${c2}</span></td><td>${b}</td></tr>`).join('');
+  $('endMetrics').innerHTML = [['过期事件比例', Math.round(T.missed / Math.max(1, T.all) * 100) + '%', '目标 20–35%：说明你在取舍'], ['完整专注时段', S.focusBlocks + ' 段', '≥ 90 分钟不被打断'], ['时间利用率', Math.round((1 - waste) * 100) + '%', '走路、等电梯和发呆以外的时间'], ['平均学生信任', Math.round(avgTrust()), ''], ['在家的晚上', S.homeNights + ' 晚', homeCap ? '少于 2 晚：评级上限 B' : '目标 3–4 晚'], ['周日身心', Math.round(S.wb), wbCost ? `低于 ${BAL.wbFloor}：综合分 −${Math.round(wbCost)}` : `${BAL.wbFloor} 以上不扣分`]].map(([a, b, c2]) => `<tr><td>${a}<br><span class="note">${c2}</span></td><td>${b}</td></tr>`).join('');
   $('endKpis').innerHTML = KPI.map(([k, n]) => `<tr><td><span class="dot" style="background:${S.k[k] < 40 ? 'var(--danger)' : S.k[k] < 55 ? 'var(--warn)' : 'var(--cyan)'}"></span>${n}</td><td>${Math.round(S.k[k])}</td></tr>`).join('') + `<tr><td><span class="dot" style="background:var(--gold)"></span>综合得分</td><td>${Math.round(score)}</td></tr>`;
   $('endAch').innerHTML = Object.entries(ACHIEVEMENTS).map(([id, [n, d]]) => `<div class="${S.ach.includes(id) ? '' : 'off'}"><span class="medal">★</span><span><b>${esc(n)}</b><small>${esc(d)}</small></span></div>`).join('');
   $('endLog').innerHTML = S.log.map(l => `<div><span class="t">${DAYS[l.day || 0].name.slice(1)} ${fmt(l.t)}</span><span>${esc(l.text)}</span></div>`).join('');
@@ -6086,7 +6101,7 @@ function startDay(d) {
     Object.values(NPC).forEach(n => { setEmote(n, null); n.userData.state = n.userData.baseState || 'idle'; setExpr(n, 'normal'); });
     S.day = d; S.t = hm(8); S.ended = false; S.running = true; S.paused = false; S.activity = null; S.dialog = null; S.path = []; S.autoTarget = null; S.warned = {};
     S.v = { energy: S.lastEnd === 'collapse' ? 55 : S.lastEnd === 'home' ? 92 : 78, full: 50, bladder: 15 };
-    if (d > 0 && S.endT !== undefined) S.wb = clamp(S.wb + (S.lastEnd === 'collapse' ? 0 : S.endT < hm(19) ? 14 : S.endT < hm(21) ? 9 : S.endT < hm(23) ? 4 : 1));
+    if (d > 0 && S.endT !== undefined) S.wb = clamp(S.wb + (S.lastEnd === 'collapse' ? 0 : S.endT < hm(19) ? BAL.wbMorning[0] : S.endT < hm(21) ? BAL.wbMorning[1] : S.endT < hm(23) ? BAL.wbMorning[2] : BAL.wbMorning[3]));
     S.coffees = 0; S.meals = 0; S.hadQuests = false; S.flags = S.flags || {};
     S.blockUse = []; S.memToday = {}; S.intent = null; S.flow = 0; S.flowCarry = null; S.endT = undefined; S.homeToday = false; S.atHome = false;
     if (S.fam && S.fam.house < 30) { S.t = hm(8, 30); logIt('找不到车钥匙，衬衫也没一件干净的。08:30 才出门。'); }
@@ -6119,7 +6134,7 @@ function showPlanner(d) {
   const perBlock = 20, gLeft = Math.max(0, 100 - S.grant), pLeft = Math.max(0, 100 - S.paper);
   const freeBlocks = (lastDay) => { let n = 0; for (let x = d; x <= lastDay; x++) n += 5; return n - BLOCKS.slice(0, 5).filter((b, i) => fixed(i).some(e => e.known)).length; };
   const rows = [];
-  if (!S.submitted && d <= 4) rows.push(`<div><b>基金书 ${Math.floor(S.grant)}% · 评审预估 ${dossierScore('grant')} 分（≥ 58 获批）</b>还需要约 <em>${Math.ceil(gLeft / perBlock)}</em> 段完整的专注时段；距周五截止还有约 ${freeBlocks(4)} 个时段（不算被会议和课占掉的）。${dossierHTML('grant', true)}</div>`);
+  if (!S.submitted && d <= 4) rows.push(`<div><b>基金书 ${Math.floor(S.grant)}% · 评审预估 ${dossierScore('grant')} 分（≥ ${BAL.grantBar} 获批）</b>还需要约 <em>${Math.ceil(gLeft / perBlock)}</em> 段完整的专注时段；距周五截止还有约 ${freeBlocks(4)} 个时段（不算被会议和课占掉的）。${dossierHTML('grant', true)}</div>`);
   if (!S.paperSubmitted) rows.push(`<div><b>论文修改稿 ${Math.floor(S.paper)}% · 审稿预估 ${dossierScore('paper')} 分</b>还需要约 <em>${Math.ceil(pLeft / 23)}</em> 段专注时段，周日 23:59 截止。${dossierHTML('paper', true)}</div>`);
   rows.push(`<div><b>身心 ${Math.round(S.wb)}</b>${S.wb < 40 ? '偏低：专注会更难进入状态。回家一晚或六楼植物园能恢复。' : '还撑得住。加班会慢慢磨掉它。'}</div>`);
   const lowF = Object.entries(S.fam).sort((a, b) => a[1] - b[1])[0];
@@ -6492,7 +6507,7 @@ loadContent();
 if (SIM) window.__sim = {
   get S() { return S; }, get ready() { return CONTENT.ready; }, setup, ACT, HS, ZONES, BLOCKS, DAYS, INTENTS, STUDENTS, KPI, FAMILY, CANTEEN, FIN: typeof FIN !== 'undefined' ? FIN : null,
   startGame, startDay, beginDay, nextWeek, pick, closeDialog, openDialog, openDesk, openRoofCafe, canteenMenu, canteenToday, confirmHome, goHome,
-  openGarden, companionsFor, get TABLE() { return TABLE; },
+  openGarden, companionsFor, get TABLE() { return TABLE; }, BAL,
   minuteTick, simulate, activeEvents, travelMinutes, blockIdx, commitEnd, dossierScore, avgTrust, loadCareer, saveCareer, finishActivity, hm,
   clearAll() { try { localStorage.clear(); } catch (e) { /* storage blocked */ } },
 };

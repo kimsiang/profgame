@@ -58,6 +58,10 @@ Games last about 2 minutes (84–138 s). Energy 95 vs 25 is a 32–59 point swin
 - **Sharpness (v10.3.1).** While the venue is on: pixel ratio boosted (`PR_BOOST`, high 1.5–2×, mid 1.25–1.6×), tilt-shift and grain off, shadow camera ±11 m with a 4096² (high) / 2048² (mid) map. Falls back to normal resolution if the 150-frame average is below 45 fps.
 - **Rules untouched.** `badminton.js` is unchanged; balance numbers below still hold.
 
+## v12.3 — balance numbers
+- `BAL` (next to `FAM_DRIFT`) holds every number the harness tuned: KPI gain scale, soft cap and nightly slide; wellbeing wear and overnight recovery; wellbeing lost per expired event; grant noise, pass mark and priority mark; the Sunday-wellbeing grade penalty; grade bands. Change a number there, then run `tools/e2e/balance.mjs` and compare with `tools/balance/out/v12.3.txt`.
+- `S.weekResult` also carries `kAvg`, `grantQ`, `paperQ` for the harness.
+
 ## v12.2 — companions
 - Data: `TABLE` from `table.json` — `places` (who may come, trust), `people` (name, perk text, days, from), `chance`, `treat`, `events`.
 - `companionsFor(place)` → `{ ok, no }` with reasons. `whoDialog` (canteen) and the café/garden menus offer the free ones. `companionDone(place, id)` pays, adds trust, applies the place's perk, logs, then `tableTalk(place, id)`.

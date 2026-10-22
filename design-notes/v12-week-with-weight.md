@@ -174,3 +174,11 @@ Rules for Opus during the build: a design question that changes a number in §1 
 | §1.1 canteen cost ¥35–60 | ¥45 flat | Simpler to read on the button. |
 | §1.4 "already ate → coffee at 30% cost" | Invites only at lunch and dinner | Fewer rules to explain; the café covers coffee. |
 | §1.3 memory by the generic rule (sum of fx) | Table talks are remembered by their trust delta | An encouraging answer that costs research read as "bad" in her memory. |
+| §2.3 targets measured on 100 distinct weeks | Bots add choice noise (±4) and leave ±30 min around their home time | Without it, careers with the same week number played identically: the "100 weeks" of v12.0 were 10 distinct weeks. |
+| §2.3 grinder grant funded 70–85% | 0% | The grinder never gathers data, letter or ideas (they come from people), and submits exhausted (−4). Kept on purpose: grinding alone does not win grants. |
+| §2.3 grant pass mark 58 | 70 (priority 82), reviewer noise ±10 (was ±4) | A careful dossier (75–82) passed every time; now it passes about 60% of the time. |
+| — | Grade bands S 92 / A 84 / B 60 / C 46 (were 82 / 70 / 58 / 46); Sunday wellbeing under 40 costs 0.4 per point | Careful play got S every week, and the mentor bot got S while ending the week at wellbeing 18. |
+| — | KPI gains ×0.4, shrinking above 50 (to 15% near 100), and a 5% nightly slide toward 50 | The written rewards add up to +100–200 per KPI in a week: every KPI hit 100 by Tuesday. |
+| — | Wellbeing wear 0.04 / 0.045 / 0.06 per minute (was 0.008 / 0.025 / 0.06); evening at home +10 (was +12); overnight recovery 6 / 4 / 2 / 0 (was 14 / 9 / 4 / 1) | Leaving at 19:00 every day ended the week at 100. |
+| — | Bug fix: the lifetime-fit mini game now adds the paper's 关键结果 stars (it only set the flag) | The paper's dossier described a source that never paid out. |
+| — | Bots hold a submission until the dossier is good or it is the deadline day | Bots submitted at 100% text with no stars, which no reader of the checklist would do; the paper looked impossible. |

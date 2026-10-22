@@ -1,5 +1,16 @@
 # Changelog
 
+## v12.3 — A week with weight: balance pass (2026-10-23)
+Tuned with the harness (`tools/balance/out/v12.3.json`, 400 weeks). Before → after for the "balanced" bot (sensible play: write in the mornings, people in the afternoons, home around 19:00):
+- Grade: S every week → **median B, A in 37% of weeks** (bands now S 92 / A 84 / B 60 / C 46).
+- Grant funded: 100% → **82%** (60% in a career's first five weeks); pass mark **70** (priority 82), reviewer noise ±10.
+- Sunday wellbeing: 100 → **70**. A working day now wears you down (0.04 a minute), an evening at home gives +10, a good night's recovery +6. **Sunday wellbeing under 40 costs grade points** (0.4 each), shown in the week's metrics.
+- KPIs: all six at 100 by Tuesday → **about 65**. Gains are scaled (×0.4), shrink above 50, and every KPI slides 5% back toward 50 each night.
+- People-first play (the mentor bot) keeps students at trust 98 and wins most grants and papers, but ends the week at wellbeing ~20 and grades B. Grinding alone (never home, only urgent events) still grades D: grants need people.
+- Fix: a good lifetime fit (the Monday mini game) now adds the paper's 关键结果 stars it always promised.
+- The invite list shows a student's trust as "信任 +6（现在 50）".
+- Harness: bots vary their choices and their leaving time, so careers differ (before, careers with the same week number played identically); bots hold a submission until the dossier is good or it is the deadline day; the report shows review scores and the KPI average.
+
 ## v12.2 — Lunch with someone / 约人 (2026-10-23)
 - **Invite someone.** At lunch and dinner the canteen asks "叫谁一起？": 小陈, 小周, 小雨, 小林 or 赵博士, whoever is free (not waiting for you somewhere, not in crisis, not already invited today). You pay (¥45), the meal takes 10 minutes longer, and their trust rises (+6, ×1.5 on a students-first day).
 - **Table talks / 饭桌上说的话.** Sixteen two- or three-choice conversations that only happen at the table (about a third of shared meals, a quarter of café coffees with 赵博士): 小周 might not do a PhD, 小林 skipped a gas-cylinder check, 小陈 found a bug in the fit that is already in your grant, 赵博士 has an industry offer… Each happens once per career, and what you said comes back in their memory lines later in the week. Written in 中文 and English.

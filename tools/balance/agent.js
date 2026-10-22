@@ -8,8 +8,11 @@
   const mulberry = (a) => () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
   const hm = (h, m = 0) => h * 60 + m;
   // Walking inside a floor ≈ 4 game minutes; another floor adds the lift (travelMinutes) and the walk to and from it.
-  const TRAVEL = { same: 5, other: 7 };   // 3.7 m/s walking, 1 game minute per real second, typical 15–25 m trips
+  const TRAVEL = { same: 5, other: 7 };
+  const NOISE = 4;   // ± spread added to each choice's value, so careers differ
+  const homeAt = (S, base) => base + (S.homeJit || 0);   // each day's leaving time varies ±30 min   // 3.7 m/s walking, 1 game minute per real second, typical 15–25 m trips
   const FAMK = ['partner', 'child', 'house'];
+  const STAR_FLAGS = ['letter', 'letter3', 'fit_ok', 'sys_ok', 'r2_data', 'resp_full', 'refs_ok', 'fig_ok', 'disc_ok'];
 
   /* ---------------- policies ---------------- */
   // Weights turn a choice's fx into one number; timeCost is per minute the choice takes.
@@ -27,6 +30,8 @@
     if (fl.some((f) => f.startsWith('kept_'))) v += name === 'grinder' ? 5 : 25;
     if (fl.includes('lose')) v -= name === 'grinder' ? 5 : 40;
     if (fl.includes('data_in')) v += 12;
+    // flags that add dossier stars (FLAG_STARS in index.html): a player who reads the checklist values them
+    if (fl.some((f) => STAR_FLAGS.includes(f))) v += name === 'grinder' ? 12 : 8;
     if (c.next && !c.fx) v += 1;   // a branch: look inside rather than walk away
     return v;
   }
@@ -54,7 +59,8 @@
     if (id === 'home') { const i = find(/带束花/); return P.name !== 'grinder' && i >= 0 && S.fam.partner < 60 ? i : 0; }
     // events and home scenes: best weighted value
     let best = 0, bv = -1e9;
-    ch.forEach((c, i) => { const v = choiceValue(S, ev, c, P.name) + rnd() * 0.01; if (v > bv) { bv = v; best = i; } });
+    // NOISE: players weigh things differently; without it every career with the same week number plays identically
+    ch.forEach((c, i) => { const v = choiceValue(S, ev, c, P.name) + rnd() * NOISE; if (v > bv) { bv = v; best = i; } });
     return best;
   }
 
@@ -72,12 +78,19 @@
   function deskOrWrite(S) {
     const k = workKind(S); if (!k) return null;
     if (k === 'grant' && !S.dataReq && S.day <= 3 && !S.lost.includes('chen')) return { do: 'desk', want: 'data' };
-    if (k === 'grant' && S.grant >= 100 && S.day < 4 && G().dossierScore('grant') < 58) {
+    const bar = (G().BAL || {}).grantBar || 58;
+    if (k === 'grant' && S.grant >= 100 && S.day < 4 && G().dossierScore('grant') < bar) {
       // Text done but the dossier would fail: gather stars (reading, events) and use the desk time for the paper.
       if (S.dos.grant.idea < 3 && S.readDay !== S.day) { S.readDay = S.day; return { do: 'read', min: 30 }; }
       if (!S.paperSubmitted) return S.paper >= 100 ? { do: 'desk', want: 'submit-paper' } : { do: 'desk', want: 'paper' };
     }
-    if (S[k] >= 100) return { do: 'desk', want: 'submit-' + k };
+    if (S[k] >= 100) {
+      // Text done: submit when the dossier is good, or on the deadline day; until then the stars come from people and events.
+      const q = G().dossierScore(k), last = k === 'grant' ? 4 : 6;
+      if (q >= (k === 'grant' ? bar + 10 : 70) || S.day >= last || (k === 'grant' && q >= bar && S.day >= 3)) return { do: 'desk', want: 'submit-' + k };
+      if (k === 'grant' && !S.paperSubmitted && S.paper < 100) return { do: 'desk', want: 'paper' };
+      return null;
+    }
     return { do: 'desk', want: k };
   }
   const takeable = (S, ev) => ev.phone || G().HS[ev.loc];
@@ -102,7 +115,7 @@
         const n = needs(S, this); if (n) return n;
         const evs = G().activeEvents().filter((e) => takeable(S, e)).sort(byDeadline);
         if (evs.length) return { ev: evs[0] };
-        if (S.t >= hm(18, 30) && !lateDeadline(S)) return { do: 'home' };
+        if (S.t >= homeAt(S, hm(18, 30)) && !lateDeadline(S)) return { do: 'home' };
         if (S.t >= hm(15) && S.t < hm(16, 30) && S.cafeDay !== S.day && G().companionsFor && G().companionsFor('cafe').ok.includes('zhao')) { S.cafeDay = S.day; return { do: 'roofcafe' }; }
         if (S.t >= hm(17) && S.t < hm(18) && S.dayBad !== S.day) { S.dayBad = S.day; return { do: 'badminton', min: 60 }; }
         return deskOrWrite(S) || (S.t >= hm(17) ? { do: 'home' } : { do: 'wait', min: 15 });
@@ -122,7 +135,7 @@
         const urgent = evs.filter((e) => e.urgent || e.alarm || e.crisisOf || e.deadline - S.t < 45 || e.npc && g.STUDENTS[e.npc]);
         if (urgent.length) return { ev: urgent[0] };
         if (!inFocusBlock(S) && evs.length) return { ev: evs[0] };
-        if (S.t >= hm(19) && !lateDeadline(S)) return { do: 'home' };
+        if (S.t >= homeAt(S, hm(19)) && !lateDeadline(S)) return { do: 'home' };
         if (S.wb < 45 && S.t >= hm(15) && S.walkDay !== S.day) { S.walkDay = S.day; return { do: 'walk', min: 20 }; }
         if (S.t >= hm(14, 30) && S.t < hm(16) && S.cafeDay !== S.day && S.day <= 4 && G().companionsFor && G().companionsFor('cafe').ok.length) { S.cafeDay = S.day; return { do: 'roofcafe' }; }
         if (S.day === 1 && S.t >= hm(17) && S.t < hm(18) && S.dayBad !== S.day) { S.dayBad = S.day; return { do: 'badminton', min: 60 }; }
@@ -180,7 +193,7 @@
     };
     const playDay = (d) => {
       const S = g.S;
-      g.beginDay(d, P.intent(S, d, rnd)); S.paused = false; here = 'f5';
+      g.beginDay(d, P.intent(S, d, rnd)); S.paused = false; here = 'f5'; S.homeJit = Math.round((rnd() - 0.5) * 60);
       while (!g.S.ended) {
         if (++guard > 200000 || performance.now() - T0 > LIMIT) throw new Error('harness stuck on day ' + d + ' at ' + g.S.t);
         const S2 = g.S;
@@ -206,7 +219,7 @@
       for (let d = 0; d < 7; d++) { if (d > 0) g.startDay(d); playDay(d); }
       const S = g.S, R = S.weekResult || {}, outs = R.outs || [];
       out.push({
-        policy: name, seed, week: S.week, grade: R.grade, score: R.score, pts: R.pts, homeCap: R.homeCap,
+        policy: name, seed, week: S.week, grade: R.grade, score: R.score, pts: R.pts, homeCap: R.homeCap, kAvg: R.kAvg, grantQ: R.grantQ, paperQ: R.paperQ,
         grantSubmitted: S.submitted, grantOk: outs.some((o) => /^基金：(获批|优先资助)/.test(o[1])), paper: (outs.find((o) => /^论文/.test(o[1])) || [])[1] || '',
         wb: Math.round(S.wb), collapses: S.collapses, trust: Math.round(g.avgTrust()), lost: S.lost.length, homeNights: S.homeNights,
         fam: Math.round(Math.min(...FAMK.map((k) => S.fam[k]))), cash: S.fin ? Math.round(S.fin.cash) : null, rank: S.career.rank, post: S.career.post,
@@ -214,7 +227,7 @@
         k: Object.fromEntries(Object.entries(S.k).map(([k, v]) => [k, Math.round(v)])),
       });
       const no = document.getElementById(P.post ? 'ofYes' : 'ofNo'); if (no) no.click();
-      const c = g.loadCareer(); if (!c || c.done) break;
+      const c = g.loadCareer(); if (!c || c.done || w === weeks - 1) break;
       g.nextWeek();
     }
     return out;
