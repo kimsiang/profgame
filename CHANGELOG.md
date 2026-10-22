@@ -1,5 +1,8 @@
 # Changelog
 
+## v10.1 — Badminton (2026-10-22)
+Tag for the steps below. Also: DESIGN.md gains the badminton rules and balance table; "play it out" win chances re-fit to the final bot runs.
+
 ## v10.1-step7 — Badminton in the career (2026-10-22)
 - **At court 2 you choose**: play a game to 7, let it play out (a win chance from your current energy, shown in the choice), or not play. The choice shows your energy and what it does to the timing window ("精力充沛 · 判定宽" … "很累 · 判定窄").
 - **Friday's 物理 vs 化学 is now a real match**: the deciding singles against 小吴. Winning: team +3, reputation +3, wellbeing +2 and a log line; losing: reputation +1. Leaving mid-match counts as a loss. (Before, the result was written in: "你们 21:18 赢了第一局".)

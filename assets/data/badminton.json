@@ -383,18 +383,18 @@
     }
   },
   "autoWin": {
-    "_comment": "win probability for 'just play it out' by opponent, interpolated on energy; filled from tools/bm_balance.js",
+    "_comment": "win chance for 'just play it out', linear in energy; set a little below the bot runs in DESIGN.md so that playing pays",
     "aqiang": {
-      "e100": 0.7,
-      "e0": 0.4
+      "e100": 0.85,
+      "e0": 0.1
     },
     "wu": {
-      "e100": 0.4,
-      "e0": 0.12
+      "e100": 0.6,
+      "e0": 0.05
     },
     "jay": {
-      "e100": 0.3,
-      "e0": 0.08
+      "e100": 0.42,
+      "e0": 0.03
     }
   },
   "tutorial": {
