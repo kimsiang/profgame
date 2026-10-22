@@ -820,6 +820,8 @@ body.talking #lbT,body.talking #lbB{height:7vh}
         <div class="eyebrow">Time · 这一周的时间都去哪了</div>
         <div class="catBars" id="endTime"></div>
         <table class="endKpis" id="endMetrics"></table>
+        <div class="eyebrow" style="margin-top:20px">People · 你的一周</div>
+        <div class="outcomes" id="endPeople"></div>
         <table class="endKpis" id="endKpis"></table>
         <div class="eyebrow" style="margin-top:20px">Achievements · 成就</div>
         <div class="achGrid" id="endAch"></div>
@@ -3924,7 +3926,7 @@ function newState(career) {
     // v6: dossier stars carry over (ideas go stale, see nextWeek); family meters carry over; tutorial progress is per browser.
     dos: career.dos ? JSON.parse(JSON.stringify(career.dos)) : freshDossier(), dataReq: null,
     // v12.2 companions: who came where today, table talks already had (once per career), garden inspiration, Dr Zhao's flow start
-    companions: {}, tableSeen: (career.tableSeen || []).slice(), tableLog: [], inspired: false, zhaoFlow: false, coachWeek: 0,
+    companions: {}, tableSeen: (career.tableSeen || []).slice(), tableLog: [], inspired: false, zhaoFlow: false, coachWeek: 0, mealsOut: 0, mealsAlone: 0, tiredDay: null,
     fam: career.fam ? Object.assign({}, career.fam) : freshFamily(), homeNights: 0, famSkip: 0, homeToday: false, famEvents: {},
     // v9: the household ledger carries over in the career; one game week = one financial month.
     fin: JSON.parse(JSON.stringify(career.fin || freshFin(setup.house, setup.commute))),
@@ -4090,6 +4092,7 @@ function minuteTick(dm) {
   S.muons += 650 * dm;
   S.t += dm;
   if (a) { a.done += dm; if (a.min && a.done >= a.min) finishActivity(true); }
+  if (v.energy < 30 && S.tiredDay == null) S.tiredDay = S.day;
   if (v.energy < 25 && !S.warned.e) { S.warned.e = 1; toast('精力只剩 25%：去沙发小睡，或者喝杯咖啡。', 'bad'); }
   if (v.energy > 40) S.warned.e = 0;
   if (v.full < 15 && !S.warned.f) { S.warned.f = 1; toast('肚子在叫了。饿着肚子，精力掉得更快。', 'bad'); }
@@ -4360,7 +4363,7 @@ const ACT = {
   meeting: (min) => { pose('sit', 14.75, 21.05, Math.PI / 2, true); startActivity({ type: 'meeting', label: '开会中', icon: '会', min, ff: 12, drain: 0.03, cancelText: '中途离场',
     onDone: () => pose('idle', 16, 18.4), onCancel: () => { pose('idle', 16, 18.4); applyFx({ rep: -4 }); logIt('会开到一半离场。'); } }); },
   canteen: (min, pick, comp) => { const [food0, meal] = FOOD(), food = pick ? pick[0] : food0, cui = pick && pick[1] ? pick[1].c : null; pose('sit', 28, 3.7, 0, true); setExpr(player, 'happy'); startActivity({ type: 'eat', label: `食堂 · ${food}${comp ? ' · 和' + compName(comp) : ''}`, icon: '饭', min, ff: 8, perMin: (dm) => { S.v.full = clamp(S.v.full + 3.6 * dm); S.v.energy = clamp(S.v.energy + 0.4 * dm); },
-    onDone: () => { S.meals++; S.mealsWeek++; const first = cui && !(S.cuisines || {})[cui.id]; if (cui) (S.cuisines = S.cuisines || {})[cui.id] = 1; applyFx({ wellbeing: first ? 5 : 3 }); logIt(`在食堂${comp ? '和' + compName(comp) : '和同事们'}一起吃了${meal}：${food}${first ? `（这周第一次吃${cui.zh}菜）` : ''}。`); pose('idle', 28, 2.6); if (comp) companionDone('canteen', comp); }, onCancel: () => pose('idle', 28, 2.6), cancelText: '先不吃了' }); },
+    onDone: () => { S.meals++; S.mealsWeek++; const first = cui && !(S.cuisines || {})[cui.id]; if (cui) (S.cuisines = S.cuisines || {})[cui.id] = 1; applyFx({ wellbeing: first ? 5 : 3 }); if (meal !== '早餐') { S.mealsOut++; if (!comp) S.mealsAlone++; } logIt(`在食堂${comp ? '和' + compName(comp) : '和同事们'}一起吃了${meal}：${food}${first ? `（这周第一次吃${cui.zh}菜）` : ''}。`); pose('idle', 28, 2.6); if (comp) companionDone('canteen', comp); }, onCancel: () => pose('idle', 28, 2.6), cancelText: '先不吃了' }); },
   read: (min) => { pose('read', 13, 18.3, 0, true); startActivity({ type: 'read', label: '在图书馆读论文', icon: '读', min, ff: 10, drain: -0.02, perMin: (dm) => { S.paper = S.paperSubmitted ? S.paper : clamp(S.paper + 0.12 * dm); },
     onDone: () => { applyFx({ research: 2, energy: 4 }); S.reads++; if (!S.submitted && S.day <= 4) { if (addStar('grant', 'idea', 1, true)) toast(`读到一篇好文章，基金书多了一个创新点：${STAR(S.dos.grant.idea)}`, 'good'); else toast('又读了一篇，创新点已经够清楚了；现在缺的是数据和写作。'); } if (S.reads >= 3) unlock('bookworm'); logIt('在图书馆安静地读了半小时论文，记下了两个基金书可以用的想法。'); pose('idle', 13, 17.6); }, onCancel: () => pose('idle', 13, 17.6) }); },
   tennis: (min) => sport('tennis', min, { x: 12, z: 13, lx: 26, lz: 13, label: '和化学系陈老师打网球', fx: { energy: 12, full: -10, bladder: 4, rep: 2, wellbeing: 5 }, partner: 'coach', log: '和化学系的陈老师打了一局网球，聊起了各自的基金。',
@@ -5228,6 +5231,7 @@ function pick(c) {
   (c.flags || []).filter(f => f.startsWith('fin_')).forEach(finFlag);
   sayLines(c.fb);
   if (c.ach) unlock(c.ach);
+  if (d.ev.table) { const tl = S.tableLog[S.tableLog.length - 1]; if (tl && tl.id === d.ev.id) tl.said = c.t; }
   if (c.fx) { const s = Object.values(c.fx).reduce((a, b) => a + b, 0); (s >= 0 ? SFX.good : SFX.bad)(); }
   logIt(`${d.ev.title} → ${c.t}`);
   if (c.min) simulate(c.min);
@@ -5236,7 +5240,8 @@ function pick(c) {
 }
 function resolve(after) {
   const d = S.dialog, ev = d.ev;
-  if (ev.npc && !ev.synthetic && !ev.crisisOf) {
+  if (ev.table) { const fx = (d.picked && d.picked.fx) || {}; remember(ev, (fx.trust || 0) >= 0 ? 'good' : 'bad'); }   // v12.2: a table talk is judged by how the person took it; its trust is already in the choice
+  else if (ev.npc && !ev.synthetic && !ev.crisisOf) {
     const fx = (d.picked && d.picked.fx) || {}, sum = Object.entries(fx).filter(([k]) => k !== 'trust').reduce((a, [, b]) => a + b, 0);
     remember(ev, sum >= 0 && (fx.team || 0) >= 0 ? 'good' : 'bad');
     if (S.trust[ev.npc] !== undefined) { const dt = Math.max(-10, Math.min(8, Math.round((fx.team || 0) * 1.1 + (sum >= 0 ? 1 : -3)))); S.trust[ev.npc] = clamp(S.trust[ev.npc] + (dt > 0 ? trustGain(dt) : dt)); }
@@ -5717,7 +5722,7 @@ function showDaySummary() {
 const SAVE_KEY = 'prof-week-save-v2', SAVE_V1 = 'prof-week-save-v1', CAREER_KEY = 'prof-career-v1';
 const PERSIST = ['bm', 'k', 'xp', 'level', 'ach', 'cards', 'log', 'grant', 'submitted', 'paper', 'paperSubmitted', 'day', 'collapses', 'lastEnd', 'totals', 'muons', 'rooms', 'zones', 'sports', 'reads', 'clears', 'flags', 'coffeesWeek', 'mealsWeek', 'mode', 'avatar',
   'week', 'career', 'wb', 'trust', 'mem', 'lost', 'gq', 'intel', 'crisis', 'crisisSeen', 'timeWeek', 'focusBlocks', 'recruit', 'intents', 'rumours', 'subWb', 'endT',
-  'dos', 'dataReq', 'fam', 'homeNights', 'famSkip', 'famEvents', 'fin', 'companions', 'tableSeen', 'tableLog', 'inspired', 'zhaoFlow', 'coachWeek'];
+  'dos', 'dataReq', 'fam', 'homeNights', 'famSkip', 'famEvents', 'fin', 'companions', 'tableSeen', 'tableLog', 'inspired', 'zhaoFlow', 'coachWeek', 'mealsOut', 'mealsAlone', 'tiredDay'];
 /* v10.2 saves. Day boundaries save PERSIST (as before). During a day, an autosave every 20 s (and when the tab is hidden)
    also stores a mid-day snapshot ("mid"): the whole state minus 3D objects, dialogs and activities, plus the state the
    day started from ("dayBase") so the day's events can be rebuilt with their functions, then given their saved states.
@@ -5908,6 +5913,15 @@ function renderOffer(offer, c) {
     $('ofQuit').onclick = () => set(cc => { (cc.postLog = cc.postLog || []).push({ week: cc.week, n: '卸任' + POSTS[cc.post].n }); cc.post = null; cc.postWeeks = 0; cc.postCool = 4; }, '你卸任了。下周起，只做教授。');
   } else el.innerHTML = '';
 }
+/* v12.2 "你的一周": who you spent time with, what was said at the table, when you first ran low. Shown on the week's end screen. */
+function peopleRows() {
+  const inv = Object.values(S.companions || {}).flatMap(d => Object.keys(d)), who = [...new Set(inv)].map(compName);
+  const rows = [[inv.length >= 4 ? 'ok' : inv.length ? 'mid' : 'bad', `约人 ${inv.length} 次`, inv.length ? `和${who.join('、')}一起吃饭、喝咖啡或散步。` : '这周一直是一个人吃饭。']];
+  (S.tableLog || []).forEach(x => { const e = (TABLE.events || []).find(t => t.id === x.id); if (e) rows.push(['mid', `${DAYS[x.day].name} · ${e.title}`, x.said ? `你：${x.said}` : '']); });
+  if (S.mealsOut) rows.push([S.mealsAlone / S.mealsOut > 0.7 ? 'bad' : 'ok', `午饭和晚饭：${S.mealsOut - S.mealsAlone} / ${S.mealsOut} 顿有人一起`, '']);
+  rows.push(S.tiredDay == null ? ['ok', '一整周精力都没跌破 30', ''] : ['mid', `${DAYS[S.tiredDay].name}第一次累到精力 30 以下`, S.tiredDay <= 1 ? '一周才刚开始。' : '']);
+  return rows;
+}
 function careerEpilogue(c) {
   const st = careerStats(c), grades = c.history.map(h => h.grade).join('');
   const path = [{ week: 1, n: '助理教授' }].concat(c.rankLog || [], c.postLog || []).sort((a, b) => a.week - b.week).concat([{ week: c.academician, n: '院士' }]);
@@ -5989,6 +6003,7 @@ function endWeek(reason) {
   if (elected) $('endOffer').innerHTML = ''; else renderOffer(offer, c);
   if (elected) $('endCareer').innerHTML += careerEpilogue(c);
   $('endMoney').innerHTML = money ? finStatementHTML(money) : '';
+  $('endPeople').innerHTML = peopleRows().map(([k, t, d]) => `<div class="oc ${k}"><span class="m">${k === 'ok' ? '✓' : k === 'bad' ? '✕' : '~'}</span><div><b>${esc(t)}</b><small>${esc(d)}</small></div><em></em></div>`).join('');
   clearSave(); refreshContinue();
   if (promoted) setTimeout(() => { SFX.level(); }, 700);
   try { const best = +localStorage.getItem('prof-day-best') || 0; if (score > best) localStorage.setItem('prof-day-best', String(Math.round(score))); } catch (e) { /* storage unavailable */ }
