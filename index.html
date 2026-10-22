@@ -37,6 +37,13 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 svg.ic{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
 
 /* ---- player card ---- */
+/* v11.2: every HUD box folds to its header (button in the corner, or H for all); remembered in this browser */
+.foldBtn{position:absolute;top:6px;right:6px;width:20px;height:20px;padding:0;border:1px solid var(--line);background:rgba(5,28,44,.6);color:var(--muted);font:700 12px/18px var(--mono,monospace);cursor:pointer;z-index:2;text-align:center}
+.foldBtn:hover{color:var(--ice);border-color:var(--cyan)}
+.panel.folded>:not(.foldKeep):not(.foldBtn){display:none!important}
+.panel.folded .foldKeep{margin-bottom:0!important}
+#pCard.folded .pTop{grid-template-columns:40px 1fr}#pCard.folded .pAvatar{width:40px;height:40px}
+#mapCard.folded #roomName{margin:2px 26px 2px 2px}
 #pCard{top:calc(14px + env(safe-area-inset-top,0px));left:max(14px,env(safe-area-inset-left,0px));width:268px;padding:12px 14px 12px}
 .pTop{display:grid;grid-template-columns:62px 1fr;gap:12px;align-items:center}
 .pAvatar{width:62px;height:62px;border-radius:50%;position:relative;background:conic-gradient(var(--gold) var(--xp,0%),rgba(255,255,255,.1) 0);padding:3px}
@@ -98,6 +105,9 @@ svg.ic{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;str
 .dayLine span{position:absolute;top:3px;width:2px;height:10px;background:rgba(255,255,255,.35)}
 .dayLine span.big{background:var(--gold);height:10px}
 /* ---- right column ---- */
+#musicMenu{position:absolute;top:44px;right:0;width:250px;padding:10px;display:flex;flex-direction:column;gap:4px;z-index:30}
+#musicMenu button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:7px 10px;background:rgba(255,255,255,.03);border:1px solid transparent;color:var(--ice);cursor:pointer;text-align:left;font:600 13px var(--body)}
+#musicMenu button span{font:500 11px var(--body);color:var(--muted)}#musicMenu button:hover{border-color:var(--line2)}#musicMenu button.on{border-color:var(--cyan);background:rgba(0,169,244,.12)}
 #rightCol{top:calc(14px + env(safe-area-inset-top,0px));right:max(14px,env(safe-area-inset-right,0px));width:300px;display:flex;flex-direction:column;gap:10px;align-items:stretch}
 #ctrlRow{display:flex;gap:5px;justify-content:flex-end;flex-wrap:wrap}
 .ib{display:inline-flex;align-items:center;gap:5px;height:32px;min-width:32px;justify-content:center;border:1px solid var(--line);background:rgba(5,28,44,.82);padding:0 8px;font:700 12px var(--tech);letter-spacing:.04em;color:var(--ice);clip-path:polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px)}
@@ -557,7 +567,7 @@ body.talking #lbT,body.talking #lbB{height:7vh}
 <div id="bm" class="hidden"><div id="bmSpeed"></div><div id="bmLabels"></div><div id="bmScore" class="panel"></div><div id="bmEndBox" class="panel hidden"></div><div id="bmPop"></div><div id="bmHint" class="panel"></div><button id="bmHelp" class="btn ghost" type="button" title="操作说明 (?)">?</button><button id="bmQuit" class="btn" type="button">退出比赛</button></div>
 <div id="hud" class="hidden">
   <div id="pCard" class="hud panel">
-    <div class="pTop">
+    <div class="pTop foldKeep">
       <div class="pAvatar" id="pAvatar"><img id="pImg" alt=""><span class="pLv" id="pLv">Lv.1</span></div>
       <div style="min-width:0">
         <div class="pName">你 · 值班教授 <span id="clockMini" class="mono" style="color:var(--cyan);font-size:13px"></span></div>
@@ -574,7 +584,7 @@ body.talking #lbT,body.talking #lbB{height:7vh}
     <div class="pMoneyRow" title="你自己的钱 · 课题经费只能用于科研"><span class="yen">¥</span><span id="pMoney"></span></div>
   </div>
   <div id="kpiCard" class="hud panel">
-    <div class="eyebrow">Performance · 今日表现</div>
+    <div class="eyebrow foldKeep">Performance · 今日表现</div>
     <div id="kpis"></div>
     <div id="grantRow">
       <div class="top"><span>基金申请书 · 周五截止</span><span class="mono" id="grantPct">20%</span></div>
@@ -586,7 +596,7 @@ body.talking #lbT,body.talking #lbB{height:7vh}
     <div id="muonRow">这周已有 <b id="muonCount">0</b> 个宇宙线缪子穿过你的身体</div>
   </div>
   <div id="clockPill" class="hud panel">
-    <div class="clkRow"><span id="clockEyebrow">DAY 1 · 上班中</span><span id="clock">08:00</span><span id="clockSub">基金截止 <b id="toDeadline">15:59</b></span></div>
+    <div class="clkRow foldKeep"><span id="clockEyebrow">DAY 1 · 上班中</span><span id="clock">08:00</span><span id="clockSub">基金截止 <b id="toDeadline">15:59</b></span></div>
     <div class="dayLine" id="dayLine"><i id="dayFill"></i></div>
     <div class="blockStrip" id="blockStrip"></div>
   </div>
@@ -606,12 +616,12 @@ body.talking #lbT,body.talking #lbB{height:7vh}
       <button class="ib" id="bEnd" type="button" title="下班"><svg class="ic"><use href="#i-exit"/></svg><span class="lbl">下班</span></button>
     </div>
     <div id="quests" class="panel">
-      <div class="head"><span class="eyebrow">Quests · 待处理</span><span class="mono" id="callN" style="color:var(--gold)">0</span></div>
+      <div class="head foldKeep" style="padding-right:24px"><span class="eyebrow">Quests · 待处理</span><span class="mono" id="callN" style="color:var(--gold)">0</span></div>
       <div id="questList"><div class="empty">目前没有人找你。</div></div>
     </div>
   </div>
   <div id="mapCard" class="hud panel">
-    <div id="roomName"><span id="roomLbl">电梯厅</span><span class="mono" id="roomSub" style="color:var(--muted)">5F</span></div>
+    <div id="roomName" class="foldKeep"><span id="roomLbl">电梯厅</span><span class="mono" id="roomSub" style="color:var(--muted)">5F</span></div>
     <canvas id="minimap" width="440" height="300"></canvas>
   </div>
   <div id="navChip" class="hud panel" title="我在哪？(N)"><span class="pin"></span><span class="path" id="navPath">物理楼 5F</span><span class="off" id="navOff"></span><span class="k">N</span></div>
@@ -931,6 +941,8 @@ body.talking #lbT,body.talking #lbB{height:7vh}
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/geometries/RoundedBoxGeometry.js"></script>
 <script src="assets/js/badminton.js"></script>
 <script src="assets/js/bm-venue.js"></script>
+<script src="assets/js/music.js"></script>
+<script src="assets/js/garden.js"></script>
 <script>
 (function(){
 'use strict';
@@ -1247,6 +1259,10 @@ function pbr(id, o = {}) {
   m.userData.pbr = { id, tint: o.tint, ns: o.ns, roughK: o.roughK, metal: !!o.metal, tile: o.tile || 2, noDiff: !!o.noDiff };   // noDiff: relief and roughness only, over a clean paint colour
   PBR_MATS.push(m); pbrApply(m); return m;
 }
+
+// v11.2 canteen data (assets/data/canteen.json); declared before the 1F build, which makes the stall signs
+const CANTEEN = { data: null, stalls: [], signDay: null };
+fetch('assets/data/canteen.json').then(r => r.json()).then(d => { CANTEEN.data = d; CANTEEN.signDay = null; }).catch(() => { /* old fixed menu */ });
 
 /* =========================================================
    ARCHITECTURE
@@ -2438,10 +2454,23 @@ function sportNPC(id, look, x, z, lx, lz) { look._id = id; const p = makeChar(lo
   box(1.0, 0.95, 9, mat('#e8edf2', { roughness: 0.3 }), 23.2, 0, 6, { block: true, round: 0.02 }); box(1.0, 0.04, 9, mat('#2b3d52', { metalness: 0.3 }), 23.2, 0.95, 6);
   [2.5, 4.5, 6.5, 8.5].forEach((z, i) => { box(0.5, 0.18, 0.4, mat(['#c0392b', '#f2c574', '#3f8f5a', '#e8e8e8'][i], { roughness: 0.5 }), 23.2, 0.99, z, { round: 0.03 }); });
   plane(0.8, 3.2, glow('#ffd9a0', 1.3, 0.3), 23.2, 1.9, 6, { rx: -Math.PI / 2 });
-  for (let r = 0; r < 3; r++) for (let c = 0; c < 2; c++) { const x = 28 + c * 6, z = 3 + r * 3.4; box(2.4, 0.06, 1.1, mat('#f3f1ec'), x, 0.74, z, { block: true, round: 0.02 }); box(0.12, 0.74, 0.12, mat('#9aa7b3', { metalness: 0.5 }), x, 0, z); [-0.8, 0, 0.8].forEach(dx => { chair(x + dx, z - 0.9, 0, '#c86b3c'); chair(x + dx, z + 0.9, Math.PI, '#c86b3c'); }); }
-  decal('食堂 · CANTEEN', 31, 11.2, 3.2, 0.6, { sub: '07:00 – 20:00' });
+  for (let r = 0; r < 3; r++) for (let c = 0; c < 2; c++) { const x = 28 + c * 6, z = 4.6 + r * 2.7; box(2.4, 0.06, 1.1, mat('#f3f1ec'), x, 0.74, z, { block: true, round: 0.02 }); box(0.12, 0.74, 0.12, mat('#9aa7b3', { metalness: 0.5 }), x, 0, z); [-0.8, 0, 0.8].forEach(dx => { chair(x + dx, z - 0.9, 0, '#c86b3c'); chair(x + dx, z + 0.9, Math.PI, '#c86b3c'); }); }
+  decal('食堂 · CANTEEN', 31, 11.2, 3.2, 0.6, { sub: '07:00 – 20:00 · 世界美食档口 WORLD KITCHENS' });
+  /* v11.2: six world-cuisine stalls along the north wall; their signs are redrawn each day (canteenSigns) */
+  CANTEEN.stalls = [];
+  for (let k = 0; k < 6; k++) {
+    const x = 25.6 + k * 2.4;
+    box(2.2, 0.95, 0.8, mat('#d9dee3', { roughness: 0.25, metalness: 0.6 }), x, 0, 1.2, { block: true, round: 0.02 });
+    box(2.2, 0.04, 0.9, mat('#2b2f33', { roughness: 0.3 }), x, 0.95, 1.2, { cast: false });
+    [-0.6, 0, 0.6].forEach((dx, j) => box(0.45, 0.12, 0.35, mat(['#c8a27a', '#e9e2d4', '#7aa83a'][(j + k) % 3], { roughness: 0.5 }), x + dx, 0.99, 1.15, { cast: false, round: 0.03 }));
+    box(2.2, 2.3, 0.1, mat('#3a3f45', { roughness: 0.6 }), x, 0, 0.25, { cast: false });
+    const sign = plane(2.0, 0.95, new THREE.MeshBasicMaterial({ toneMapped: false, map: canvasTex(400, 190, () => {}) }), x, 1.9, 0.32);
+    sign.material.color.setScalar(1.15);
+    CANTEEN.stalls.push(sign);
+  }
+  plane(14.4, 0.6, glow('#ffd9a0', 1.1, 0.25), 31.6, 2.55, 1.2, { rx: -Math.PI / 2 });
   sportNPC('cook', { shirt: '#ffffff', hair: '#222', hairStyle: 'bald', label: '食堂师傅', skin: '#e9b58a' }, 22.4, 6, 24, 6);
-  [['#2251FF', 'pony'], ['#7a5cff', 'short'], ['#3DDC97', 'bob']].forEach(([c, h], i) => { const p = makeChar({ shirt: c, hairStyle: h }); p.position.set(28 + (i % 2) * 6, 0, 3 + Math.floor(i / 2) * 3.4 - 0.9); p.rotation.y = 0; p.userData.seated = true; p.userData.state = 'sit'; p.userData.baseState = 'sit'; Z.npcs.push(p); });
+  [['#2251FF', 'pony'], ['#7a5cff', 'short'], ['#3DDC97', 'bob']].forEach(([c, h], i) => { const p = makeChar({ shirt: c, hairStyle: h }); p.position.set(28 + (i % 2) * 6, 0, 4.6 + Math.floor(i / 2) * 2.7 - 0.9); p.rotation.y = 0; p.userData.seated = true; p.userData.state = 'sit'; p.userData.baseState = 'sit'; Z.npcs.push(p); });
   lightPool(31, 6, 6, '#ffd9a0', 0.12); lightPool(8, 8, 6, '#cfe6ff', 0.1); addLamp(31, 6, '#ffd9a0'); addLamp(8, 10, '#cfe6ff');
   /* main door to campus */
   [18, 22].forEach(x => box(0.2, 2.6, 0.3, frameM, x, 0, 26));
@@ -2560,27 +2589,25 @@ function sportNPC(id, look, x, z, lx, lz) { look._id = id; const p = makeChar(lo
   /* glasshouse ridge */
   for (let i = 0; i <= 6; i++) { const x = 2 + i * 6; box(0.08, 0.08, 26, frameM, x, 3.2, 13, { cast: false }); }
   box(40, 0.08, 0.08, frameM, 20, 3.3, 13, { cast: false }); box(40, 0.04, 26, new THREE.MeshStandardMaterial({ color: '#a6e2ff', transparent: true, opacity: 0.04, roughness: 0.05, depthWrite: false }), 20, 3.34, 13, { cast: false });
-  /* beds with many plants */
-  let kseed = 1;
-  const rnd = () => { kseed = (kseed * 16807) % 2147483647; return kseed / 2147483647; };
-  const beds = [[1.5, 1.5, 17, 10.5], [23, 1.5, 38.5, 10.5], [1.5, 15.5, 17, 24.5], [23, 15.5, 34.5, 24.5]];
-  const leafCols = ['#3f8f5a', '#2f7d4c', '#7aa83a', '#5c8a2a', '#8fb84a', '#2e6b3f', '#a0c060'];
-  const flowerCols = ['#ff5a6e', '#ffc857', '#ff8ad8', '#7fe3ff', '#ffffff', '#ff7a3a'];
-  beds.forEach(([x0, z0, x1, z1], bi) => {
-    box(x1 - x0 + 0.4, 0.3, z1 - z0 + 0.4, mat('#6b5a44', { roughness: 0.95 }), (x0 + x1) / 2, 0, (z0 + z1) / 2, { cast: false });
-    for (let i = 0; i < 44; i++) {
-      const x = x0 + 0.6 + rnd() * (x1 - x0 - 1.2), z = z0 + 0.6 + rnd() * (z1 - z0 - 1.2), s = 0.5 + rnd() * 0.9, kind = rnd();
-      if (kind < 0.35) { for (let k = 0; k < 7; k++) { const a = k / 7 * Math.PI * 2; const l = new THREE.Mesh(new THREE.SphereGeometry(0.14 * s, 8, 6), mat(leafCols[(bi + k) % 7])); l.scale.set(0.5, 1.8, 0.3); l.position.set(x + Math.cos(a) * 0.1 * s, 0.3 + 0.45 * s, z + Math.sin(a) * 0.1 * s); l.rotation.set(Math.sin(a) * 0.7, 0, -Math.cos(a) * 0.7); l.castShadow = true; Z.group.add(l); } }
-      else if (kind < 0.6) { const b = new THREE.Mesh(new THREE.SphereGeometry(0.35 * s, 10, 8), mat(leafCols[(bi * 3 + i) % 7], { flatShading: true })); b.position.set(x, 0.3 + 0.3 * s, z); b.scale.y = 0.8; b.castShadow = true; Z.group.add(b); for (let k = 0; k < 5; k++) { const f = new THREE.Mesh(new THREE.SphereGeometry(0.06 * s, 6, 5), mat(flowerCols[(i + k) % 6], { emissive: flowerCols[(i + k) % 6], emissiveIntensity: 0.25 })); const a = rnd() * 6.28; f.position.set(x + Math.cos(a) * 0.3 * s, 0.3 + 0.55 * s, z + Math.sin(a) * 0.3 * s); Z.group.add(f); } }
-      else if (kind < 0.8) { cyl(0.02, 0.03, 0.8 * s, mat('#3a6b2a'), x, 0.3, z, { seg: 5 }); const f = new THREE.Mesh(new THREE.ConeGeometry(0.12 * s, 0.22 * s, 8), mat(flowerCols[i % 6], { emissive: flowerCols[i % 6], emissiveIntensity: 0.3 })); f.position.set(x, 0.3 + 0.85 * s, z); f.rotation.x = Math.PI; Z.group.add(f); }
-      else { tree(x, z, 0.5 + rnd() * 0.4, (bi + i) % 4); }
-    }
+  /* v11.2: four climate zones, one per corner bed (assets/js/garden.js): rainforest NW, desert NE, temperate forest SW, alpine SE.
+     The alpine bed is a low rock garden round the pond (an alpine tarn). */
+  const ZONES6 = [
+    { kind: 'rainforest', b: [1.5, 1.5, 17, 10.5], h: 0.3, soil: '#3a2c1c', zh: '热带雨林', en: 'TROPICAL RAINFOREST', accent: '#3DDC97' },
+    { kind: 'desert', b: [23, 1.5, 38.5, 10.5], h: 0.3, soil: '#b8915e', zh: '沙漠', en: 'DESERT', accent: '#FFB547' },
+    { kind: 'temperate', b: [1.5, 15.5, 17, 24.5], h: 0.3, soil: '#4a3a26', zh: '温带森林', en: 'TEMPERATE FOREST', accent: '#c86b3c' },
+    { kind: 'alpine', b: [23, 15.5, 34.5, 24.5], h: 0.12, soil: '#77766f', zh: '高山', en: 'ALPINE', accent: '#9fd0ff' },
+  ];
+  ZONES6.forEach((zn, bi) => {
+    const [x0, z0, x1, z1] = zn.b;
+    box(x1 - x0 + 0.4, zn.h, z1 - z0 + 0.4, mat(zn.soil, { roughness: 0.95 }), (x0 + x1) / 2, 0, (z0 + z1) / 2, { cast: false });
+    if (window.GardenKit) Z.group.add(GardenKit.bed(THREE, { kind: zn.kind, x0, z0, x1, z1, y: zn.h, seed: 11 + bi * 97, quality: QUALITY, avoid: zn.kind === 'alpine' ? [30.5, 19.5, 4.0] : null }));
     blockRect(x0, z0, x1, z1, 0.1);
+    decal(zn.zh + '区', (x0 + x1) / 2, z0 < 12 ? z1 + 0.65 : z0 - 0.65, 2.6, 0.5, { sub: zn.en, accent: zn.accent });
   });
   /* pond */
-  const pond = new THREE.Mesh(new THREE.CircleGeometry(3.2, 32), new THREE.MeshStandardMaterial({ color: '#2a7fa8', roughness: 0.05, metalness: 0.4, transparent: true, opacity: 0.85, envMapIntensity: 1.4 })); pond.rotation.x = -Math.PI / 2; pond.position.set(30.5, 0.02, 19.5); Z.group.add(pond);
-  const rim = new THREE.Mesh(new THREE.RingGeometry(3.2, 3.6, 32), mat('#8a8f86', { roughness: 0.9 })); rim.rotation.x = -Math.PI / 2; rim.position.set(30.5, 0.025, 19.5); Z.group.add(rim);
-  for (let i = 0; i < 7; i++) { const a = i * 0.9, r = 0.8 + (i % 3) * 0.7; const lp = new THREE.Mesh(new THREE.CircleGeometry(0.25, 10), mat('#3f8f5a')); lp.rotation.x = -Math.PI / 2; lp.position.set(30.5 + Math.cos(a) * r, 0.03, 19.5 + Math.sin(a) * r); Z.group.add(lp); if (i % 2) { const fl = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 6), mat('#ff8ad8', { emissive: '#ff8ad8', emissiveIntensity: 0.3 })); fl.position.set(lp.position.x, 0.1, lp.position.z); Z.group.add(fl); } }
+  const pond = new THREE.Mesh(new THREE.CircleGeometry(3.2, 32), new THREE.MeshStandardMaterial({ color: '#2a7fa8', roughness: 0.05, metalness: 0.4, transparent: true, opacity: 0.85, envMapIntensity: 1.4 })); pond.rotation.x = -Math.PI / 2; pond.position.set(30.5, 0.14, 19.5); Z.group.add(pond);
+  const rim = new THREE.Mesh(new THREE.RingGeometry(3.2, 3.6, 32), mat('#8a8f86', { roughness: 0.9 })); rim.rotation.x = -Math.PI / 2; rim.position.set(30.5, 0.145, 19.5); Z.group.add(rim);
+  for (let i = 0; i < 7; i++) { const a = i * 0.9, r = 0.8 + (i % 3) * 0.7; const lp = new THREE.Mesh(new THREE.CircleGeometry(0.25, 10), mat('#3f8f5a')); lp.rotation.x = -Math.PI / 2; lp.position.set(30.5 + Math.cos(a) * r, 0.15, 19.5 + Math.sin(a) * r); Z.group.add(lp); if (i % 2) { const fl = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 6), mat('#ff8ad8', { emissive: '#ff8ad8', emissiveIntensity: 0.3 })); fl.position.set(lp.position.x, 0.22, lp.position.z); Z.group.add(fl); } }
   blockRect(27, 16, 34, 23, 0.1);
   Z.anims.push((t) => { pond.material.opacity = 0.8 + Math.sin(t * 1.3) * 0.05; });
   /* pergola + benches */
@@ -2634,6 +2661,46 @@ function sportNPC(id, look, x, z, lx, lz) { look._id = id; const p = makeChar(lo
   for (let i = 0; i < stringPts.length - 1; i++) { const [ax, az] = stringPts[i], [bx, bz] = stringPts[i + 1]; const n = Math.ceil(Math.hypot(bx - ax, bz - az) / 1.2); for (let k = 0; k <= n; k++) { const u = k / n; const l = new THREE.Mesh(new THREE.SphereGeometry(0.06, 6, 5), glow(k % 2 ? '#ffe2a8' : '#ffc857', 2.4)); l.position.set(ax + (bx - ax) * u, 3.3 - Math.sin(u * Math.PI) * 0.35, az + (bz - az) * u); Z.group.add(l); } }
   for (let i = 0; i < stringPts.length; i++) { const [x, z] = stringPts[i]; if (i < stringPts.length - 1) cyl(0.03, 0.03, 3.3, frameM, x, 0, z, { seg: 6 }); }
   box(2.6, 2.3, 4.4, mat('#9fb0c0', { roughness: 0.5 }), 38.3, 0, 19, { cast: true }); // elevator machine room
+  /* v11.2: the café dressed up — slatted oak cladding, pendant lamps, a chalkboard menu, a lounge corner with sofas, rugs and
+     lanterns, a pergola with hanging plants, potted olives, and an art wall of three abstract canvases on the machine room. */
+  {
+    const slats = canvasTex(256, 256, (g, w, h) => { for (let x = 0; x < w; x += 16) { const v = 150 + ((x * 37) % 40); g.fillStyle = `rgb(${v + 40},${v - 5},${v - 50})`; g.fillRect(x, 0, 14, h); g.fillStyle = 'rgba(40,25,10,.6)'; g.fillRect(x + 14, 0, 2, h); } });
+    slats.wrapS = slats.wrapT = THREE.RepeatWrapping; slats.repeat.set(3, 1);
+    const clad = mat('#ffffff', { map: slats, roughness: 0.6 });
+    box(7.05, 2.3, 0.06, clad, 9, 0.1, 6.03, { cast: false }); box(0.06, 2.3, 4.05, clad, 5.47, 0.1, 4, { cast: false }); box(0.06, 2.3, 4.05, clad, 12.53, 0.1, 4, { cast: false });
+    // pendant lamps over the counter
+    for (let i = 0; i < 3; i++) { const x = 7 + i * 2; cyl(0.006, 0.006, 0.9, mat('#222'), x, 1.75, 6.6, { seg: 4 }); const sh = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.28, 18, 1, true), mat('#1b1b1b', { side: THREE.DoubleSide, roughness: 0.4, metalness: 0.5 })); sh.position.set(x, 1.62, 6.6); add(sh); const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.07, 10, 8), glow('#ffcf8a', 3)); bulb.position.set(x, 1.5, 6.6); add(bulb); }
+    // chalkboard menu
+    const chalk = plane(1.6, 1.1, new THREE.MeshStandardMaterial({ roughness: 0.9, map: canvasTex(320, 220, (g, w, h) => { g.fillStyle = '#1f2a24'; g.fillRect(0, 0, w, h); g.strokeStyle = '#8a6a44'; g.lineWidth = 10; g.strokeRect(0, 0, w, h);
+      g.fillStyle = '#f2efe6'; g.font = `700 26px ${CN_FONT}`; g.fillText('今日手冲', 22, 42); g.font = `500 17px ${CN_FONT}`;
+      [['埃塞俄比亚 耶加雪菲', '38'], ['云南 普洱 · 日晒', '32'], ['哥伦比亚 慧兰', '34'], ['燕麦拿铁', '28'], ['槟城白咖啡', '26']].forEach(([n, pr], i) => { g.fillText(n, 22, 76 + i * 28); g.fillText(pr, w - 50, 76 + i * 28); });
+      g.fillStyle = '#e8b04a'; g.fillText('～ 慢一点，喝一杯 ～', 70, h - 14); }) }), 12.6, 1.4, 6.7, { ry: Math.PI / 2 });
+    // lounge corner (south-east of the deck): sofas, a low table, a rug and lanterns
+    const rug = new THREE.Mesh(new THREE.PlaneGeometry(4.4, 3.2), new THREE.MeshStandardMaterial({ roughness: 0.95, map: canvasTex(256, 192, (g, w, h) => { g.fillStyle = '#b8574a'; g.fillRect(0, 0, w, h); g.strokeStyle = '#f0e2c8'; g.lineWidth = 6; g.strokeRect(10, 10, w - 20, h - 20); for (let i = 0; i < 6; i++) { g.strokeStyle = i % 2 ? '#2f4f6f' : '#e8b04a'; g.lineWidth = 3; g.beginPath(); g.moveTo(30, 30 + i * 26); g.lineTo(w - 30, 30 + i * 26); g.stroke(); } }) }));
+    rug.rotation.x = -Math.PI / 2; rug.position.set(26, 0.012, 21.5); rug.receiveShadow = true; add(rug);
+    const sofa = (x, z, ry, col) => { const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = ry; Z.group.add(g); const cm = mat(col, { roughness: 0.9 });
+      [[2.0, 0.4, 0.85, 0, 0.2, 0], [2.0, 0.5, 0.2, 0, 0.55, -0.35], [0.2, 0.35, 0.85, -0.95, 0.45, 0], [0.2, 0.35, 0.85, 0.95, 0.45, 0]].forEach(([w, h, d, px, py, pz]) => { const b = new THREE.Mesh(rbox(w, h, d, 0.06), cm); b.position.set(px, py, pz); b.castShadow = b.receiveShadow = true; g.add(b); });
+      [-0.5, 0.5].forEach(px => { const c = new THREE.Mesh(rbox(0.5, 0.35, 0.12, 0.05), mat('#e8dcc4', { roughness: 0.95 })); c.position.set(px, 0.6, -0.22); c.rotation.x = -0.2; g.add(c); }); };
+    sofa(26, 19.9, 0, '#3f5a4a'); sofa(26, 23.1, Math.PI, '#3f5a4a'); sofa(23.4, 21.5, Math.PI / 2, '#6b5a44');
+    blockRect(22.9, 19.3, 29.1, 23.7, 0.1);
+    box(1.4, 0.35, 0.7, mat('#5a3f2a', { roughness: 0.5 }), 26, 0, 21.5, { round: 0.03 });
+    const lantern = (x, y, z) => { box(0.18, 0.26, 0.18, new THREE.MeshStandardMaterial({ color: '#1b1b1b', metalness: 0.6, roughness: 0.4, transparent: true, opacity: 0.85 }), x, y, z, { cast: false }); const f = new THREE.Mesh(new THREE.SphereGeometry(0.045, 8, 6), glow('#ffb25e', 3.2)); f.position.set(x, y + 0.11, z); add(f); };
+    lantern(26, 0.35, 21.5); spots.forEach(([x, z]) => lantern(x - 0.2, 0.77, z + 0.15));
+    // pergola with hanging plants over the lounge
+    [[23.5, 19.2], [28.5, 19.2], [23.5, 23.8], [28.5, 23.8]].forEach(([x, z]) => box(0.14, 2.7, 0.14, mat('#6b4a32', { roughness: 0.8 }), x, 0, z));
+    for (let i = 0; i < 7; i++) box(5.4, 0.08, 0.1, mat('#6b4a32', { roughness: 0.8 }), 26, 2.7, 19.2 + i * 0.77, { cast: false });
+    for (let i = 0; i < 8; i++) { const x = 24 + (i % 4) * 1.4, z = 19.8 + Math.floor(i / 4) * 3.4; cyl(0.004, 0.004, 0.5, mat('#333'), x, 2.2, z, { seg: 3 }); const pot = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.12, 0.2, 10), mat('#c8a27a')); pot.position.set(x, 2.15, z); add(pot);
+      for (let k = 0; k < 6; k++) { const v = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.6 + (k % 3) * 0.2, 4), mat(k % 2 ? '#4f8f3f' : '#3f7a35', { flatShading: true })); v.rotation.x = Math.PI; v.position.set(x + Math.cos(k) * 0.12, 1.85 - (k % 3) * 0.1, z + Math.sin(k) * 0.12); add(v); } }
+    // potted olive trees
+    [[3.2, 12.8], [3.2, 19.5], [31.5, 9], [31.5, 15], [15.5, 23.8]].forEach(([x, z]) => { cyl(0.32, 0.26, 0.55, mat('#d9cbb6', { roughness: 0.9 }), x, 0, z, { block: true }); cyl(0.04, 0.06, 1.1, mat('#6b5a44'), x, 0.55, z, { seg: 6 });
+      for (let k = 0; k < 5; k++) { const b = new THREE.Mesh(new THREE.IcosahedronGeometry(0.32, 0), mat(['#7d8f62', '#8a9c6e', '#6f8456'][k % 3], { flatShading: true, roughness: 0.9 })); b.position.set(x + Math.cos(k * 1.3) * 0.25, 1.75 + (k % 2) * 0.25, z + Math.sin(k * 1.3) * 0.25); b.castShadow = true; add(b); } });
+    // art wall: three abstract canvases on the machine room
+    const art = (seed) => canvasTex(200, 260, (g, w, h) => { const pal = [['#e8b04a', '#c0392b', '#2f4f6f', '#f2efe6'], ['#2251FF', '#00A9F4', '#051C2C', '#f2efe6'], ['#3f8f5a', '#e8dcc4', '#b8574a', '#2b2b2b']][seed];
+      g.fillStyle = pal[3]; g.fillRect(0, 0, w, h); for (let i = 0; i < 3; i++) { g.fillStyle = pal[i]; g.globalAlpha = 0.85; const y = 20 + i * 78; g.fillRect(16 + (seed * 7 + i * 5) % 20, y, w - 32, 60 + ((seed + i) % 2) * 14); } g.globalAlpha = 1;
+      g.strokeStyle = pal[2]; g.lineWidth = 3; g.beginPath(); g.arc(w * 0.65, h * 0.5, 30 + seed * 6, 0, 6.3); g.stroke(); });
+    [17.6, 19, 20.4].forEach((z, k) => { box(0.04, 1.36, 1.08, mat('#1b1b1b'), 36.97, 0.55, z, { cast: false }); plane(1.0, 1.28, new THREE.MeshStandardMaterial({ map: art(k), roughness: 0.85 }), 36.94, 1.23, z, { ry: -Math.PI / 2 }); });
+    decal('天台咖啡 · 艺术角', 33.6, 22.6, 2.8, 0.55, { sub: 'ROOFTOP CAFÉ · ART WALL', accent: '#e8b04a' });
+  }
   decal('天台 · ROOFTOP', 20, 9.4, 3, 0.55, { sub: '小心风大 · 请勿攀爬', bg: 'rgba(40,30,20,.85)', accent: '#ffc857' });
   lightPool(9, 8, 5, '#ffd9a0', 0.14); lightPool(18, 15, 10, '#ffe2a8', 0.08); addLamp(9, 7, '#ffd9a0'); addLamp(18, 15, '#ffe2a8', 14);
   /* elevator door in the machine room */
@@ -2677,9 +2744,50 @@ function sportNPC(id, look, x, z, lx, lz) { look._id = id; const p = makeChar(lo
   floorPlane(36, 34, 86, 58, mat('#ffffff', { map: fieldTex, roughness: 0.9 }), 0.007);
   const goal = (x, flip) => { const g = new THREE.Group(); g.position.set(x, 0, 46); if (flip) g.rotation.y = Math.PI; Z.group.add(g); [-3.5, 3.5].forEach(dz => add(new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 2.4, 8), mat('#ffffff')), { parent: g }).position.set(0, 1.2, dz)); const bar = add(new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 7.1, 8), mat('#ffffff')), { parent: g }); bar.position.set(0, 2.4, 0); bar.rotation.x = Math.PI / 2; const nt = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2.4, 7), new THREE.MeshStandardMaterial({ color: '#ffffff', transparent: true, opacity: 0.18, side: THREE.DoubleSide })); nt.position.set(-0.75, 1.2, 0); g.add(nt); blockRect(x - 1.6, 42.3, x + 0.2, 49.7); };
   goal(37.6, false); goal(84.4, true);
-  for (let i = 0; i < 6; i++) { const [x, z] = [[46, 40], [52, 50], [60, 44], [68, 38], [74, 52], [78, 45]][i]; const p = makeChar({ shirt: i % 2 ? '#c0392b' : '#2251FF', hairStyle: ['short', 'pony', 'spiky', 'bob', 'short', 'short'][i], pants: '#ffffff' }); p.position.set(x, 0, z); face(p, 61, 46); p.userData.baseState = 'play'; p.userData.state = 'play'; Z.npcs.push(p); }
-  const sb = ball(52, 0.22, 46, 0.22, '#ffffff', 'soccer'); sb.from = [44, 42]; sb.to = [76, 49]; sb.active = true;
-  Z.anims.push((t) => { Z.npcs.forEach((p, i) => { if (p.userData.baseState === 'play') { p.position.x += Math.sin(t * 0.9 + i) * 0.01; p.position.z += Math.cos(t * 0.7 + i * 2) * 0.01; } }); });
+  /* v11.2: a kick-about on the ground. Two teams of three; the nearest player runs to the ball and passes or shoots, the others
+     keep their shape and drift with play. The ball rolls (with friction) and is only chipped now and then. Pitch 37.6–84.4 × 34.6–57.4. */
+  const FIELD = { x0: 38.2, x1: 83.8, z0: 35.2, z1: 56.8 }, players = [];
+  [[46, 40, 0], [50, 50, 0], [58, 45, 0], [64, 40, 1], [72, 51, 1], [77, 45, 1]].forEach(([x, z, team], i) => {
+    const p = makeChar({ shirt: team ? '#c0392b' : '#2251FF', hairStyle: ['short', 'pony', 'spiky', 'bob', 'short', 'short'][i], pants: '#ffffff' });
+    p.position.set(x, 0, z); face(p, 61, 46); p.userData.baseState = 'idle'; p.userData.state = 'idle'; Z.npcs.push(p);
+    players.push({ p, team, hx: x, hz: z, cool: 0 });
+  });
+  const sb = ball(58, 0.22, 46, 0.22, '#ffffff', 'soccer'); sb.sim = true;   // driven here, not by the generic ball bobbing
+  const bs = { x: 58, z: 46, y: 0.22, vx: 0, vz: 0, vy: 0, last: null };
+  let lastT = null;
+  Z.anims.push((t) => {
+    const dt = lastT == null ? 0 : Math.min(0.05, t - lastT); lastT = t; if (!dt) return;
+    // ball: roll with friction, chip arcs fall under gravity, bounce off the pitch edges
+    bs.x += bs.vx * dt; bs.z += bs.vz * dt; const sp = Math.hypot(bs.vx, bs.vz), f = Math.max(0, 1 - 0.9 * dt);
+    bs.vx *= f; bs.vz *= f;
+    if (bs.y > 0.22 || bs.vy > 0) { bs.vy -= 9.8 * dt; bs.y += bs.vy * dt; if (bs.y < 0.22) { bs.y = 0.22; bs.vy = Math.abs(bs.vy) > 1.5 ? -bs.vy * 0.35 : 0; } }
+    if (bs.x < FIELD.x0 || bs.x > FIELD.x1) { bs.vx *= -0.6; bs.x = Math.min(FIELD.x1, Math.max(FIELD.x0, bs.x)); }
+    if (bs.z < FIELD.z0 || bs.z > FIELD.z1) { bs.vz *= -0.6; bs.z = Math.min(FIELD.z1, Math.max(FIELD.z0, bs.z)); }
+    sb.m.position.set(bs.x, bs.y, bs.z); sb.y = bs.y; if (sp > 0.05) { sb.m.rotation.z -= bs.vx * dt / 0.22; sb.m.rotation.x += bs.vz * dt / 0.22; }
+    // players: the one nearest the ball chases it; the rest hold a shape shifted toward the ball
+    let chaser = null, best = 1e9;
+    players.forEach(q => { const d = Math.hypot(q.p.position.x - bs.x, q.p.position.z - bs.z); if (d < best && q.cool <= 0) { best = d; chaser = q; } });
+    players.forEach(q => {
+      q.cool = Math.max(0, q.cool - dt);
+      const P = q.p.position, u = q.p.userData;
+      let tx, tz, speed;
+      if (q === chaser) { tx = bs.x; tz = bs.z; speed = 5.2; }
+      else { tx = q.hx + (bs.x - 61) * 0.45; tz = q.hz + (bs.z - 46) * 0.35; speed = 2.4; }
+      const dx = tx - P.x, dz = tz - P.z, d = Math.hypot(dx, dz);
+      if (d > 0.35) { const st = Math.min(d, speed * dt); P.x += dx / d * st; P.z += dz / d * st; q.p.rotation.y = Math.atan2(dx, dz); u.state = speed > 4 && d > 1 ? 'run' : 'walk'; }
+      else u.state = 'idle';
+      // kick: pass to a teammate ahead, or shoot when close to the opponent's goal
+      if (q === chaser && d < 0.6 && bs.y < 0.4) {
+        const goalX = q.team ? 37.6 : 84.4, mates = players.filter(o => o.team === q.team && o !== q), toGoal = Math.abs(goalX - P.x);
+        let ax, az, power;
+        if (toGoal < 16) { ax = goalX - P.x; az = 46 + (Math.random() - 0.5) * 5 - P.z; power = 13; }
+        else { const m = mates[(Math.random() * mates.length) | 0]; ax = m.p.position.x - P.x + (goalX - P.x) * 0.15; az = m.p.position.z - P.z; power = 7 + Math.random() * 3; }
+        const al = Math.hypot(ax, az) || 1; bs.vx = ax / al * power; bs.vz = az / al * power; if (Math.random() < 0.2) bs.vy = 4;   // an occasional chip
+        q.cool = 1.2; q.p.rotation.y = Math.atan2(ax, az); bs.last = q;
+      }
+    });
+    if (bs.x < 38.4 || bs.x > 83.6) { if (Math.abs(bs.z - 46) < 3.4) { bs.x = 61; bs.z = 46; bs.vx = bs.vz = 0; bs.y = 0.22; bs.vy = 0; } }   // a goal: back to the centre spot
+  });
   [[36, 60], [86, 60], [36, 32], [86, 32]].forEach(([x, z]) => lampPost(x - (x > 50 ? 0.6 : -0.6), z - (z > 40 ? 1.2 : -1.2), 5));
   bench(40, 32.8, 0); bench(50, 32.8, 0); bench(60, 32.8, 0);
   decal('足球场 · FOOTBALL', 61, 35.3, 4, 0.7, { sub: '校队训练 周二 / 周四 17:00', bg: 'rgba(30,70,40,.85)', accent: '#7aa83a' });
@@ -4618,6 +4726,8 @@ function ensureAudio() {
     musicBus = actx.createGain(); musicBus.gain.value = 0.0;
     const delay = actx.createDelay(1.0); delay.delayTime.value = 0.42; const fb = actx.createGain(); fb.gain.value = 0.35; const lp = actx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1800;
     musicBus.connect(lp); lp.connect(master); lp.connect(delay); delay.connect(fb); fb.connect(delay); delay.connect(master);
+    // v11.2: the track sequencer (assets/js/music.js + assets/data/music.json)
+    if (window.ProfMusic) fetch('assets/data/music.json').then(r => r.json()).then(d => { ProfMusic.init(actx, master, d); MUSIC.data = d; }).catch(() => { /* old pads only */ });
   } catch (e) { actx = null; }
 }
 function tone(f, dur = 0.15, type = 'sine', vol = 0.08, when = 0, bus) {
@@ -4643,8 +4753,26 @@ const SFX = {
 const CHORDS_DAY = [[261.6, 329.6, 392, 493.9], [220, 261.6, 329.6, 392], [174.6, 220, 261.6, 329.6], [196, 246.9, 293.7, 392]];
 const CHORDS_NIGHT = [[220, 261.6, 329.6, 415.3], [174.6, 220, 261.6, 349.2], [146.8, 174.6, 220, 293.7], [164.8, 207.7, 246.9, 329.6]];
 let musicStep = 0, musicTimer = 0;
+/* v11.2 music choice: 'auto' (by time of day; the rooftop café always plays the lounge track), a track id, or 'off'. */
+const MUSIC = { data: null, pick: (() => { try { return localStorage.getItem('prof-music') || 'auto'; } catch (e) { return 'auto'; } })() };
+musicOn = MUSIC.pick !== 'off';
+function musicWant() {
+  const A = MUSIC.data.auto;
+  if (Z && Z.id === 'roof') return A.cafe;
+  if (MUSIC.pick !== 'auto') return MUSIC.pick;
+  if (!S) return A.evening;
+  const t = S.t; if (t < hm(9, 30)) return A.morning; if (t >= hm(20, 30)) return A.night; if (t >= hm(17, 30)) return A.evening;
+  return A.day[Math.floor((t - hm(9, 30)) / 120) % A.day.length];   // a new daytime track every two in-game hours
+}
 function musicTick(dt) {
   if (!actx || !musicBus) return;
+  if (MUSIC.data && window.ProfMusic) {
+    musicBus.gain.value = 0;
+    if (!musicOn) { ProfMusic.setVolume(0); return; }
+    ProfMusic.setTrack(musicWant());
+    ProfMusic.setVolume(S && S.running ? (S.paused ? 0.25 : 0.6) : 0.45);
+    return;
+  }
   const want = musicOn ? (S && S.running ? (S.paused ? 0.12 : 0.32) : 0.22) : 0;
   musicBus.gain.value += (want - musicBus.gain.value) * Math.min(1, dt * 1.5);
   musicTimer -= dt; if (musicTimer > 0) return;
@@ -4783,7 +4911,42 @@ function settleEvent(ev) {
 }
 
 /* ---------------- activities ---------------- */
-const FOOD = () => S.t < hm(10, 30) ? ['包子和豆浆', '早餐'] : S.t < hm(15) ? ['食堂的红烧肉便当', '午饭'] : S.t < hm(20, 30) ? ['外卖的兰州拉面', '晚饭'] : ['办公室囤的泡面', '宵夜'];
+// The pantry and takeaway keep the old everyday food; the canteen serves the world kitchens.
+const FOOD_PANTRY = () => S.t < hm(10, 30) ? ['包子和豆浆', '早餐'] : S.t < hm(15) ? ['食堂打包的红烧肉便当', '午饭'] : S.t < hm(20, 30) ? ['外卖的兰州拉面', '晚饭'] : ['办公室囤的泡面', '宵夜'];
+const FOOD = () => S.t < hm(10, 30) ? [canteenBreakfast(), '早餐'] : S.t < hm(15) ? [canteenPick()[0], '午饭'] : S.t < hm(20, 30) ? [canteenPick()[0], '晚饭'] : ['办公室囤的泡面', '宵夜'];
+/* v11.2 world kitchens (assets/data/canteen.json): six of TasteAtlas's top-20 cuisines open each day, one signature dish each. */
+function canteenDay() { return S ? ((S.week || 1) - 1) * 7 + (S.day || 0) : 0; }
+function canteenToday() {
+  const D = CANTEEN.data; if (!D) return [];
+  const d = canteenDay(), n = D.cuisines.length, k = D.stallsPerDay || 6;
+  return Array.from({ length: k }, (_, i) => { const c = D.cuisines[(d * k + i) % n]; return { c, dish: c.dishes[(d + i) % c.dishes.length] }; });
+}
+function canteenBreakfast() { const B = CANTEEN.data && CANTEEN.data.breakfast; return B ? B[canteenDay() % B.length][0] : '包子和豆浆'; }
+function canteenPick() { const T = canteenToday(); if (!T.length) return ['食堂的红烧肉便当', null]; const p = T[(Math.random() * T.length) | 0]; return [`${p.c.zh}档 · ${p.dish[0]}`, p]; }
+function canteenSigns() {
+  const T = canteenToday(), key = canteenDay(); if (!T.length || CANTEEN.signDay === key) return; CANTEEN.signDay = key;
+  CANTEEN.stalls.forEach((sg, i) => {
+    const p = T[i], tx = sg.material.map, c = tx.userData.canvas, g = c.getContext('2d'), w = 400, h = 190;
+    g.fillStyle = '#14181d'; g.fillRect(0, 0, w, h);
+    p.c.flag.forEach((col, j) => { g.fillStyle = col; g.fillRect(j * w / 3, 0, w / 3 + 1, 14); });
+    g.fillStyle = '#ffd9a0'; g.font = `800 15px ${CN_FONT}`; g.fillText(`No.${p.c.rank} · ${p.c.en.toUpperCase()}`, 16, 40);
+    g.fillStyle = '#ffffff'; g.font = `900 40px ${CN_FONT}`; g.fillText(p.c.zh, 16, 88);
+    g.fillStyle = '#EAF4FB'; g.font = `700 20px ${CN_FONT}`; g.fillText(p.dish[0].length > 16 ? p.dish[0].slice(0, 16) + '…' : p.dish[0], 16, 126);
+    g.fillStyle = 'rgba(234,244,251,.6)'; g.font = `500 14px ${CN_FONT}`; g.fillText(p.dish[1].length > 40 ? p.dish[1].slice(0, 40) + '…' : p.dish[1], 16, 152);
+    g.fillStyle = '#c9a227'; g.font = `600 12px ${CN_FONT}`; g.fillText('今日主厨推荐 · CHEF\'S SIGNATURE', 16, 176);
+    tx.needsUpdate = true;
+  });
+}
+// At the counter: breakfast is quick; at lunch and dinner you choose a stall. A cuisine new to you this week lifts the mood a little more.
+function canteenMenu() {
+  const T = canteenToday();
+  if (S.t < hm(10, 30) || S.t >= hm(20, 30) || !T.length) return ACT.canteen(20);
+  canteenSigns();
+  const tried = S.cuisines || {}, ch = T.map(p => ({ t: `${p.c.zh} · ${p.dish[0]}`, d: `${p.c.en} · ${p.dish[1]}${tried[p.c.id] ? '' : ' · 本周第一次'}`, run: () => ACT.canteen(20, [`${p.c.zh}档 · ${p.dish[0]}`, p]) }));
+  ch.push({ t: '算了，不吃了', d: '' });
+  openDialog({ id: 'canteenMenu', loc: 'canteen', who: '食堂 · 世界美食档口', tag: '吃饭', title: `今天开张的 6 个档口（第 ${canteenDay() + 1} 天）`, synthetic: true, start: 'a',
+    status: [['排名来源', 'TasteAtlas 2025/26'], ['本周尝过', `${Object.keys(tried).length} / 20`]], nodes: { a: { say: [['', '六个档口今天换了菜。每个档口一道主厨招牌。']], choices: ch } } });
+}
 function startActivity(a) {
   S.path = []; S.autoTarget = null;
   if (a.deep) { S.flow = S.flowCarry && S.t - S.flowCarry.t <= 5 ? S.flowCarry.v : 0; S.flowCarry = null; }
@@ -4892,7 +5055,7 @@ const ACT = {
     onDone: () => { setEmote(player, null); pose('idle', 2.3, 8); S.wb = clamp(S.wb + 2); toast('睡醒了，精力回来了一些。'); logIt('在办公室沙发上睡了 25 分钟。'); }, onCancel: () => { setEmote(player, null); pose('idle', 2.3, 8); } }); },
   coffee: () => { const gain = [16, 12, 8, 5, 3][Math.min(4, S.coffees)]; pose('talk', 27.6, 23.9, 0);
     startActivity({ type: 'coffee', label: '冲一杯手冲咖啡', icon: '啡', min: 4, ff: 6, onDone: () => { S.coffees++; S.coffeesWeek++; applyFx({ energy: gain, bladder: 16 }); if (S.coffees >= 4) unlock('caffeine'); if (S.coffees === 4) toast('第四杯了，咖啡因的效果在递减。'); } }); },
-  eat: () => { const [food, meal] = FOOD(); pose('sit', PANTRY_SEAT[0], PANTRY_SEAT[1], Math.atan2(28.6 - PANTRY_SEAT[0], 19.6 - PANTRY_SEAT[1]), true); setExpr(player, 'happy');
+  eat: () => { const [food, meal] = FOOD_PANTRY(); pose('sit', PANTRY_SEAT[0], PANTRY_SEAT[1], Math.atan2(28.6 - PANTRY_SEAT[0], 19.6 - PANTRY_SEAT[1]), true); setExpr(player, 'happy');
     startActivity({ type: 'eat', label: food + ' · 还温的', icon: '饭', min: 16, ff: 8, perMin: (dm) => { S.v.full = clamp(S.v.full + 4.2 * dm); S.v.energy = clamp(S.v.energy + 0.35 * dm); },
       onDone: () => { S.meals++; S.mealsWeek++; logIt(`吃了${meal}：${food}。`); pose('idle', 30.2, 23.9); }, onCancel: () => pose('idle', 30.2, 23.9), cancelText: '先不吃了' }); },
   wc: () => { player.visible = false; startActivity({ type: 'wc', label: '洗手间', icon: '厕', min: 4, ff: 6, cancelable: false, perMin: (dm) => { S.v.bladder = clamp(S.v.bladder - 30 * dm); } }); },
@@ -4900,8 +5063,8 @@ const ACT = {
     onDone: () => { pose('idle', 6, 22.3); toast('下课了。拿出手机一看……'); logIt('上完 90 分钟的大学物理。'); gainXP(40); }, onCancel: () => { pose('idle', 6, 22.3); applyFx({ teaching: -8 }); logIt('提前下课，学生们一脸疑惑。'); } }); },
   meeting: (min) => { pose('sit', 14.75, 21.05, Math.PI / 2, true); startActivity({ type: 'meeting', label: '开会中', icon: '会', min, ff: 12, drain: 0.03, cancelText: '中途离场',
     onDone: () => pose('idle', 16, 18.4), onCancel: () => { pose('idle', 16, 18.4); applyFx({ rep: -4 }); logIt('会开到一半离场。'); } }); },
-  canteen: (min) => { const [food, meal] = FOOD(); pose('sit', 28, 2.1, 0, true); setExpr(player, 'happy'); startActivity({ type: 'eat', label: `食堂 · ${food}`, icon: '饭', min, ff: 8, perMin: (dm) => { S.v.full = clamp(S.v.full + 3.6 * dm); S.v.energy = clamp(S.v.energy + 0.4 * dm); },
-    onDone: () => { S.meals++; S.mealsWeek++; applyFx({ wellbeing: 3 }); logIt(`在食堂和同事们一起吃了${meal}：${food}。`); pose('idle', 28, 4.5); }, onCancel: () => pose('idle', 28, 4.5), cancelText: '先不吃了' }); },
+  canteen: (min, pick) => { const [food0, meal] = FOOD(), food = pick ? pick[0] : food0, cui = pick && pick[1] ? pick[1].c : null; pose('sit', 28, 3.7, 0, true); setExpr(player, 'happy'); startActivity({ type: 'eat', label: `食堂 · ${food}`, icon: '饭', min, ff: 8, perMin: (dm) => { S.v.full = clamp(S.v.full + 3.6 * dm); S.v.energy = clamp(S.v.energy + 0.4 * dm); },
+    onDone: () => { S.meals++; S.mealsWeek++; const first = cui && !(S.cuisines || {})[cui.id]; if (cui) (S.cuisines = S.cuisines || {})[cui.id] = 1; applyFx({ wellbeing: first ? 5 : 3 }); logIt(`在食堂和同事们一起吃了${meal}：${food}${first ? `（这周第一次吃${cui.zh}菜）` : ''}。`); pose('idle', 28, 2.6); }, onCancel: () => pose('idle', 28, 2.6), cancelText: '先不吃了' }); },
   read: (min) => { pose('read', 13, 18.3, 0, true); startActivity({ type: 'read', label: '在图书馆读论文', icon: '读', min, ff: 10, drain: -0.02, perMin: (dm) => { S.paper = S.paperSubmitted ? S.paper : clamp(S.paper + 0.12 * dm); },
     onDone: () => { applyFx({ research: 2, energy: 4 }); S.reads++; if (!S.submitted && S.day <= 4) { if (addStar('grant', 'idea', 1, true)) toast(`读到一篇好文章，基金书多了一个创新点：${STAR(S.dos.grant.idea)}`, 'good'); else toast('又读了一篇，创新点已经够清楚了；现在缺的是数据和写作。'); } if (S.reads >= 3) unlock('bookworm'); logIt('在图书馆安静地读了半小时论文，记下了两个基金书可以用的想法。'); pose('idle', 13, 17.6); }, onCancel: () => pose('idle', 13, 17.6) }); },
   tennis: (min) => sport('tennis', min, { x: 12, z: 13, lx: 26, lz: 13, label: '和化学系陈老师打网球', fx: { energy: 12, full: -10, bladder: 4, rep: 2, wellbeing: 5 }, partner: 'coach', log: '和化学系的陈老师打了一局网球，聊起了各自的基金。',
@@ -5522,7 +5685,7 @@ function bmScoreStatic(html) { $('bmScore').classList.remove('pills'); $('bmScor
 function amenityAt(x, z) {
   const near = (h, r = 1.25) => (HS[h].zone || 'f5') === Z.id && Math.hypot(HS[h].x - x, HS[h].z - z) < r;
   for (const p of Z.portals) if (Math.hypot(p.x - x, p.z - z) < 1.3) return p.kind === 'elevator' ? { label: '乘电梯', code: FLOOR_LABEL[Z.id] || Z.name, act: openElevator } : { label: p.label || '出门', code: '门', act: () => travel(p.to, p) };
-  if (near('canteen')) return { label: `食堂打饭：${FOOD()[0]}`, code: '1F', act: () => ACT.canteen(20) };
+  if (near('canteen')) return { label: S.t >= hm(10, 30) && S.t < hm(20, 30) && CANTEEN.data ? '食堂：今天 6 个世界美食档口 · 选一家' : `食堂打饭：${FOOD()[0]}`, code: '1F', act: () => canteenMenu() };
   if (near('libdesk', 1.6)) return { label: '读 30 分钟论文 · 论文进度 + 基金创新点', code: '3F', act: () => ACT.read(30) };
   if (near('tennis', 1.8)) return { label: `和陈老师打 30 分钟网球 · 声誉 + 身心${S.flags.ally_coach ? '' : ' · 也许能谈成合作'}`, code: '4F', act: () => ACT.tennis(30) };
   if (near('garden', 1.8)) return { label: `在植物园里走 20 分钟 · 身心 +9（现在 ${Math.round(S.wb)}）`, code: '6F', act: () => ACT.walk(20) };
@@ -5532,7 +5695,7 @@ function amenityAt(x, z) {
   if (near('desk')) return { label: `办公桌 · 专注写到 ${fmt(commitEnd())} · 基金 ${S.submitted ? '已交' : Math.floor(S.grant) + '%'} · 论文 ${S.paperSubmitted ? '已交' : Math.floor(S.paper) + '%'}`, code: '503', act: openDesk };
   if (near('sofa')) return { label: '在沙发上小睡 25 分钟', code: '503', act: ACT.nap };
   if (near('coffee')) return { label: `冲一杯咖啡（今天第 ${S.coffees + 1} 杯）`, code: '508', act: ACT.coffee };
-  if (near('food')) return { label: '吃' + FOOD()[0], code: '508', act: ACT.eat };
+  if (near('food')) return { label: '吃' + FOOD_PANTRY()[0], code: '508', act: ACT.eat };
   if (near('wc', 1.6)) return { label: '上厕所', code: 'WC', act: ACT.wc };
   return null;
 }
@@ -6073,6 +6236,25 @@ function navMinutes(to) {
   let m = 0; for (let i = 1; i < hops.length; i++) m += travelMinutes(hops[i - 1], hops[i]);
   return Math.round(m);
 }
+/* v11.2: folding HUD boxes */
+const FOLD_KEY = 'prof-fold-v1', FOLDABLE = { pCard: '你 · 值班教授', kpiCard: '今日表现', clockPill: '时间', quests: '待处理', mapCard: '小地图' };
+let FOLD = {}; try { FOLD = JSON.parse(localStorage.getItem(FOLD_KEY) || '{}'); } catch (e) { FOLD = {}; }
+function foldSet(id, on) {
+  const el = $(id); if (!el) return; FOLD[id] = !!on; el.classList.toggle('folded', !!on);
+  const b = el.querySelector(':scope > .foldBtn'); if (b) { b.textContent = on ? '+' : '–'; b.title = (on ? '展开 · ' : '收起 · ') + FOLDABLE[id] + '（H：全部）'; }
+  try { localStorage.setItem(FOLD_KEY, JSON.stringify(FOLD)); } catch (e) { /* storage blocked */ }
+  placeLeftCol(); placeNavChip();
+}
+Object.keys(FOLDABLE).forEach(id => { const el = $(id); if (!el) return; const b = document.createElement('button'); b.type = 'button'; b.className = 'foldBtn';
+  b.onclick = (e) => { e.stopPropagation(); foldSet(id, !FOLD[id]); }; el.appendChild(b); foldSet(id, !!FOLD[id]); });
+function foldAll() { const any = Object.keys(FOLDABLE).some(id => !FOLD[id]); Object.keys(FOLDABLE).forEach(id => foldSet(id, any)); toast(any ? '信息框已全部收起（H 展开）' : '信息框已全部展开'); }
+// The performance box sits 10 px under the player card, whatever height the card has (folded or not).
+function placeLeftCol() {
+  const a = $('pCard'), k = $('kpiCard'); if (!a || !k) return;
+  if (innerWidth <= 900) { k.style.top = ''; return; }
+  const r = a.getBoundingClientRect(); if (r.height) k.style.top = Math.round(r.bottom + 10) + 'px';
+}
+addEventListener('resize', placeLeftCol);
 let navSig = '';
 // Desktop: the chip sits 8 px under the clock panel (the panel grows with the day-block bar, so a fixed top overlapped it).
 function placeNavChip() {
@@ -6086,7 +6268,7 @@ function placeNavChip() {
 addEventListener('resize', placeNavChip);
 function renderNavChip() {
   if (!Z) return;
-  placeNavChip();
+  placeNavChip(); placeLeftCol();
   const cur = player ? roomAt(player.position.x, player.position.z) : '';
   const room = cur && Z.rooms[cur] ? Z.rooms[cur].name : (Z.outdoor ? '' : (Z.name.split(' · ')[1] || '走廊'));
   const by = navEvents(), off = Object.entries(by).filter(([z]) => z !== Z.id).reduce((a, [, o]) => a + o.n, 0);
@@ -6637,6 +6819,7 @@ function showPlanner(d) {
   show('scrPlan'); setTimeout(tutTick, 400);
 }
 function beginDay(d, intent) {
+  CANTEEN.signDay = null;   // v11.2: the stalls change their line-up every day
   SFX.click(); tutHide(); S.planning = false; S.intent = intent; S.intents.push(intent); if (intent === 'self') S.v.energy = clamp(S.v.energy + 8);
   logIt(`今天的打算：${INTENTS.find(x => x.id === intent).n}。`);
   if (S.fin && S.fin.commute === 'metro') {
@@ -6694,6 +6877,7 @@ addEventListener('keydown', (e) => {
   if (e.code === 'KeyE' || e.code === 'Space') interact();
   if (e.code === 'KeyM') toggleOverview();
   if (e.code === 'KeyN') toggleNav(true);
+  if (e.code === 'KeyH') foldAll();   // v11.2: fold / unfold every HUD box
   if (e.code === 'KeyO') toggleSave(true);
   if (e.code === 'KeyF') cycleSpeed();
   if (e.code === 'KeyQ') rotateView(-1);
@@ -6709,7 +6893,19 @@ $('bMap').onclick = () => toggleOverview();
 $('bRotL').onclick = () => rotateView(-1);
 $('bRotR').onclick = () => rotateView(1);
 $('bSpeed').onclick = () => cycleSpeed();
-$('bMusic').onclick = () => { ensureAudio(); musicOn = !musicOn; $('bMusic').classList.toggle('on', musicOn); };
+// v11.2: the music button opens a track list (auto, each track, off); the choice is remembered
+$('bMusic').onclick = (e) => {
+  e.stopPropagation(); ensureAudio(); if (actx && actx.state === 'suspended') actx.resume();
+  let m = $('musicMenu'); if (m) { m.remove(); return; }
+  m = document.createElement('div'); m.id = 'musicMenu'; m.className = 'panel';
+  const tracks = MUSIC.data ? MUSIC.data.tracks : [];
+  const row = (id, label, sub) => `<button type="button" data-m="${id}" class="${MUSIC.pick === id ? 'on' : ''}"><b>${label}</b>${sub ? `<span>${sub}</span>` : ''}</button>`;
+  m.innerHTML = '<div class="eyebrow">Music · 音乐</div>' + row('auto', '自动', '按时间换曲；天台咖啡馆放爵士') + tracks.map(t => row(t.id, t.zh, `${t.en} · ${t.bpm} BPM`)).join('') + row('off', '关闭', '');
+  m.querySelectorAll('[data-m]').forEach(b => { b.onclick = (ev) => { ev.stopPropagation(); MUSIC.pick = b.dataset.m; musicOn = MUSIC.pick !== 'off'; try { localStorage.setItem('prof-music', MUSIC.pick); } catch (er) { /* storage blocked */ } $('bMusic').classList.toggle('on', musicOn); m.remove(); toast(musicOn ? `音乐：${b.querySelector('b').textContent}` : '音乐已关闭'); }; });
+  $('rightCol').appendChild(m);
+  setTimeout(() => addEventListener('click', function off() { const mm = $('musicMenu'); if (mm) mm.remove(); removeEventListener('click', off); }), 0);
+};
+$('bMusic').classList.toggle('on', musicOn);
 $('bSound').onclick = () => { soundOn = !soundOn; $('bSound').classList.toggle('on', soundOn); };
 const QNAME = { high: '高', mid: '中', low: '低' };
 $('qualLbl').textContent = '画质 ' + QNAME[QUALITY];
@@ -6776,7 +6972,7 @@ initAI();
   refreshProCard();
 })();
 
-function onZoneChange(z) { setEnvFor(z); loadVisibleModels(); cityGroup.visible = !z.outdoor; scene.fog.near = z.outdoor ? 160 : 90; scene.fog.far = z.outdoor ? 420 : 330; }
+function onZoneChange(z) { setEnvFor(z); if (z.id === 'f1') canteenSigns(); loadVisibleModels(); cityGroup.visible = !z.outdoor; scene.fog.near = z.outdoor ? 160 : 90; scene.fog.far = z.outdoor ? 420 : 330; }
 onZoneChange(Z);
 /* =========================================================
    MAIN LOOP
@@ -6855,7 +7051,7 @@ function frame(now) {
   if (Z.id === 'f5') Object.values(NPC).forEach(p => { if (p.visible && p.parent === F5.group) animChar(p, tsec, dt); });
   else Z.npcs.forEach(p => animChar(p, tsec, dt));
   if (BM.m) bmFrame(dt);
-  Z.balls.forEach(b => { if (!b.active) { b.m.position.y += (b.y - b.m.position.y) * 0.1; return; } b.t += dt; const u = (Math.sin(b.t * 1.4) + 1) / 2, h = Math.sin(((b.t * 1.4) % Math.PI)) ; b.m.position.set(b.from[0] + (b.to[0] - b.from[0]) * u, 0.3 + Math.abs(Math.sin(b.t * 1.4)) * (b.kind === 'soccer' ? 0.9 : 1.6), b.from[1] + (b.to[1] - b.from[1]) * u); });
+  Z.balls.forEach(b => { if (b.sim) return; if (!b.active) { b.m.position.y += (b.y - b.m.position.y) * 0.1; return; } b.t += dt; const u = (Math.sin(b.t * 1.4) + 1) / 2, h = Math.sin(((b.t * 1.4) % Math.PI)) ; b.m.position.set(b.from[0] + (b.to[0] - b.from[0]) * u, 0.3 + Math.abs(Math.sin(b.t * 1.4)) * (b.kind === 'soccer' ? 0.9 : 1.6), b.from[1] + (b.to[1] - b.from[1]) * u); });
   Z.anims.forEach(f => f(tsec));
   if (S && S.activity && S.activity.perFrame) S.activity.perFrame(tsec);
   const tt = S ? S.t : hm(17, 50);

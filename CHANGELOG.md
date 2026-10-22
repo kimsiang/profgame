@@ -1,5 +1,14 @@
 # Changelog
 
+## v11.2 — Garden, café, football, world kitchens, folding HUD, new music (2026-10-23)
+- **Botanical garden (6F): four climate zones**, one per corner, each signed: tropical rainforest (banana plants, monstera, tree ferns, bromeliads, orchids, a little mist), desert (saguaro, barrel cacti with yellow crowns, prickly pear with fruit, agave, rocks on rippled sand), temperate forest (oak, an autumn maple, a birch, ferns, foxgloves, moss, a fallen log with mushrooms) and alpine (granite boulders, dwarf pines, cushion plants, edelweiss, gentians, old snow) round the pond. `assets/js/garden.js`.
+- **Rooftop café**: slatted oak cladding, pendant lamps, a chalkboard of the day's pour-overs, a lounge corner (sofas, rug, low table, lanterns) under a pergola with hanging plants, potted olives, and an art wall of three abstract canvases. The café always plays a relaxed jazz track.
+- **Football pitch**: no more floating. The ball rolls along the ground with friction and is only chipped now and then; two teams of three run (not drift): the nearest player chases the ball and passes or shoots, the others keep their shape. A goal resets to the centre spot.
+- **Canteen: world kitchens.** Six stalls along the back wall, from TasteAtlas's 2025/26 top-20 cuisines (Italy, Greece, Peru, Portugal, Spain, Japan, Türkiye, China, France, Indonesia, Mexico, Serbia, India, Poland, USA, Vietnam, Brazil, Croatia, South Korea, Lebanon). A different line-up and a different chef's signature every day; signs show rank, cuisine and today's dish. At lunch and dinner you choose a stall; a cuisine new to you this week gives a little more wellbeing. Breakfast rotates too. The 5F pantry keeps its everyday food. `assets/data/canteen.json`.
+- **Folding HUD**: every box (你 · 值班教授, 今日表现, the clock, 待处理, the minimap) has a – / + button and folds to its header; H folds or unfolds all. Remembered in this browser; the performance box moves up under a folded player card.
+- **Music**: a new sequencer with seven tracks, picked from the ♫ button: 清晨实验室 (102 BPM), 基金冲刺 (126), 缪子快跑 (142), 校园放克 (112), 槟城海风 (98), 天台咖啡 · 爵士 (84, swing), 安静夜晚 (70). "自动" changes track with the time of day (a new daytime track every two in-game hours). `assets/js/music.js`, `assets/data/music.json`.
+- Tests: `tools/e2e/v112_shots.mjs` (garden, café, football, canteen, menu, folded HUD), `tools/e2e/music_render.mjs` (renders every track offline and reports levels).
+
 ## v11.1.1 — Fix (2026-10-23)
 - Notices no longer cover the navigator chip on desktop: they now sit 8 px below it (or below the clock panel when the chip is hidden), wherever the panel has grown to. Test: `tools/e2e/toast_nav.mjs`.
 
