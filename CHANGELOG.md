@@ -1,5 +1,11 @@
 # Changelog
 
+## v10.1-step7 — Badminton in the career (2026-10-22)
+- **At court 2 you choose**: play a game to 7, let it play out (a win chance from your current energy, shown in the choice), or not play. The choice shows your energy and what it does to the timing window ("精力充沛 · 判定宽" … "很累 · 判定窄").
+- **Friday's 物理 vs 化学 is now a real match**: the deciding singles against 小吴. Winning: team +3, reputation +3, wellbeing +2 and a log line; losing: reputation +1. Leaving mid-match counts as a loss. (Before, the result was written in: "你们 21:18 赢了第一局".)
+- **Opponents remember**: a win/loss record per opponent this run (saved), shown in the choice, and a rematch line ("阿强：上次输给您之后，我回去练了一周反手。").
+- **One-screen how-to** before your first match or drill (once per browser), reopened any time with the "?" button or the ? key. The match is frozen while it is open.
+
 ## v10.1-step6 — Opponents with a game plan (2026-10-22)
 - Opponents now play patterns, set per opponent in `assets/data/badminton.json` (`tactics`): 拉吊四角 (move you front–back, away from where you stand), 压反手后场 (clears and lifts to your rear backhand), 杀后上网 (follow the smash in and kill the reply), 假动作变线 (a disguised shot: you start 0.15 s late, and the line changes to the side you are on).
 - 小吴 plays 拉吊四角, your backhand and smash-and-follow. 阿强 only moves you around now and then.

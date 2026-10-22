@@ -401,18 +401,18 @@
     "title_zh": "一只手就能打",
     "title_en": "One hand is enough",
     "lines_zh": [
-      "跑位是自动的，你只管出手。",
-      "上滑：高远球 · 下滑：吊球 / 放网 · 左右滑：平抽",
-      "球在头顶时点一下：杀球",
-      "脚下的圈收紧变绿时松手，就是完美时机。",
-      "电脑：W/S/A/D 和空格；体力越低，判定越窄。"
+      "跑位是自动的，你只管出手。脚下的外圈收紧到内圈、变绿时松手，就是最佳时机。",
+      "上滑：高远球 · 下滑：吊球 / 放网 · 左右滑：平抽 · 球在头顶时点一下：杀球。",
+      "斜着滑选角：左上 / 右上打两个后场角，左下 / 右下打两个前场角。",
+      "后场球：先按住再滑是马来步（转身用正手，要时间够）；双击再滑是中国跳（不转身，抢点更早，费体力）。",
+      "电脑：W/S/A/D、Q/E/Z/C、空格；K = 马来步，L = 中国跳；? 随时看这一页。体力越低，判定越窄。"
     ],
     "lines_en": [
-      "Movement is automatic: you only swing.",
-      "Swipe up: clear · down: drop / net shot · left/right: drive",
-      "Tap when it's overhead: smash",
-      "Release as the ring at your feet closes and turns green.",
-      "Keyboard: W/S/A/D and Space. The more tired you are, the tighter the timing."
+      "Movement is automatic: you only swing. Release as the outer ring closes on the inner one and turns green.",
+      "Swipe up: clear · down: drop / net shot · left/right: drive · tap when it's overhead: smash.",
+      "Swipe diagonally to pick a corner: up-left / up-right for the rear corners, down-left / down-right for the front.",
+      "Rear-court balls: hold, then swipe for the Malaysian step (turn, forehand, needs time); double-tap, then swipe for the China jump (no turn, earlier, costs energy).",
+      "Keyboard: W/S/A/D, Q/E/Z/C, Space; K = Malaysian step, L = China jump; ? shows this page. The more tired you are, the tighter the timing."
     ]
   },
   "fakeDelay": 0.15
