@@ -5818,13 +5818,33 @@ const clock = { last: performance.now(), hud: 0, led: 0, muon: 0, dust: 0, steam
 const CC = (h) => new THREE.Color(h);
 const SKY = { dayTop: CC('#2a6fa8'), dayMid: CC('#a9d3ee'), dayBot: CC('#16405f'), duskTop: CC('#253a6b'), duskMid: CC('#f0a26a'), duskBot: CC('#1a1f3a'), nightTop: CC('#040c1a'), nightMid: CC('#0d2340'), nightBot: CC('#02060c') };
 const tmp1 = new THREE.Color(), tmp2 = new THREE.Color(), tmp3 = new THREE.Color();
+/* Stable sun shadows (v9.0.3). Shadow edges on the floor shimmered (floor flipping white/grey) for two reasons:
+   1) the sun's direction was recomputed from the clock every frame, so every shadow edge crept a fraction of a texel;
+   2) the shadow camera followed the player continuously, so the shadow-map grid slid under the floor.
+   Fix: the sun direction moves in 20-minute steps, and the light is moved only in whole shadow-map texels. */
+const SUN_STEP = 20;   // in-game minutes between sun-direction updates
+const sunLX = new THREE.Vector3(), sunLY = new THREE.Vector3(), sunLZ = new THREE.Vector3(), sunOff = new THREE.Vector3(), sunT = new THREE.Vector3();
+function placeSun(t, f, sc) {
+  const tq = Math.round(t / SUN_STEP) * SUN_STEP;
+  const fq = tq < hm(16, 30) ? 1 : tq < hm(19, 30) ? 1 - (tq - hm(16, 30)) / 180 : 0;
+  const sunAz = 0.4 + (tq - 480) / 960 * 2.2;
+  sunOff.set(Math.cos(sunAz) * 30, 14 + 30 * fq, -18 + Math.sin(sunAz) * 8);
+  // Light-space axes, matching the shadow camera's lookAt (camera at target + sunOff, looking at target, world up).
+  sunLZ.copy(sunOff).normalize();
+  sunLX.set(0, 1, 0).cross(sunLZ).normalize();
+  sunLY.copy(sunLZ).cross(sunLX);
+  const ms = sun.shadow.mapSize, tx = (2 * sc) / ms.x, ty = (1.7 * sc) / ms.y;   // world size of one shadow texel
+  sunT.copy(camState.target);
+  const px = sunT.dot(sunLX), py = sunT.dot(sunLY);
+  sunT.addScaledVector(sunLX, Math.round(px / tx) * tx - px).addScaledVector(sunLY, Math.round(py / ty) * ty - py);
+  sun.target.position.copy(sunT);
+  sun.position.copy(sunT).add(sunOff);
+}
 function lighting(t, now) {
   const f = t < hm(16, 30) ? 1 : t < hm(19, 30) ? 1 - (t - hm(16, 30)) / 180 : 0;
   const dusk = Math.max(0, 1 - Math.abs(t - hm(18)) / 70);
-  const sunAz = 0.4 + (t - 480) / 960 * 2.2;
-  sun.position.set(camState.target.x + Math.cos(sunAz) * 30, 14 + 30 * f, camState.target.z - 18 + Math.sin(sunAz) * 8);
-  sun.target.position.copy(camState.target);
   const sc = (camState.overview || !S || !S.running) ? Math.max(26, Z.W * 0.62) : (Z.outdoor ? 22 : 15); if (sun.shadow.camera.right !== sc) { Object.assign(sun.shadow.camera, { left: -sc, right: sc, top: sc * 0.85, bottom: -sc * 0.85 }); sun.shadow.camera.updateProjectionMatrix(); }
+  placeSun(t, f, sc);
   sun.intensity = 0.1 + 1.1 * f;
   sun.color.setRGB(1, 0.92 - dusk * 0.25, 0.82 - dusk * 0.4);
   hemi.intensity = 0.07 + 0.33 * f; amb.intensity = 0.06 + (1 - f) * 0.05;

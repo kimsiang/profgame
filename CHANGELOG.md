@@ -1,5 +1,8 @@
 # Changelog
 
+## v9.0.3 — Fix (2026-10-22)
+- Floor no longer flickers between white and grey while you walk or as the clock runs. The real cause was the sun's shadow, not the floor: the shadow map followed the player continuously and the sun angle changed every in-game minute, so wall shadows crawled across the floor. The sun now moves in 20-minute steps and the shadow map shifts only in whole texels.
+
 ## v9.0.2 — Fix (2026-10-22)
 - Floor tiles no longer flicker on 中/高 quality. Post-processing rendered into buffers with 16-bit depth (three r128's default), too coarse at our camera distance to separate floor layers laid 4–7 mm above the base floor. The buffers now request 24-bit depth, and raised floor layers use a polygon offset so they always draw on top.
 - Desktop: the Performance card moved down so it no longer hides the ¥ line under the vitals.
