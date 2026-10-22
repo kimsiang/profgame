@@ -1184,10 +1184,12 @@ function plane(w, h, material, x, y, z, o = {}) {
   m.receiveShadow = !!o.receive; m.castShadow = false; (o.parent || Z.group).add(m); return m;
 }
 function floorPlane(x0, z0, x1, z1, material, y = 0) {
-  const m = new THREE.Mesh(new THREE.PlaneGeometry(x1 - x0, z1 - z0), material);
+  const geo = new THREE.PlaneGeometry(x1 - x0, z1 - z0), P = material.userData && material.userData.pbr;
+  if (P) { const uv = geo.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, (x0 + uv.getX(i) * (x1 - x0)) / P.tile, (z0 + uv.getY(i) * (z1 - z0)) / P.tile); }   // v11: world-metre UVs, so floors line up across rooms
+  const m = new THREE.Mesh(geo, material);
   m.rotation.x = -Math.PI / 2; m.position.set((x0 + x1) / 2, y, (z0 + z1) / 2); m.receiveShadow = true; Z.group.add(m);
   // A layer laid on top of a base floor (y > 0) always wins the depth test, whatever the depth-buffer precision.
-  if (y > 0) { const mt = m.material = material.clone(); mt.polygonOffset = true; mt.polygonOffsetFactor = -1; mt.polygonOffsetUnits = -Math.round(y * 1000); }
+  if (y > 0) { const mt = m.material = material.clone(); mt.polygonOffset = true; mt.polygonOffsetFactor = -1; mt.polygonOffsetUnits = -Math.round(y * 1000); if (P) pbrApply(mt); }
   return m;
 }
 function tiled(draw, rx, ry, srgb = true) { const t = canvasTex(256, 256, draw, srgb); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, ry); return t; }
@@ -1199,14 +1201,39 @@ const T = {
   labGrid: (rx, ry) => tiled((g, w, h) => { g.fillStyle = '#000'; g.fillRect(0, 0, w, h); g.strokeStyle = '#2aa8ff'; g.lineWidth = 2; g.strokeRect(1, 1, w - 2, h - 2); g.strokeStyle = 'rgba(42,168,255,.35)'; g.beginPath(); g.moveTo(128, 0); g.lineTo(128, h); g.moveTo(0, 128); g.lineTo(w, 128); g.stroke(); }, rx, ry, false),
 };
 
+/* ---------- v11.0: real materials (Poly Haven, CC0) ----------
+   Files: assets/textures/<id>_diff_1k.jpg (colour), _nor_gl_1k.jpg (normal), _arm_1k.jpg (AO / roughness / metal).
+   pbr(id, o) returns a material at once, showing o.fallback (a colour or procedural map) until the files arrive;
+   a missing file just keeps the fallback. Textures are shared: floorPlane() scales the plane's UVs to world metres
+   (o.tile = metres per texture repeat; Poly Haven surfaces are about 2 m), so one texture serves every floor. */
+const PBR_DIR = 'assets/textures/', PBR_TEX = {}, PBR_MATS = [];
+function pbrTex(id, m, srgb) {
+  const k = id + '_' + m;
+  if (!PBR_TEX[k]) PBR_TEX[k] = new Promise(ok => new THREE.TextureLoader().load(`${PBR_DIR}${id}_${m}_1k.jpg`,
+    t => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = MAX_ANISO; if (srgb) t.encoding = THREE.sRGBEncoding; ok(t); }, undefined, () => ok(null)));
+  return PBR_TEX[k];
+}
+function pbrApply(m) {
+  const P = m.userData.pbr;
+  pbrTex(P.id, 'diff', true).then(t => { if (t) { m.map = t; m.color.set(P.tint || '#ffffff'); m.needsUpdate = true; } });
+  pbrTex(P.id, 'nor_gl', false).then(t => { if (t) { m.normalMap = t; m.normalScale.set(P.ns || 1, P.ns || 1); m.needsUpdate = true; } });
+  pbrTex(P.id, 'arm', false).then(t => { if (t) { m.roughnessMap = t; m.roughness = P.roughK || 1; if (P.metal) { m.metalnessMap = t; m.metalness = 1; } m.needsUpdate = true; } });
+}
+function pbr(id, o = {}) {
+  const fb = o.fallback;
+  const m = new THREE.MeshStandardMaterial({ color: typeof fb === 'string' ? fb : '#ffffff', map: fb && fb.isTexture ? fb : null, roughness: o.rough ?? 0.6, metalness: 0, envMapIntensity: o.env ?? 0.45 });
+  m.userData.pbr = { id, tint: o.tint, ns: o.ns, roughK: o.roughK, metal: !!o.metal, tile: o.tile || 2 };
+  PBR_MATS.push(m); pbrApply(m); return m;
+}
+
 /* =========================================================
    ARCHITECTURE
    ========================================================= */
-function slab(w, d, cx, cz, color = '#1b2c3d') {
+function slab(w, d, cx, cz, color = '#7a7b7c') {   // v11.0: a concrete floor slab in section (was dark navy)
   // The slab's top sits 3 cm below the floor (y = 0). It used to be exactly at y = 0, coplanar with every
   // floor plane, so the GPU picked slab or tile at random per pixel per frame: the white/grey floor flicker.
   box(w + 1.2, 1.2, d + 1.2, mat(color, { roughness: 0.9 }), cx, -1.23, cz, { cast: false });
-  const e = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(w + 1.2, 0.02, d + 1.2)), new THREE.LineBasicMaterial({ color: new THREE.Color('#00A9F4').multiplyScalar(2.5), toneMapped: false }));
+  const e = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(w + 1.2, 0.02, d + 1.2)), new THREE.LineBasicMaterial({ color: '#4a4c4f' }));
   e.position.set(cx, -0.04, cz); Z.group.add(e);
 }
 /* ---------- v7.3: prop kit (assets/props/kit.glb, built by tools/blender/build_props.py) ----------
@@ -1290,17 +1317,28 @@ if (THREE.GLTFLoader) new THREE.GLTFLoader().load('assets/props/kit.glb', (g) =>
 const F5 = beginZone('f5', { name: '5F · 缪子物理组', floor: 5, spawn: { x: 38, z: 18.6 }, portals: [{ kind: 'elevator', x: 38.2, z: 18.6 }] });
 slab(40, 26, 20, 13);
 
-floorPlane(0, 11, 40, 15, mat('#ffffff', { map: T.concrete(10, 1), roughness: 0.32, envMapIntensity: 0.9 }));
-floorPlane(0, 0, 8, 11, mat('#ffffff', { map: T.wood(3, 4), roughness: 0.48 }));
-floorPlane(8, 0, 20, 11, mat('#ffffff', { map: T.carpet(5, 4), roughness: 0.95, envMapIntensity: 0.25 }));
-floorPlane(20, 0, 32, 11, mat('#16283a', { roughness: 0.28, metalness: 0.15, emissive: '#ffffff', emissiveMap: T.labGrid(6, 5.5), emissiveIntensity: 0.32, envMapIntensity: 1 }));
-floorPlane(32, 0, 40, 11, mat('#ffffff', { map: T.tile(8, 11, '#2a3746', '#1b2531'), roughness: 0.4, metalness: 0.3 }));
-floorPlane(0, 15, 12, 26, mat('#ffffff', { map: T.wood(5, 5), roughness: 0.5 }));
-floorPlane(12, 15, 20, 26, mat('#ffffff', { map: T.carpet(4, 5, '#5b4a6e', '#524265'), roughness: 0.95, envMapIntensity: 0.25 }));
-floorPlane(20, 15, 26, 26, mat('#ffffff', { map: T.carpet(3, 5, '#4d6578', '#455c6e'), roughness: 0.95, envMapIntensity: 0.25 }));
-floorPlane(26, 15, 32, 26, mat('#ffffff', { map: T.tile(5, 9, '#e7e2d8', '#cfc6b7'), roughness: 0.35 }));
-floorPlane(32, 15, 36, 26, mat('#ffffff', { map: T.tile(4, 11, '#cfe0ea', '#a9c0cf'), roughness: 0.3 }));
-floorPlane(36, 15, 40, 26, mat('#ffffff', { map: T.concrete(2, 5), roughness: 0.3, envMapIntensity: 0.9 }));
+// v11.0: real floors (Poly Haven). Fallbacks are the old procedural maps until a file arrives.
+const F5_FLOOR = {
+  corridor: pbr('interior_tiles', { tile: 1.6, tint: '#ece9e4', fallback: T.concrete(10, 1) }),
+  office:   pbr('laminate_floor_02', { tile: 2, fallback: T.wood(3, 4) }),
+  carpet:   pbr('dirty_carpet', { tile: 2, rough: 0.95, env: 0.15, fallback: T.carpet(5, 4) }),
+  lab:      pbr('concrete_floor_painted', { tile: 3, rough: 0.45, fallback: '#8e979d' }),
+  server:   pbr('concrete_floor_painted', { tile: 3, tint: '#c9ced2', rough: 0.45, fallback: '#6f777d' }),
+  pantry:   pbr('interior_tiles', { tile: 1.4, fallback: T.tile(5, 9, '#e7e2d8', '#cfc6b7') }),
+  wc:       pbr('grey_cartago_01', { tile: 2, fallback: T.tile(4, 11, '#cfd6db', '#aab4bb') }),
+  lobby:    pbr('terrazzo_tiles', { tile: 2.5, tint: '#e9e2d9', fallback: T.concrete(2, 5) }),
+};
+floorPlane(0, 11, 40, 15, F5_FLOOR.corridor);
+floorPlane(0, 0, 8, 11, F5_FLOOR.office);
+floorPlane(8, 0, 20, 11, F5_FLOOR.carpet);
+floorPlane(20, 0, 32, 11, F5_FLOOR.lab);
+floorPlane(32, 0, 40, 11, F5_FLOOR.server);
+floorPlane(0, 15, 12, 26, F5_FLOOR.office);
+floorPlane(12, 15, 20, 26, F5_FLOOR.carpet);
+floorPlane(20, 15, 26, 26, F5_FLOOR.carpet);
+floorPlane(26, 15, 32, 26, F5_FLOOR.pantry);
+floorPlane(32, 15, 36, 26, F5_FLOOR.wc);
+floorPlane(36, 15, 40, 26, F5_FLOOR.lobby);
 
 /* walls */
 const WALLS = [];
@@ -1313,10 +1351,11 @@ wh(15, 0, 40, [[4.5, 7.5], [15, 17], [22, 24], [28, 30], [33, 35], [36.2, 39.8]]
 wv(8, 0, 11); wv(20, 0, 11); wv(32, 0, 11, [], 'glass');
 wv(12, 15, 26); wv(20, 15, 26); wv(26, 15, 26); wv(32, 15, 26); wv(36, 15, 26);
 const WALL_H = 1.35;
-const wallUpper = mat('#dfe5eb', { roughness: 0.9, envMapIntensity: 0.3 }), wallLower = mat('#9fb2c4', { roughness: 0.8, envMapIntensity: 0.3 }), baseB = mat('#22344a', { roughness: 0.5 }), capM = mat('#2b3d52', { roughness: 0.4, metalness: 0.4 });
-const trimGlow = glow('#00A9F4', 2.4);
-const glassM = new THREE.MeshStandardMaterial({ color: '#a6e2ff', roughness: 0.04, metalness: 0.2, transparent: true, opacity: 0.16, envMapIntensity: 1.6, depthWrite: false });
-const frameM = mat('#33475d', { roughness: 0.35, metalness: 0.6 });
+// v11.0: painted plaster walls, a grey wainscot and skirting, an aluminium cap. The neon trim is gone.
+const wallUpper = mat('#efece6', { roughness: 0.92, envMapIntensity: 0.2 }), wallLower = mat('#d9d4cb', { roughness: 0.85, envMapIntensity: 0.2 }), baseB = mat('#5d6166', { roughness: 0.6 }), capM = mat('#b9bec3', { roughness: 0.35, metalness: 0.75 });
+const trimGlow = mat('#c8cdd2', { roughness: 0.3, metalness: 0.85 });   // was glowing cyan; kept as a name so other zones pick up the metal trim too
+const glassM = new THREE.MeshStandardMaterial({ color: '#d6ebf2', roughness: 0.03, metalness: 0.1, transparent: true, opacity: 0.14, envMapIntensity: 1.4, depthWrite: false });   // v11.0: clear glass, less cyan
+const frameM = mat('#4a4f55', { roughness: 0.4, metalness: 0.65 });   // v11.0: anodised aluminium window and door frames
 function seg(cx, cz, horiz, len, y, h, t, m, cast = true) {
   const g = new THREE.Mesh(new THREE.BoxGeometry(horiz ? len : t, h, horiz ? t : len), m);
   g.position.set(cx, y + h / 2, cz); g.castShadow = cast; g.receiveShadow = true; Z.group.add(g); return g;
@@ -1347,7 +1386,7 @@ for (const [x0, z0, x1, z1, kind] of WALLS) {
 }
 /* door frames with glowing thresholds */
 const DOORS = [[5, 7, 11, 'h'], [13, 16, 11, 'h'], [25, 27, 11, 'h'], [35, 37, 11, 'h'], [4.5, 7.5, 15, 'h'], [15, 17, 15, 'h'], [22, 24, 15, 'h'], [28, 30, 15, 'h'], [33, 35, 15, 'h']];
-const thresholdM = glow('#00A9F4', 1.6, 0.9);
+const thresholdM = mat('#a9aeb3', { roughness: 0.3, metalness: 0.9 });   // v11.0: stainless door thresholds instead of glowing strips
 DOORS.forEach(([a, b, z]) => {
   [a, b].forEach(x => box(0.14, WALL_H + 0.12, 0.3, frameM, x, 0, z));
   plane(b - a, 0.08, thresholdM, (a + b) / 2, 0.012, z, { rx: -Math.PI / 2 });
@@ -1362,7 +1401,7 @@ function decal(text, x, z, w = 3.2, h = 0.7, o = {}) {
   const to = o.to || null, tipR = to === 'e', tipL = to === 'w';
   const tex = canvasTex(512, Math.round(512 * h / w), (g, cw, ch) => {
     const t = ch * 0.4;
-    g.fillStyle = o.bg || 'rgba(5,28,44,.86)'; g.beginPath();
+    g.fillStyle = 'rgba(46,50,56,.78)'; g.beginPath();   // v11.0: printed floor vinyl, one neutral colour (o.bg ignored)
     if (tipR) { g.moveTo(0, 0); g.lineTo(cw - t, 0); g.lineTo(cw, ch / 2); g.lineTo(cw - t, ch); g.lineTo(0, ch); }
     else if (tipL) { g.moveTo(t, 0); g.lineTo(cw, 0); g.lineTo(cw, ch); g.lineTo(t, ch); g.lineTo(0, ch / 2); }
     else { g.rect(0, 0, cw, ch); }
@@ -1379,7 +1418,7 @@ function decal(text, x, z, w = 3.2, h = 0.7, o = {}) {
     // Flat chevron just past the plate edge, apex toward the place.
     const sg = to === 'n' ? -1 : 1, a = 0.34, shp = new THREE.Shape();
     shp.moveTo(-a, 0); shp.lineTo(0, a * 0.9); shp.lineTo(a, 0); shp.lineTo(a * 0.55, 0); shp.lineTo(0, a * 0.5); shp.lineTo(-a * 0.55, 0); shp.closePath();
-    const c = new THREE.Mesh(new THREE.ShapeGeometry(shp), new THREE.MeshBasicMaterial({ color: new THREE.Color(o.accent || '#00A9F4').multiplyScalar(1.6), toneMapped: false, transparent: true, opacity: 0.95, polygonOffset: true, polygonOffsetFactor: -2 }));
+    const c = new THREE.Mesh(new THREE.ShapeGeometry(shp), new THREE.MeshStandardMaterial({ color: o.accent || '#00A9F4', roughness: 0.5, transparent: true, opacity: 0.9, polygonOffset: true, polygonOffsetFactor: -2 }));
     // Shape lies in XY with apex +y; lay it on the floor so the apex points to world -z (n) or +z (s).
     c.rotation.x = -Math.PI / 2; if (sg > 0) c.rotation.z = Math.PI;
     c.position.set(x, 0.016, z + sg * (h / 2 + 0.12)); Z.group.add(c);
@@ -1473,6 +1512,7 @@ function poster(x, y, z, ry, w, h, draw) {
 }
 const lightPools = [];
 function lightPool(x, z, r, color, base = 0.12) {
+  color = '#fff1dc'; base *= 0.55;   // v11.0: real ceiling light falls warm-white and soft, not tinted
   const m = new THREE.Mesh(new THREE.PlaneGeometry(r * 2, r * 2), new THREE.MeshBasicMaterial({ map: radialTex, color, transparent: true, opacity: base, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }));
   m.rotation.x = -Math.PI / 2; m.position.set(x, 0.02, z); Z.group.add(m); lightPools.push({ m, base }); return m;
 }
