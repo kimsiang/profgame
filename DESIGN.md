@@ -58,6 +58,12 @@ Games last about 2 minutes (84–138 s). Energy 95 vs 25 is a 32–59 point swin
 - **Sharpness (v10.3.1).** While the venue is on: pixel ratio boosted (`PR_BOOST`, high 1.5–2×, mid 1.25–1.6×), tilt-shift and grain off, shadow camera ±11 m with a 4096² (high) / 2048² (mid) map. Falls back to normal resolution if the 150-frame average is below 45 fps.
 - **Rules untouched.** `badminton.js` is unchanged; balance numbers below still hold.
 
+## v10.4 Sharpness — how it works
+- `PR()` returns a supersampled pixel ratio while `PR_BOOST` is on (high: 1.5 on 1× screens, device ratio up to 2 otherwise; mid: 1.25–1.5). `resize()` keys on size and ratio, so a change applies on the next frame.
+- `canvasTex` draws at `TEX_SS` (2 high, 1.5 mid, capped at 4096 px) by scaling the 2D context; draw and redraw code keeps logical coordinates. Name tags do the same. Anisotropy = GPU max (≤ 16).
+- `sharpShadows(true)`: 4096² / 2048² sun shadow map. Tilt-shift only in the dialogue camera; grain 0.
+- Fallback: after 8 s, if the 150-frame mean frame time is above 1/45 s, `PR_BOOST` turns off and shadows go back to 2048² / 1024² until reload. The quality menu (高/中/低) still works as before on top of this.
+
 ## v10.2 Saves — how a mid-day save works
 - Day boundaries store `PERSIST` only (as before). During a day, `saveGame(true)` also stores `mid`: the whole state minus 3D objects, dialogs and activities (`SNAP_SKIP`), the zone and the player's position, and `dayBase` (the state captured at the start of the day, before its events were built).
 - On load, `resumeMid` rebuilds the day's events from `dayBase` with `buildDay` (so data-driven events get their functions back), then copies each saved event's scalar fields (state, deadline, …) onto it. Events created during the day that the rebuild does not produce are restored from the save as plain data.

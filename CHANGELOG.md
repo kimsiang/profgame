@@ -1,5 +1,12 @@
 # Changelog
 
+## v10.4 — Sharp everywhere (2026-10-22)
+The v10.3.1 badminton sharpness now applies to the whole game.
+- **Render resolution**: supersampled on every screen (high: 1.5× on ordinary screens, up to 2× on Retina; mid: 1.25–1.5×). If the game runs below ~45 fps (averaged over 150 frames, after the first 8 s) it drops back to the old resolution and shadow size for the rest of the session.
+- **No more edge blur while walking**: the tilt-shift "miniature" blur is off on the map, the overview and the title page. The dialogue two-shot keeps its depth of field. Film grain is off.
+- **Textures**: every generated texture (floors, signs, posters, screens, slides, LED panels, name tags) is drawn at 2× (high) or 1.5× (mid), with the GPU's maximum anisotropic filtering, so floors and text stay crisp at an angle.
+- **Shadows**: 4096² on high, 2048² on mid.
+
 ## v10.3.1 — Sharper badminton (2026-10-22)
 - **Higher render resolution during matches**: supersampled even on 1× screens (high: 1.5–2×, mid: 1.25–1.6×), no tilt-shift blur and no film grain over the court. If a match runs below ~45 fps the extra resolution switches itself off.
 - **Crisper shadows**: the shadow map covers only the match court and doubles in size (high 4096², mid 2048²) while a match is on.
