@@ -58,6 +58,13 @@ Games last about 2 minutes (84–138 s). Energy 95 vs 25 is a 32–59 point swin
 - **Sharpness (v10.3.1).** While the venue is on: pixel ratio boosted (`PR_BOOST`, high 1.5–2×, mid 1.25–1.6×), tilt-shift and grain off, shadow camera ±11 m with a 4096² (high) / 2048² (mid) map. Falls back to normal resolution if the 150-frame average is below 45 fps.
 - **Rules untouched.** `badminton.js` is unchanged; balance numbers below still hold.
 
+## v12.2 — companions
+- Data: `TABLE` from `table.json` — `places` (who may come, trust), `people` (name, perk text, days, from), `chance`, `treat`, `events`.
+- `companionsFor(place)` → `{ ok, no }` with reasons. `whoDialog` (canteen) and the café/garden menus offer the free ones. `companionDone(place, id)` pays, adds trust, applies the place's perk, logs, then `tableTalk(place, id)`.
+- `tableTalk` rolls `rng(week, day, person)` against `TABLE.chance[place]`, takes that person's first unseen talk, builds it with `mkC` (flag `table`) and opens it. `resolve()` remembers a table talk as good or bad by its trust delta. `S.tableSeen` carries over in the career.
+- Perks: `S.zhaoFlow` (next deep block starts at 15 min of flow), `S.inspired` (next grant block +1 idea star), coach letter star (`S.coachWeek`), Wang (reimbursement or admin deadlines +60).
+- New state (defaults in `newState`, saved via `PERSIST`): companions, tableSeen, tableLog, inspired, zhaoFlow, coachWeek, mealsOut, mealsAlone, tiredDay.
+
 ## v12.1 — content files
 - `assets/data/content/week.json` — scripted events in script order; each object is the old `C()` call: day, time, loc, who, tag, title, line, open, ch, plus options (id, u, win, exp, req, reqNot, st, card, mood, pro, rubric, ach, achOn, alarm).
 - `events.json` — quick messages, admin (posts), academy week, the hat event, finance (incl. `shocks`), home scenes. `people.json` — students, memory lines. `calendar.json` — days, intentions. `codex.json` — cards, achievements, quiz.

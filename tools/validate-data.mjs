@@ -63,7 +63,13 @@ function choices(where, ch, kind = 'event') {
     if (c[5] !== undefined) { const [a, m] = String(c[5]).split(':'); if (!ACTS.has(a) || !(+m > 0)) err(w, `after "${c[5]}" must be <activity>:<minutes> with an activity from ACT`); }
   });
 }
+// "小陈放下筷子：老师……" reads as a speaker called 小陈放下筷子. Narration and speech go in separate |-lines.
+function speakers(where, open) {
+  const zh = open && typeof open === 'object' ? open.zh : open;
+  String(zh || '').split('|').forEach((seg) => { const m = seg.match(/^([^：|]{1,6})：/); if (m && !SPEAKERS.has(m[1]) && [...SPEAKERS].some((n) => m[1].startsWith(n))) err(where, `"${m[1]}：" would show as a speaker; split it into "${m[1]}。|${[...SPEAKERS].find((n) => m[1].startsWith(n))}：…"`); });
+}
 function event(where, e, o = {}) {
+  speakers(where, e.open);
   ['who', 'tag', 'title', 'line'].forEach((k) => str(where, e[k], k));
   str(where, e.open, 'open', true); loc(where, e.loc);
   if (o.time !== false) time(where, e.time);
@@ -147,7 +153,7 @@ table.events.forEach((e, i) => {
   if (!/^t_\w+$/.test(e.id || '')) err(w, 'id must look like t_<name>'); if (tids.has(e.id)) err(w, 'duplicate id'); tids.add(e.id);
   if (!PEOPLE.has(e.npc)) err(w, `npc "${e.npc}" is not in people`);
   if (!Object.values(table.places).some((P) => P.who.includes(e.npc))) warns.push(`${w}: ${e.npc} cannot be invited anywhere, so this talk never happens`);
-  ['who', 'title', 'open'].forEach((k) => str(w, e[k], k)); choices(w, e.ch);
+  ['who', 'title', 'open'].forEach((k) => str(w, e[k], k)); choices(w, e.ch); speakers(w, e.open);
 });
 
 warns.forEach((w) => console.log('warn ', w));

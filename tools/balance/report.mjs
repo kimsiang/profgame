@@ -26,6 +26,8 @@ export function report(rows) {
     line('cash > 0 at month end', (a) => pct(a, (r) => r.cash > 0)),
     line('consequential choices / day', (a) => avg(a.map((r) => r.conseqPerDay))),
     line('events handled', (a) => pct([].concat(...a.map((r) => Array(r.events).fill(0).map((_, i) => i < r.done))), (x) => x)),
+    line('companions / week (avg)', (a) => avg(a.map((r) => r.companions || 0))),
+    line('table talks / week (avg)', (a) => avg(a.map((r) => r.table || 0))),
     line('first day energy < 30 (median)', (a) => med(a.map((r) => r.firstLowEnergyDay))),
     line('rank reached (max)', (a) => Math.max(...a.map((r) => r.rank))),
   ];

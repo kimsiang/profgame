@@ -1,5 +1,14 @@
 # Changelog
 
+## v12.2 — Lunch with someone / 约人 (2026-10-23)
+- **Invite someone.** At lunch and dinner the canteen asks "叫谁一起？": 小陈, 小周, 小雨, 小林 or 赵博士, whoever is free (not waiting for you somewhere, not in crisis, not already invited today). You pay (¥45), the meal takes 10 minutes longer, and their trust rises (+6, ×1.5 on a students-first day).
+- **Table talks / 饭桌上说的话.** Sixteen two- or three-choice conversations that only happen at the table (about a third of shared meals, a quarter of café coffees with 赵博士): 小周 might not do a PhD, 小林 skipped a gas-cylinder check, 小陈 found a bug in the fit that is already in your grant, 赵博士 has an industry offer… Each happens once per career, and what you said comes back in their memory lines later in the week. Written in 中文 and English.
+- **Rooftop café with company.** 赵博士 (your next writing block starts in flow), 化学系陈老师 on Tue/Thu (+1 star on the collaboration letter, once a week), 王老师 (fixes one reimbursement, or gives office tasks an extra hour). ¥28 for their cup.
+- **Garden.** A 20-minute walk alone before the grant is in gives an idea (+1 创新点 star when you next sit down to write it); from 19:00 you can walk and phone 阿玲 instead (阿玲 +3).
+- **Week's end: "你的一周".** Who you spent time with, what was said at the table, how many meals you ate alone, and the first day you ran low on energy.
+- Content: `assets/data/content/table.json` (places, people, perks, talks). The validator checks it, and now also catches narration that would show as a speaker ("小陈放下筷子：…").
+- Tests: `tools/e2e/companion.mjs`; the balance bots invite people (mentor: every meal; balanced: a student whose trust is under 75, the café on weekdays).
+
 ## v12.1 — Content as data (2026-10-23)
 - **The week is data now.** The 136 scripted events, the quick messages, admin, academy, money and home scenes, the students and their memory lines, the days and intentions, science cards, achievements and the lecture quiz moved out of `index.html` into `assets/data/content/` (week, events, people, calendar, codex). `index.html` is ~790 lines shorter.
 - **Same game, proven:** 120 harness weeks (3 careers × 10 weeks × 4 policies) match the v12.0 baseline row for row (`tools/balance/compare.mjs`).

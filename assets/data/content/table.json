@@ -172,7 +172,7 @@
     "en": "Chen: the fit I gave you yesterday may have a bug"
    },
    "open": {
-    "zh": "小陈放下筷子：老师，我昨晚睡前想到，本底那一项我可能算了两遍。那张图……已经放进基金书的预实验部分了吧？",
+    "zh": "小陈放下筷子。|小陈：老师，我昨晚睡前想到，本底那一项我可能算了两遍。那张图……已经放进基金书的预实验部分了吧？",
     "en": "Chen puts his chopsticks down: Prof, last night I realised I may have counted the background twice. That plot… it's already in the grant's preliminary data, isn't it?"
    },
    "ch": [
@@ -223,7 +223,7 @@
     "en": "Chen: I'd like to present in Japan"
    },
    "open": {
-    "zh": "小陈把手机推过来：下个月京都有个缪子物理会议，摘要还能投。|小陈：我想讲寿命测量。您觉得……够格吗？",
+    "zh": "小陈把手机推过来。|小陈：下个月京都有个缪子物理会议，摘要还能投。|小陈：我想讲寿命测量。您觉得……够格吗？",
     "en": "Chen slides his phone across: a muon physics meeting in Kyoto next month, abstracts still open.|小陈：I'd like to talk about the lifetime measurement. Is it… good enough?"
    },
    "ch": [
@@ -274,7 +274,7 @@
     "en": "Zhou: I might not do a PhD"
    },
    "open": {
-    "zh": "小周把餐盘推到一边：老师……我可能不读博了。|小周：推荐信您都写了一半了，对不起。我就是越来越不确定，自己是喜欢物理，还是只是习惯了考第一。",
+    "zh": "小周把餐盘推到一边。|小周：老师……我可能不读博了。|小周：推荐信您都写了一半了，对不起。我就是越来越不确定，自己是喜欢物理，还是只是习惯了考第一。",
     "en": "Zhou pushes her tray aside: Prof… I might not do a PhD after all.|小周：You're halfway through my letter, I'm sorry. I'm just less and less sure whether I love physics or I'm just used to coming first."
    },
    "ch": [
@@ -325,7 +325,7 @@
     "en": "Zhou: could the letter sound a bit stronger?"
    },
    "open": {
-    "zh": "小周有点不好意思：老师，推荐信里能不能写是我“主导”了那个探测器项目？|小周：师姐说国外的信都写得很夸张，不夸张就等于差。",
+    "zh": "小周有点不好意思。|小周：老师，推荐信里能不能写是我“主导”了那个探测器项目？|小周：师姐说国外的信都写得很夸张，不夸张就等于差。",
     "en": "Zhou, a little embarrassed: Prof, could the letter say I \"led\" the detector project?|小周：A senior said letters abroad are all inflated, and an honest one reads as weak."
    },
    "ch": [
@@ -427,7 +427,7 @@
     "en": "Yu: I've slept four hours a night for two weeks"
    },
    "open": {
-    "zh": "小雨端着饭，眼下一片青：老师，我这两周每天只睡四个小时，论文还是写不完。|小雨：我是不是太慢了？",
+    "zh": "小雨端着饭，眼下一片青。|小雨：老师，我这两周每天只睡四个小时，论文还是写不完。|小雨：我是不是太慢了？",
     "en": "Yu holds her tray; there are dark rings under her eyes: Prof, I've slept four hours a night for two weeks and the thesis still isn't done.|小雨：Am I just too slow?"
    },
    "ch": [
@@ -478,7 +478,7 @@
     "en": "Yu: a senior student used my figure in his talk"
    },
    "open": {
-    "zh": "小雨小声说：老师，上周学院报告会上，隔壁组的师兄用了我做的效率图，没写我的名字。|小雨：我不想闹大，但心里不舒服。",
+    "zh": "小雨小声说。|小雨：老师，上周学院报告会上，隔壁组的师兄用了我做的效率图，没写我的名字。|小雨：我不想闹大，但心里不舒服。",
     "en": "Yu, quietly: Prof, at last week's department seminar a senior from the next group showed my efficiency plot without my name.|小雨：I don't want to make a fuss, but it bothers me."
    },
    "ch": [
@@ -580,7 +580,7 @@
     "en": "Lin: I skipped last week's gas cylinder check"
    },
    "open": {
-    "zh": "小林嚼着饭，突然停住：老师……上周五的气瓶检查我没做，记录本上是我照着前一周抄的。|小林：后天学院安全检查，我越想越怕。",
+    "zh": "小林嚼着饭，突然停住。|小林：老师……上周五的气瓶检查我没做，记录本上是我照着前一周抄的。|小林：后天学院安全检查，我越想越怕。",
     "en": "Lin stops chewing: Prof… I didn't do last Friday's cylinder check. I copied the week before into the log.|小林：The department inspection is the day after tomorrow and I can't stop thinking about it."
    },
    "ch": [
@@ -682,7 +682,7 @@
     "en": "Lin: I want to detect cosmic rays with phones"
    },
    "open": {
-    "zh": "小林眼睛发亮：老师，我看到手机摄像头能拍到宇宙线的径迹！|小林：开放日我们能不能让中学生用自己的手机测？",
+    "zh": "小林眼睛发亮。|小林：老师，我看到手机摄像头能拍到宇宙线的径迹！|小林：开放日我们能不能让中学生用自己的手机测？",
     "en": "Lin's eyes light up: Prof, phone cameras can catch cosmic-ray tracks!|小林：At open day, could school students measure them with their own phones?"
    },
    "ch": [
@@ -733,7 +733,7 @@
     "en": "Dr Zhao: a company made me an offer"
    },
    "open": {
-    "zh": "赵博士把筷子并在碗上：老师，一家做缪子成像的公司给了我 offer，工资是现在的两倍半。|赵博士：我还没答应。想先听听您怎么说。",
+    "zh": "赵博士把筷子并在碗上。|赵博士：老师，一家做缪子成像的公司给了我 offer，工资是现在的两倍半。|赵博士：我还没答应。想先听听您怎么说。",
     "en": "Dr Zhao lays his chopsticks across the bowl: Prof, a muography company offered me a job at two and a half times my salary.|赵博士：I haven't said yes. I wanted to hear what you think first."
    },
    "ch": [
@@ -835,7 +835,7 @@
     "en": "Dr Zhao: supervising takes all my time"
    },
    "open": {
-    "zh": "赵博士揉着眼睛：老师，小林和小敏每天都来问我问题。我自己的分析这个月几乎没动。",
+    "zh": "赵博士揉着眼睛。|赵博士：老师，小林和小敏每天都来问我问题。我自己的分析这个月几乎没动。",
     "en": "Dr Zhao rubs his eyes: Prof, Lin and Min come to me with questions every day. My own analysis hasn't moved this month."
    },
    "ch": [
@@ -886,7 +886,7 @@
     "en": "Dr Zhao: the dean asked if I'd move groups"
    },
    "open": {
-    "zh": "赵博士压低声音：院长昨天找我，说新引进的那位教授想要个熟悉探测器的博士后，问我愿不愿意过去。",
+    "zh": "赵博士压低声音。|赵博士：院长昨天找我，说新引进的那位教授想要个熟悉探测器的博士后，问我愿不愿意过去。",
     "en": "Dr Zhao lowers his voice: the dean asked me yesterday. The new hire wants a postdoc who knows detectors, and asked if I'd move over."
    },
    "ch": [
