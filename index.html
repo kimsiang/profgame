@@ -1899,8 +1899,12 @@ function makeChar(o = {}, parent = Z.group) {
   if (o.label) { const s = nameTag(o.label); s.position.y = 1.86; root.add(s); root.userData.tag = s; }
   root.userData = Object.assign(root.userData, { P, faceM, face: o, state: 'idle', expr: 'normal', blinkT: 1 + Math.random() * 3, phase: Math.random() * 6, baseY: 0, emote: null });
   parent.add(root);
+  // v11.1: everyone without a named model gets a realistic extra from the generic pool (after the caller had its chance to attachModel)
+  if (!o.portrait) queueMicrotask(() => { if (!root.userData.modelId) attachModel(root, o.model || genericModel(o)); });
   return root;
 }
+const GEN_POOL = { m: ['gen_m1', 'gen_m2', 'gen_m3', 'gen_m4', 's1', 'grad1'], f: ['gen_f1', 'gen_f2', 'gen_f3', 'gen_f4', 's2', 'zhou'] }, GEN_N = { m: 0, f: 0 };
+function genericModel(o) { const g = ['pony', 'bob', 'bun', 'long'].includes(o.hairStyle) ? 'f' : 'm', L = GEN_POOL[g]; return L[GEN_N[g]++ % L.length]; }
 function setExpr(c, e) { const u = c.userData; if (u.expr === e) return; u.expr = e; if (u.model) return applyMorph(c); u.faceM.map = faceTex(e, u.face.eye, u.face.brow); u.faceM.needsUpdate = true; }
 function nameTag(text) {
   const fs = 34, c = document.createElement('canvas'), g = c.getContext('2d');
@@ -2007,7 +2011,7 @@ const EXPR_KEYS = ['blink', 'happy', 'worried', 'shock', 'sleepy'];
 })();
 function inActiveZone(c) { for (let p = c; p; p = p.parent) { if (p.name && p.name.startsWith('zone-')) return p.visible; } return true; }
 function loadVisibleModels() { if (MODELS_READY) MODEL_WANT.forEach(c => { if (!c.userData.model && !c.userData.modelLoading && c.parent && inActiveZone(c)) loadModelFor(c); }); }
-function attachModel(c, id) { c.userData.modelId = id; MODEL_WANT.push(c); if (MODELS_READY && inActiveZone(c)) loadModelFor(c); }
+function attachModel(c, id) { if (c.userData.modelId === id) return; c.userData.modelId = id; MODEL_WANT.push(c); if (MODELS_READY && inActiveZone(c)) loadModelFor(c); }
 function gltfFor(url) {
   if (!GLTF_CACHE[url]) GLTF_CACHE[url] = new Promise((ok, bad) => new THREE.GLTFLoader().load(url, (g) => {
     // vertex colours are linear in glTF; the procedural cast feeds hex values straight into toon materials, so match that.
@@ -2022,7 +2026,7 @@ function gltfFor(url) {
 const castMats = {};
 /* v11.1: a realistic (Rocketbox) character: its own PBR materials, no toon shading or outline, clips from the shared
    per-gender animation pack (re-targeted by bone name). No face morphs yet: expressions show in the portraits only. */
-const REAL_H = 2.12;   // name tag height over a 1.8 m adult
+const REAL_H = 2.12, REAL_CLIPS = {};   // name tag height over a 1.8 m adult
 function loadRealFor(c, spec) {
   Promise.all([gltfFor(spec.url), gltfFor(spec.anims)]).then(([g, a]) => {
     if (!c.parent) return;
@@ -2035,7 +2039,16 @@ function loadRealFor(c, spec) {
     c.children.forEach(ch => { if (!ch.isSprite) ch.visible = false; else ch.position.y = REAL_H; });
     c.add(m);
     const mixer = new THREE.AnimationMixer(m), clips = {};
-    (a.animations || []).forEach(an => { clips[an.name] = mixer.clipAction(an); });
+    // Keep only tracks whose bone this body has: a track for a missing node would bind to the scene root and tip the body over.
+    const have = new Set(); m.traverse(n => have.add(n.name));
+    // The clips were captured on an adult: scale the hip height to this body (children), so nobody floats or sinks.
+    const hip = m.getObjectByName('Bip01'), restY = hip ? hip.position.y : 0.9;
+    (a.animations || []).forEach(an => {
+      const pt = an.tracks.find(t => t.name === 'Bip01.position'), k = pt ? restY / pt.values[1] : 1, kq = Math.abs(k - 1) > 0.04 ? +k.toFixed(2) : 1, key = spec.anims + an.name + kq;
+      const cl = REAL_CLIPS[key] || (REAL_CLIPS[key] = new THREE.AnimationClip(an.name, an.duration, an.tracks.filter(t => have.has(t.name.split('.')[0])).map(t => {
+        if (kq === 1 || t.name !== 'Bip01.position') return t; const c2 = t.clone(); for (let i = 0; i < c2.values.length; i++) c2.values[i] *= kq; return c2; })));
+      clips[an.name] = mixer.clipAction(cl);
+    });
     c.userData.model = { mixer, clips, map: spec.clips || {}, cur: null, morphs: [], blinkT: 9e9, blinking: 0, real: true };
     c.userData.real = true;
   }).catch(() => { c.userData.modelLoading = false; });
@@ -2314,7 +2327,7 @@ const portrait = (() => {
     try {
       if (!r) { r = new THREE.WebGLRenderer({ alpha: true, antialias: true, preserveDrawingBuffer: true }); r.outputEncoding = THREE.sRGBEncoding; r.setPixelRatio(1); }
       const W2 = framing === 'bust' ? 400 : 256, H2 = framing === 'bust' ? 500 : 256; r.setSize(W2, H2, false); pc.aspect = W2 / H2; pc.updateProjectionMatrix();
-      const c = makeChar(Object.assign({}, look, { label: null }), pScene); setExpr(c, expr); c.rotation.y = -0.28;
+      const c = makeChar(Object.assign({}, look, { label: null, portrait: true }), pScene); setExpr(c, expr); c.rotation.y = -0.28;
       if (look.mic) c.userData.P.shR.rotation.x = -1.2;
       if (framing === 'bust') { pc.position.set(0.0, 1.12, 3.0); pc.lookAt(0, 1.0, 0); } else { pc.position.set(0, 1.22, 1.55); pc.lookAt(0, 1.18, 0); }
       r.render(pScene, pc);
@@ -2695,8 +2708,8 @@ function sportNPC(id, look, x, z, lx, lz) { look._id = id; const p = makeChar(lo
     if (i !== 1) { const a = makeChar({ shirt: ['#2251FF', '#3DDC97'][i / 2 | 0], hairStyle: 'short', pants: '#ffffff' }); a.position.set(cx, 0, 9); face(a, cx, 17); a.userData.state = 'play'; a.userData.baseState = 'play'; Z.npcs.push(a); const b = makeChar({ shirt: ['#c0392b', '#f2c574'][i / 2 | 0], hairStyle: 'pony', pants: '#ffffff' }); b.position.set(cx, 0, 17); face(b, cx, 9); b.userData.state = 'play'; b.userData.baseState = 'play'; Z.npcs.push(b); const sh = ball(cx, 1.6, 13, 0.07, '#ffffff', 'shuttle'); sh.from = [cx, 9.5]; sh.to = [cx, 16.5]; sh.active = true; }
   });
   sportNPC('grad1', { shirt: '#7a5cff', hairStyle: 'spiky', pants: '#ffffff', label: '研究生会 · 阿强' }, 20, 9.5, 20, 16);
-  { const wu = makeChar({ shirt: '#f2c574', hair: '#1a1a1e', hairStyle: 'pony', pants: '#ffffff', accent: '#c0392b', label: '化学系 · 小吴' }); wu.position.set(24.4, 0, 9); face(wu, 20, 9); wu.userData.baseState = 'idle'; wu.visible = false; Z.npcs.push(wu); NPC.wu = wu; }
-  { const jay = makeChar({ shirt: '#FFCC00', hair: '#121216', hairStyle: 'spiky', pants: '#1b2430', accent: '#2251FF', label: '槟城 · 阿杰' }); jay.position.set(24.4, 0, 7.5); face(jay, 20, 7.5); jay.userData.baseState = 'idle'; jay.visible = false; Z.npcs.push(jay); NPC.jay = jay; }
+  { const wu = makeChar({ model: 'gen_f1', shirt: '#f2c574', hair: '#1a1a1e', hairStyle: 'pony', pants: '#ffffff', accent: '#c0392b', label: '化学系 · 小吴' }); wu.position.set(24.4, 0, 9); face(wu, 20, 9); wu.userData.baseState = 'idle'; wu.visible = false; Z.npcs.push(wu); NPC.wu = wu; }
+  { const jay = makeChar({ model: 'gen_m4', shirt: '#FFCC00', hair: '#121216', hairStyle: 'spiky', pants: '#1b2430', accent: '#2251FF', label: '槟城 · 阿杰' }); jay.position.set(24.4, 0, 7.5); face(jay, 20, 7.5); jay.userData.baseState = 'idle'; jay.visible = false; Z.npcs.push(jay); NPC.jay = jay; }
   const sh2 = ball(20, 1.6, 13, 0.07, '#ffffff', 'shuttle'); sh2.from = [20, 9.8]; sh2.to = [20, 16.6];
   bench(6, 2.4, 0); bench(20, 2.4, 0); bench(33, 2.4, 0); bench(6, 23.6, Math.PI); bench(33, 23.6, Math.PI);
   for (let i = 0; i < 6; i++) { box(0.5, 0.04, 0.02, mat(['#c0392b', '#2251FF', '#3DDC97'][i % 3]), 4.4 + i * 0.5, 0.52, 2.4, { cast: false }); }
@@ -4988,8 +5001,13 @@ function bmRig(c) {
   let r = null;
   if (u.model) {
     const bone = (n) => c.getObjectByName(n) || c.getObjectByName(n.replace('.', ''));   // GLTFLoader strips the dot from bone names
+    if (u.model.real) {   // v11.1 Rocketbox (3ds Max Biped): bones point along their child, whatever the local axis is
+      const ua = bone('Bip01_R_UpperArm'), fa = bone('Bip01_R_Forearm'), hd = bone('Bip01_R_Hand'), ul = bone('Bip01_L_UpperArm');
+      if (ua && fa && hd) r = { kind: 'glb', ua, fa, ul, hand: hd, axisU: fa.position.clone().normalize(), axisF: hd.position.clone().normalize(), axis: hd.position.clone().normalize() };
+    } else {
     const ua = bone('upper_arm.R'), fa = bone('forearm.R'), hd = bone('hand.R'), ul = bone('upper_arm.L');
     if (ua && fa && hd) r = { kind: 'glb', ua, fa, ul, hand: hd, axis: new THREE.Vector3(0, 1, 0) };
+    }
   } else if (u.P && u.P.shR && u.P.elR) r = { kind: 'proc', ua: u.P.shR, fa: u.P.elR, ul: u.P.shL, hand: u.P.elR, axis: new THREE.Vector3(0, -1, 0), off: -0.2 };
   if (!r) return null;
   if (u.bmRacket && u.bmRacket.parent) u.bmRacket.parent.remove(u.bmRacket);
@@ -4997,7 +5015,11 @@ function bmRig(c) {
   r.hand.add(rk); c.updateMatrixWorld(true);
   rk.position.set(0, r.off || 0.04, 0); rk.quaternion.identity();
   if (r.axis.y < 0) rk.rotation.x = Math.PI;   // the procedural forearm hangs along -Y
-  const ws = r.hand.getWorldScale(_bv1).x, cs = c.getWorldScale(_bv2).x; rk.scale.setScalar(cs / (ws || 1) * 1.6);   // chibi proportions: an oversized racket reads at broadcast distance
+  if (u.model && u.model.real) {   // Rocketbox: grip in the palm, shaft along the middle finger
+    const f = c.getObjectByName('Bip01_R_Finger2') || c.getObjectByName('Bip01_R_Finger1'), ax = f ? f.position.clone().normalize() : new THREE.Vector3(1, 0, 0);
+    rk.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), ax); rk.position.copy(ax).multiplyScalar(0.05);
+  }
+  const ws = r.hand.getWorldScale(_bv1).x, cs = c.getWorldScale(_bv2).x; rk.scale.setScalar(cs / (ws || 1) * (u.model && u.model.real ? 1.2 : 1.6));   // chibi proportions: an oversized racket reads at broadcast distance
   if (r.kind === 'proc') rk.position.y = r.off;
   // which local x is the racket side (the rig's right arm), measured once from the shoulder position
   c.worldToLocal(r.ua.getWorldPosition(_bv1)); r.sx = Math.sign(_bv1.x) || -1;
@@ -5030,10 +5052,10 @@ function bmPoseArms(c, side, m, B) {
   if (!type || w <= 0) return;
   c.updateMatrixWorld(true);
   const d1 = bmLocalDir(c, r, [a[0][0] + (b[0][0] - a[0][0]) * k, a[0][1] + (b[0][1] - a[0][1]) * k, a[0][2] + (b[0][2] - a[0][2]) * k], _bv1);
-  bmAim(r.ua, r.axis, d1, w);
+  bmAim(r.ua, r.axisU || r.axis, d1, w);
   const d2 = bmLocalDir(c, r, [a[1][0] + (b[1][0] - a[1][0]) * k, a[1][1] + (b[1][1] - a[1][1]) * k, a[1][2] + (b[1][2] - a[1][2]) * k], _bv2);
-  bmAim(r.fa, r.axis, d2, w);
-  if (r.ul) { const l = type.left, d3 = bmLocalDir(c, r, [-l[0], l[1], l[2]], _bv1); bmAim(r.ul, r.axis, d3, w * 0.8); }
+  bmAim(r.fa, r.axisF || r.axis, d2, w);
+  if (r.ul) { const l = type.left, d3 = bmLocalDir(c, r, [-l[0], l[1], l[2]], _bv1); bmAim(r.ul, r.axisU || r.axis, d3, w * 0.8); }
 }
 /* v10.3 juice: floating labels over the hitter, contact flashes, hit-stop and shake, speed lines, racket sounds. */
 BM.labels = [];
@@ -5154,7 +5176,8 @@ async function bmStart(opp, drillId, ctx) {
   bmVenueOn(); if (npc) bmVenueBorrow(npc); BM.camSnap = true; BMV.v && BMV.v.setEvent(!!(ctx && ctx.event));
   const sh = bmShuttle(); bmLayer().add(sh);
   const fx = bmFx(); bmLayer().add(fx.ring, fx.shadow, fx.mark, fx.trail, fx.ribbon, fx.goal, ...fx.flashes); fx.rhist.length = 0; fx.n = 0; fx.markT = 0; fx.mark.material.opacity = 0; fx.ring.visible = false;
-  player.scale.setScalar(BM_SCALE); if (npc) npc.scale.setScalar(BM_SCALE);   // players read at broadcast size
+  const bmS = (c) => c.userData.real ? 1 : BM_SCALE;   // realistic adults are already life size
+  player.scale.setScalar(bmS(player)); if (npc) npc.scale.setScalar(bmS(npc));   // players read at broadcast size
   BM.m = { sw: {}, core, D, O, opp, ctx: ctx || {}, drillId: drill ? drillId : null, drill, npc, sh, decor, npcHome: npc ? npc.position.clone() : null, npcRot: npc ? npc.rotation.y : 0, npcVis: npc ? npc.visible : true, pop: 0 };
   if (npc) npc.visible = true;
   bmShowRackets(true);

@@ -82,8 +82,12 @@ for cid, a in CAST['avatars'].items():
     if os.path.exists(os.path.join(OUT, cid + '.glb')):
         man[cid] = {'url': f'assets/characters/real/{cid}.glb', 'real': True, 'anims': f'assets/characters/real/anim_{a["g"]}.glb',
                     'clips': {k: k for k in CAST['clips']}, 'speed': {'walk': 1.0, 'run': 1.0}, 'src': 'Microsoft Rocketbox ' + os.path.basename(a['src'])}
-        pp = os.path.join(OUT, 'portraits', cid + '.webp')
+        pp, png = os.path.join(OUT, 'portraits', cid + '.webp'), os.path.join(OUT, 'portraits', cid + '.png')
+        if os.path.exists(png):   # baked by tools/e2e/portraits.mjs: one pose, repeated for the five expressions
+            im = Image.open(png).convert('RGBA'); atlas = Image.new('RGBA', (2000, 500))
+            for k in range(5): atlas.paste(im, (k * 400, 0))
+            atlas.save(pp, 'WEBP', quality=88); os.remove(png)
         if os.path.exists(pp):
-            man[cid]['portrait'] = {'url': f'assets/characters/real/portraits/{cid}.webp', 'cell': [400, 500], 'exprs': ['normal', 'happy', 'worried', 'shock', 'sleepy'], 'head': [80, 30, 240, 240]}
+            man[cid]['portrait'] = {'url': f'assets/characters/real/portraits/{cid}.webp', 'cell': [400, 500], 'exprs': ['normal', 'happy', 'worried', 'shock', 'sleepy'], 'head': [110, 10, 180, 180]}
 json.dump(man, open(os.path.join(OUT, 'manifest.json'), 'w'), indent=1, ensure_ascii=False)
 print('manifest:', len(man), 'characters')

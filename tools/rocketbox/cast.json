@@ -17,7 +17,7 @@
     "child_xiaoyu": { "src": "Children/Male_Child_01", "g": "m" },
     "grad1": { "src": "Adults/Male_Adult_02", "g": "m" },
     "barista": { "src": "Adults/Female_Adult_08", "g": "f" },
-    "coach": { "src": "Professions/Sports_Male_01", "g": "m" },
+    "coach": { "src": "Professions/Sports_Male_04", "g": "m" },
     "cook": { "src": "Professions/Chef_Female_01", "g": "f" },
     "guard": { "src": "Professions/Security_Male_01", "g": "m" },
     "librarian": { "src": "Professions/Business_Female_02", "g": "f" },

@@ -8,7 +8,7 @@ import { prune, dedup, resample } from '@gltf-transform/functions';
 import fs from 'fs';
 
 const [out, ...pairs] = process.argv.slice(2);
-const FACE = /Eye|Jaw|Lip|Mouth|Masseter|Caninus|Cheek|Brow|Tongue|Nose|Ear|Lid|Nub$/;
+const FACE = /Footsteps|Eye|Jaw|Lip|Mouth|Masseter|Caninus|Cheek|Brow|Tongue|Nose|Ear|Lid|Nub$/;
 const io = new NodeIO();
 const list = pairs.map((p) => { const i = p.indexOf('='); return [p.slice(0, i), p.slice(i + 1)]; });
 const base = await io.read(list[0][1]);
