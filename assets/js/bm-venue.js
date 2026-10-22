@@ -20,7 +20,7 @@
     const M = (color, x = {}) => { const k = color + JSON.stringify(x); return mats[k] || (mats[k] = new THREE.MeshStandardMaterial(Object.assign({ color, roughness: 0.75, metalness: 0.02, envMapIntensity: 0.3 }, x))); };
     const tex = (w, h, draw, rep) => {
       const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h);
-      const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 8;
+      const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = o.aniso || 8;
       if (rep) { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rep[0], rep[1]); }
       return t;
     };
@@ -43,17 +43,18 @@
     const rnd = (() => { let s = 11; return () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; }; })();   // same layout every time
 
     /* ---------- floor: sprung maple boards ---------- */
-    const planks = tex(512, 512, (g, w, h) => {
-      g.fillStyle = '#b07c48'; g.fillRect(0, 0, w, h);
-      for (let y = 0; y < 16; y++) for (let x = 0; x < 4; x++) { const s = 0.86 + rnd() * 0.18; g.fillStyle = `rgb(${196 * s | 0},${142 * s | 0},${88 * s | 0})`; g.fillRect(x * 128 + (y % 2) * 64, y * 32 + 1, 126, 30); }
-      for (let i = 0; i < 900; i++) { g.fillStyle = `rgba(90,50,20,${0.04 + rnd() * 0.05})`; g.fillRect(rnd() * w, rnd() * h, 18 + rnd() * 40, 1); }
+    // 1024² texture, 2 px gaps between boards, grain streaks; v10.3.1 doubled from 512²
+    const planks = tex(1024, 1024, (g, w, h) => {
+      g.fillStyle = '#8f6236'; g.fillRect(0, 0, w, h);
+      for (let y = 0; y < 16; y++) for (let x = 0; x < 4; x++) { const s = 0.86 + rnd() * 0.18; g.fillStyle = `rgb(${196 * s | 0},${142 * s | 0},${88 * s | 0})`; g.fillRect(((x * 256 + (y % 2) * 128) % w), y * 64 + 1, 254, 62); if ((y % 2) && x === 3) g.fillRect(0, y * 64 + 1, 126, 62); }
+      for (let i = 0; i < 3200; i++) { g.fillStyle = `rgba(90,50,20,${0.03 + rnd() * 0.05})`; g.fillRect(rnd() * w, rnd() * h, 30 + rnd() * 80, 1); }
     }, [10, 7]);
     flat(40, 26, new THREE.MeshStandardMaterial({ map: planks, roughness: 0.38, metalness: 0.0, envMapIntensity: 0.7 }), 0, 0.0, 0);
 
     /* ---------- courts (BWF Law 1). Court 2 is the match court; 1 and 3 stay in use beside it. ---------- */
-    const courtTex = tex(610, 1340, (g, w, h) => {
-      const k = 100; g.fillStyle = '#2c7d58'; g.fillRect(0, 0, w, h);
-      for (let i = 0; i < 2600; i++) { g.fillStyle = `rgba(255,255,255,${0.01 + rnd() * 0.02})`; g.fillRect(rnd() * w, rnd() * h, 1 + rnd() * 3, 1); }
+    const courtTex = tex(1220, 2680, (g, w, h) => {
+      const k = 200; g.fillStyle = '#2c7d58'; g.fillRect(0, 0, w, h);   // 200 px per metre: a 40 mm line is 8 px wide
+      for (let i = 0; i < 9000; i++) { g.fillStyle = `rgba(255,255,255,${0.01 + rnd() * 0.02})`; g.fillRect(rnd() * w, rnd() * h, 1 + rnd() * 3, 1); }
       const L = 0.04 * k, net = h / 2; g.fillStyle = '#ffffff';
       const hl = (y) => g.fillRect(0, y, w, L), vl = (x, y0, y1) => g.fillRect(x, y0, L, y1 - y0);
       hl(0); hl(h - L); vl(0, 0, h); vl(w - L, 0, h); vl(0.46 * k, 0, h); vl(w - 0.46 * k - L, 0, h);
@@ -61,7 +62,7 @@
       vl(w / 2 - L / 2, 0, net - 1.98 * k); vl(w / 2 - L / 2, net + 1.98 * k, h);
     });
     const courtMat = new THREE.MeshStandardMaterial({ map: courtTex, roughness: 0.6, envMapIntensity: 0.4 });
-    const netTex = tex(512, 64, (g, w, h) => { g.clearRect(0, 0, w, h); g.strokeStyle = 'rgba(16,20,26,.92)'; g.lineWidth = 1.2; for (let i = 0; i <= w; i += 5) { g.beginPath(); g.moveTo(i, 0); g.lineTo(i, h); g.stroke(); } for (let j = 0; j <= h; j += 5) { g.beginPath(); g.moveTo(0, j); g.lineTo(w, j); g.stroke(); } }, [6, 1]);
+    const netTex = tex(1024, 128, (g, w, h) => { g.clearRect(0, 0, w, h); g.strokeStyle = 'rgba(16,20,26,.92)'; g.lineWidth = 2; for (let i = 0; i <= w; i += 10) { g.beginPath(); g.moveTo(i, 0); g.lineTo(i, h); g.stroke(); } for (let j = 0; j <= h; j += 10) { g.beginPath(); g.moveTo(0, j); g.lineTo(w, j); g.stroke(); } }, [6, 1]);
     const netMat = new THREE.MeshStandardMaterial({ map: netTex, transparent: true, side: THREE.DoubleSide, alphaTest: 0.15, roughness: 0.9 });
     const tape = M('#ffffff', { roughness: 0.5 }), postM = M('#1b2430', { metalness: 0.5, roughness: 0.4 }), baseM = M('#20262e', { roughness: 0.5 });
     [-13, 0, 13].forEach(x0 => {
@@ -70,7 +71,7 @@
       flat(6.1, 13.4, courtMat, x0, 0.006, 0);
       add(new THREE.Mesh(new THREE.PlaneGeometry(6.1, 0.76), netMat), x0, 1.524 - 0.38, 0);
       box(6.1, 0.07, 0.012, tape, x0, 1.524 - 0.07, 0, { cast: false });
-      [-3.05, 3.05].forEach(x => { cyl(0.028, 0.028, 1.55, postM, x0 + x, 0, 0); cyl(0.17, 0.2, 0.09, baseM, x0 + x, 0, 0, 16); });
+      [-3.05, 3.05].forEach(x => { cyl(0.028, 0.028, 1.55, postM, x0 + x, 0, 0, 16); cyl(0.17, 0.2, 0.09, baseM, x0 + x, 0, 0, 32); });
     });
 
     /* ---------- the room: window walls on three sides, open toward the camera ---------- */

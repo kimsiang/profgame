@@ -6,7 +6,7 @@ import path from 'path';
 const NM = new URL("./node_modules/three", import.meta.url).pathname;
 const scenario = (await import(path.resolve(process.argv[2]))).default;
 const browser = await puppeteer.launch({ executablePath: await chromium.executablePath(), headless: 'shell', pipe: true,
-  args: chromium.args, defaultViewport: { width: 1280, height: 800 } });
+  args: chromium.args, defaultViewport: { width: +(process.env.W || 1280), height: +(process.env.H || 800), deviceScaleFactor: +(process.env.DPR || 1) } });
 const page = await browser.newPage();
 const logs = [];
 page.on('console', (m) => logs.push(`[${m.type()}] ${m.text()}`));

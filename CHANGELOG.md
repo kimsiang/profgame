@@ -1,5 +1,11 @@
 # Changelog
 
+## v10.3.1 — Sharper badminton (2026-10-22)
+- **Higher render resolution during matches**: supersampled even on 1× screens (high: 1.5–2×, mid: 1.25–1.6×), no tilt-shift blur and no film grain over the court. If a match runs below ~45 fps the extra resolution switches itself off.
+- **Crisper shadows**: the shadow map covers only the match court and doubles in size (high 4096², mid 2048²) while a match is on.
+- **Finer textures and models**: court 200 px/m (lines 8 px wide), 1024² floor boards, finer net mesh, max anisotropic filtering; smoother shuttle, posts, rings and racket, with a strung racket face.
+- Smash label on a dark pill so it reads on the wooden floor. `tools/e2e/run.mjs` takes W, H, DPR for high-resolution captures.
+
 ## v10.3 — Badminton you can watch (2026-10-22)
 Presentation pass modelled on a broadcast-style badminton game (reference video from Kim). Rules, timing and balance are unchanged.
 - **Same gym, new camera.** Matches are still on court 2 of the gym, now rebuilt for a camera behind your baseline: window walls, courts 1 and 3 still in play beside you, the umpire's chair. Friday's 物理 vs 化学 fills a bleacher behind the far court with a cheering crowd, boards, banners and a live scoreboard.
