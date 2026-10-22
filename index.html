@@ -133,6 +133,11 @@ svg.ic{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;str
 #navChip .sep{color:var(--muted);margin:0 4px}
 #navChip .off{font:700 10px var(--mono);color:var(--warn);flex:none}
 #navChip .k{font:700 10px var(--mono);color:var(--muted);border:1px solid var(--line);padding:1px 5px;flex:none}
+#saveSheet{position:fixed;inset:0;z-index:31;display:grid;place-items:center;background:rgba(2,10,18,.6);padding:16px}
+#saveBox{width:min(520px,100%);max-height:calc(100vh - 32px);overflow:auto;padding:18px 18px 14px}
+#saveBox h3{margin:0 0 4px;font:900 20px var(--serif-cn,serif)}#saveBox .sub{font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6}
+.slot{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid rgba(205,238,255,.18)}.slot .info{flex:1;min-width:0}.slot b{display:block;font-size:14px}.slot small{font-size:11px;color:var(--muted)}
+.slot .btn{padding:6px 10px;font-size:12px}.saveFoot{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 #navSheet{position:fixed;inset:0;z-index:30;display:grid;place-items:center;background:rgba(2,10,18,.6);padding:16px}
 #navBox{width:min(440px,100%);max-height:calc(100vh - 32px);overflow:auto;padding:16px 16px 12px}
 #navBox h3{margin:2px 0 2px;font:900 18px var(--serif-cn)}
@@ -186,7 +191,7 @@ svg.ic{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;str
 
 /* ---- dialogue (visual-novel panel) ---- */
 /* v10 badminton overlay: catches swipes over the whole screen while a match is on */
-body.bm #hud,body.bm #prompt{display:none!important}
+body.bm #hud,body.bm #prompt,body.bm #tut{display:none!important}
 #bm{position:fixed;inset:0;z-index:15;touch-action:none;user-select:none;-webkit-user-select:none}
 #bmScore{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);padding:8px 18px;font:700 20px/1.2 var(--mono,monospace);display:flex;gap:14px;align-items:center;white-space:nowrap}
 #bmScore b{font-size:28px;color:#fff}#bmScore .srv{color:#FFB547}
@@ -587,6 +592,7 @@ body.talking #lbT,body.talking #lbB{height:7vh}
       <button class="ib on" id="bSound" type="button" title="音效"><svg class="ic"><use href="#i-sound"/></svg></button>
       <button class="ib" id="bAI" type="button" title="AI 设置"><span>AI</span></button>
       <button class="ib" id="bQual" type="button" title="画质"><span id="qualLbl">画质 高</span></button>
+      <button class="ib" id="bSave" type="button" title="存档 / 读档 (O)"><span>存档</span></button>
       <button class="ib" id="bEnd" type="button" title="下班"><svg class="ic"><use href="#i-exit"/></svg><span class="lbl">下班</span></button>
     </div>
     <div id="quests" class="panel">
@@ -619,6 +625,7 @@ body.talking #lbT,body.talking #lbB{height:7vh}
 <div id="lvlUp"></div>
 <div id="tut" class="hidden" role="status"></div>
 <div id="navSheet" class="hidden"><div id="navBox" class="panel"></div></div>
+<div id="saveSheet" class="hidden"><div id="saveBox" class="panel"></div></div><input id="saveFile" type="file" accept="application/json,.json" class="hidden">
 <div id="pauseVeil" class="hidden"><div>暂停中<small>按 P 或点任意处继续</small></div></div>
 
 <!-- dialogue -->
@@ -664,6 +671,7 @@ body.talking #lbT,body.talking #lbB{height:7vh}
     <div class="row" style="margin-top:14px;gap:10px">
       <button class="btn gold hidden" id="contBtn" type="button">继续上次的进度</button>
       <button class="btn" id="quickBM" type="button" title="不影响职业生涯存档">直接打一局羽毛球 ▸</button>
+      <button class="btn ghost" id="loadBtnTitle" type="button">读取存档</button>
       <button class="btn ghost" id="aiBtnTitle" type="button">AI 设置（学者 Pro 版）</button>
     </div>
     <div class="qualRow">画质
@@ -4872,7 +4880,7 @@ function bmHint() {
   $('bmHint').innerHTML = m.phase === 'serve' && m.server === 'P' ? '发球：上滑 / <span class="key">W</span> 高远球 · 下滑 / <span class="key">S</span> 网前球'
     : (core0().ring() && core0().ring().rear ? '后场球：按住再滑 / <span class="key">K</span> 马来步 · 双击再滑 / <span class="key">L</span> 中国跳 · ' : '') + '上滑 <span class="key">W</span> 高远 · 下滑 <span class="key">S</span> 吊球 · 斜滑 <span class="key">Q</span><span class="key">E</span><span class="key">Z</span><span class="key">C</span> 选左右角 · 左右 <span class="key">A</span><span class="key">D</span> 平抽 · 头顶点击 <span class="key">空格</span> 杀球';
 }
-function bmPop(text, cls, sec = 0.9) { const el = $('bmPop'); el.textContent = text; el.className = 'on ' + (cls || ''); BM.m.pop = sec; }
+function bmPop(text, cls, sec = 0.9) { const el = $('bmPop'); el.textContent = text; el.className = 'on ' + (cls || ''); el.style.fontSize = text.length > 14 ? '22px' : ''; BM.m.pop = sec; }
 function bmSwing(g) {
   const B = BM.m; if (!B || B.paused || B.core.m.phase === 'over') return;
   const r = B.core.swing(g); if (!r) return;
@@ -5838,7 +5846,96 @@ const SAVE_KEY = 'prof-week-save-v2', SAVE_V1 = 'prof-week-save-v1', CAREER_KEY 
 const PERSIST = ['bm', 'k', 'xp', 'level', 'ach', 'cards', 'log', 'grant', 'submitted', 'paper', 'paperSubmitted', 'day', 'collapses', 'lastEnd', 'totals', 'muons', 'rooms', 'zones', 'sports', 'reads', 'clears', 'flags', 'coffeesWeek', 'mealsWeek', 'mode', 'avatar',
   'week', 'career', 'wb', 'trust', 'mem', 'lost', 'gq', 'intel', 'crisis', 'crisisSeen', 'timeWeek', 'focusBlocks', 'recruit', 'intents', 'rumours', 'subWb', 'endT',
   'dos', 'dataReq', 'fam', 'homeNights', 'famSkip', 'famEvents', 'fin'];
-function saveGame() { if (S && S.quick) return; try { const o = {}; PERSIST.forEach(k => { o[k] = S[k]; }); localStorage.setItem(SAVE_KEY, JSON.stringify({ v: 5, setup: Object.assign({}, setup), S: o, at: Date.now() })); } catch (e) { /* storage blocked */ } }
+/* v10.2 saves. Day boundaries save PERSIST (as before). During a day, an autosave every 20 s (and when the tab is hidden)
+   also stores a mid-day snapshot ("mid"): the whole state minus 3D objects, dialogs and activities, plus the state the
+   day started from ("dayBase") so the day's events can be rebuilt with their functions, then given their saved states.
+   Three manual slots and a JSON export/import sit on top. */
+const SLOT_KEYS = ['prof-week-slot-1', 'prof-week-slot-2', 'prof-week-slot-3'];
+const SNAP_SKIP = new Set(['marker', 'dialog', 'activity', 'ctl', 'typing', 'dayBase', 'autoTarget']);
+function snapState(st, keepBase) {
+  const seen = new WeakSet();
+  return JSON.parse(JSON.stringify(st, function (k, v) {
+    if (SNAP_SKIP.has(k) && !(keepBase && k === 'dayBase')) return undefined;
+    if (v && typeof v === 'object') { if (v.isObject3D || v.isMaterial || v.isTexture) return undefined; if (seen.has(v)) return undefined; seen.add(v); }
+    return v;
+  }));
+}
+function canSnapMid() { return !!(S && S.running && !S.ended && !S.planning && !S.quick && !S.dialog && !BM.m && S.dayBase && player); }
+function savePayload(mid) {
+  const o = {}; PERSIST.forEach(k => { o[k] = S[k]; });
+  const x = { v: 6, setup: Object.assign({}, setup), S: o, at: Date.now(), mid: null };
+  if (mid && canSnapMid()) x.mid = { S: Object.assign(snapState(S), { dayBase: S.dayBase }), zone: Z.id, pos: { x: player.position.x, z: player.position.z, ry: player.rotation.y } };
+  return x;
+}
+function saveGame(mid) { if (S && S.quick) return false; try { localStorage.setItem(SAVE_KEY, JSON.stringify(savePayload(mid))); return true; } catch (e) { return false; } }
+function saveLabel(x) {
+  if (!x || !x.S) return '';
+  const st = x.mid ? x.mid.S : x.S, c = st.career, day = Math.max(0, Math.min(6, st.day || 0));
+  return `第 ${st.week || 1} 周 · ${DAYS[day].name}${x.mid ? ' ' + fmt(st.t) : ' 早上'}${c && RANKS[c.rank] ? ' · ' + RANKS[c.rank].n : ''}`;
+}
+const fmtWhen = (t) => { const d = new Date(t); return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
+function readSlot(i) { try { return migrateSave(JSON.parse(localStorage.getItem(SLOT_KEYS[i]) || 'null')); } catch (e) { return null; } }
+function saveToSlot(i) {
+  if (!S || S.quick) return;
+  const x = savePayload(true); x.career = loadCareer();
+  try { localStorage.setItem(SLOT_KEYS[i], JSON.stringify(x)); saveGame(true); toast(`已存到存档 ${i + 1}：${saveLabel(x)}`, 'good'); } catch (e) { toast('存档失败：浏览器存储空间不足或被禁用。', 'bad'); }
+  if (S.activity) toast('正在做的事不会存进去：读档后要重新开始。');
+  renderSaveSheet();
+}
+function loadSlot(i) {
+  const x = readSlot(i); if (!x) return;
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(x)); if (x.career) saveCareer(x.career); } catch (e) { return toast('读档失败：浏览器存储被禁用。', 'bad'); }
+  toggleSave(false, true); continueGame();
+}
+function exportSaves() {
+  const data = {}; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith('prof-')) data[k] = localStorage.getItem(k); }
+  const blob = new Blob([JSON.stringify({ game: 'professor-week', v: 1, exported: new Date().toISOString(), data }, null, 1)], { type: 'application/json' });
+  const a = document.createElement('a'), d = new Date(); a.href = URL.createObjectURL(blob);
+  a.download = `professor-week-saves-${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}.json`;
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  toast('已导出：自动存档、三个存档位、职业生涯和设置都在这个文件里。', 'good');
+}
+function importSaves(file) {
+  const r = new FileReader();
+  r.onload = () => {
+    let j; try { j = JSON.parse(r.result); } catch (e) { return toast('这个文件不是存档文件。', 'bad'); }
+    if (!j || j.game !== 'professor-week' || !j.data) return toast('这个文件不是《教授的一周》的存档。', 'bad');
+    if (!confirm('导入会覆盖这个浏览器里现有的存档、存档位和职业生涯。继续吗？')) return;
+    try { Object.keys(localStorage).filter(k => k.startsWith('prof-')).forEach(k => localStorage.removeItem(k)); Object.entries(j.data).forEach(([k, v]) => { if (k.startsWith('prof-')) localStorage.setItem(k, v); }); }
+    catch (e) { return toast('导入失败：浏览器存储被禁用或空间不足。', 'bad'); }
+    toast('导入完成。', 'good'); refreshContinue(); renderSaveSheet();
+  };
+  r.readAsText(file);
+}
+let saveWasPaused = false;
+function toggleSave(open, silent) {
+  const sh = $('saveSheet'); open = open === undefined ? sh.classList.contains('hidden') : open;
+  if (open) { if (S && S.running && !S.planning) { saveWasPaused = S.paused; S.paused = true; } renderSaveSheet(); sh.classList.remove('hidden'); if (!silent) SFX.click(); }
+  else { sh.classList.add('hidden'); if (S && S.running && !S.planning && !silent) S.paused = saveWasPaused; }
+}
+function renderSaveSheet() {
+  const inGame = !!(S && S.running && !S.quick), auto = loadSave();
+  const row = (title, x, btns) => `<div class="slot"><div class="info"><b>${esc(title)}</b><small>${x ? esc(saveLabel(x)) + ' · 存于 ' + fmtWhen(x.at || Date.now()) : '空'}</small></div>${btns}</div>`;
+  let h = `<h3>存档 / 读档</h3><div class="sub">每 20 秒和每天开始、结束时自动存档；关掉网页再打开，点首页「继续」就能接着玩。三个存档位可以手动保存，存档只保存在这个浏览器里，换电脑请用「导出」。${inGame && S.dialog ? '<br>对话中不能存档，先把这件事处理完。' : ''}</div>`;
+  h += row('自动存档', auto, auto ? `<button class="btn" type="button" data-auto="1">读取</button>` : '');
+  SLOT_KEYS.forEach((k, i) => { const x = readSlot(i);
+    h += row(`存档 ${i + 1}`, x, (inGame && !S.dialog && !BM.m ? `<button class="btn gold" type="button" data-save="${i}">${x ? '覆盖' : '存到这里'}</button>` : '') + (x ? `<button class="btn" type="button" data-load="${i}">读取</button><button class="btn ghost" type="button" data-del="${i}" title="删除">删除</button>` : '')); });
+  h += `<div class="saveFoot"><button class="btn ghost" type="button" id="saveExport">导出全部存档</button><button class="btn ghost" type="button" id="saveImport">导入存档文件</button><span style="flex:1"></span><button class="btn" type="button" id="saveClose">关闭 <span class="key">Esc</span></button></div>`;
+  const box = $('saveBox'); box.innerHTML = h;
+  box.querySelectorAll('[data-save]').forEach(b => { b.onclick = () => { const i = +b.dataset.save; if (readSlot(i) && !confirm(`覆盖存档 ${i + 1}？`)) return; saveToSlot(i); }; });
+  box.querySelectorAll('[data-load]').forEach(b => { b.onclick = () => { if (inGame && !confirm('读取存档会放弃当前没存的进度。继续吗？')) return; loadSlot(+b.dataset.load); }; });
+  box.querySelectorAll('[data-del]').forEach(b => { b.onclick = () => { const i = +b.dataset.del; if (!confirm(`删除存档 ${i + 1}？这一步不能撤销。`)) return; try { localStorage.removeItem(SLOT_KEYS[i]); } catch (e) { /* storage blocked */ } renderSaveSheet(); }; });
+  const ab = box.querySelector('[data-auto]'); if (ab) ab.onclick = () => { if (inGame && !confirm('读取自动存档会回到上一次自动保存的位置。继续吗？')) return; toggleSave(false, true); continueGame(); };
+  $('saveExport').onclick = exportSaves;
+  $('saveImport').onclick = () => { $('saveFile').value = ''; $('saveFile').click(); };
+  $('saveClose').onclick = () => toggleSave(false);
+}
+$('saveFile').onchange = (e) => { const f = e.target.files && e.target.files[0]; if (f) importSaves(f); };
+$('bSave').onclick = () => toggleSave(true);
+$('loadBtnTitle').onclick = () => toggleSave(true);
+// Autosave the day in progress when the tab is hidden or closed.
+addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && canSnapMid()) saveGame(true); });
+addEventListener('pagehide', () => { if (canSnapMid()) saveGame(true); });
 // v1 saves (v3/v4 builds) have no career, trust or wellbeing: start them as week 1 with defaults.
 function migrateSave(x) {
   if (!x || !x.S) return null;
@@ -5858,6 +5955,8 @@ function migrateSave(x) {
   if (x.v === 3) { if (x.S.career) migrateCareer(x.S.career); x.v = 4; }
   // v4 → v5 (v9 build): money. The week in progress takes the career's ledger.
   if (x.v === 4) { if (x.S.career) { migrateCareer(x.S.career); migrateFin(x.S.career); } if (!x.S.fin) x.S.fin = JSON.parse(JSON.stringify((x.S.career && x.S.career.fin) || freshFin())); x.v = 5; }
+  // v5 → v6 (v10.2): optional mid-day snapshot; older saves resume at the start of their day, as before.
+  if (x.v === 5) { x.mid = null; x.v = 6; }
   return x;
 }
 function loadSave() {
@@ -5872,7 +5971,7 @@ function loadCareer() { try { const c = JSON.parse(localStorage.getItem(CAREER_K
 function saveCareer(c) { try { localStorage.setItem(CAREER_KEY, JSON.stringify(c)); } catch (e) { /* storage blocked */ } }
 function refreshContinue() {
   const sv = loadSave(), c = loadCareer(), btn = $('contBtn');
-  if (sv) { btn.classList.remove('hidden'); btn.textContent = `继续：第 ${sv.S.week || 1} 周 · 第 ${sv.S.day + 1} 天 · ${DAYS[sv.S.day].name}`; btn.onclick = continueGame; }
+  if (sv) { btn.classList.remove('hidden'); btn.textContent = `继续：${saveLabel(sv)}`; btn.onclick = continueGame; }
   else if (c && c.week > 1 && !c.done) { btn.classList.remove('hidden'); btn.textContent = `继续职业生涯：第 ${c.week} 周 · ${RANKS[c.rank].n}${postLabel(c)}`; btn.onclick = nextWeek; }
   else btn.classList.add('hidden');
 }
@@ -6052,12 +6151,42 @@ function renderHandover() {
   const oc = loadCareer(); $('handCareer').textContent = oc && oc.week > 1 ? `注意：这会开始一段新的职业生涯（当前存档：第 ${oc.week} 周 · ${RANKS[oc.rank].n}）。想继续，请回首页点「继续职业生涯」。` : '';
   $('teamRow').innerHTML = [['wang', '王老师', '院办秘书'], ['zhao', '赵博士', '博士后'], ['lin', '小林', '硕士 · 实验室']].map(([id, n, r]) => `<div><img alt="" src="${portrait(CAST[id], 'normal', 'head')}">${n}<br><span style="color:var(--muted)">${r}</span></div>`).join('');
 }
-function startGame() { ensureAudio(); if (actx && actx.state === 'suspended') actx.resume(); if (S) S.events.forEach(ev => { if (ev.marker) ev.marker.parent.remove(ev.marker); }); clearSave(); try { localStorage.removeItem(CAREER_KEY); } catch (e) { /* storage blocked */ } S = newState(freshCareer()); startDay(0); }
+function startGame() {
+  if (loadSave() && !confirm('开始新的一周会覆盖自动存档（三个手动存档位不受影响）。继续吗？')) return;
+  ensureAudio(); if (actx && actx.state === 'suspended') actx.resume(); if (S) S.events.forEach(ev => { if (ev.marker) ev.marker.parent.remove(ev.marker); }); clearSave(); try { localStorage.removeItem(CAREER_KEY); } catch (e) { /* storage blocked */ } S = newState(freshCareer()); startDay(0); }
 function continueGame() {
   const sv = loadSave(); if (!sv) return;
   ensureAudio(); if (actx && actx.state === 'suspended') actx.resume();
-  Object.assign(setup, sv.setup); if (S) S.events.forEach(ev => { if (ev.marker) ev.marker.parent.remove(ev.marker); });
+  Object.assign(setup, sv.setup); if (S) S.events.forEach(ev => { if (ev.marker && ev.marker.parent) ev.marker.parent.remove(ev.marker); });
+  if (sv.mid && sv.mid.S && sv.mid.S.dayBase) { try { return resumeMid(sv); } catch (e) { console.warn('mid-day resume failed, restarting the day', e); } }
   S = Object.assign(newState(), sv.S); startDay(sv.S.day);
+}
+// Mid-day resume: rebuild the day's events from the state the day started with, then apply each saved event's
+// own fields (state, deadline, …). Events added during the day that the rebuild does not produce come back as saved.
+function resumeMid(sv) {
+  const cur = sv.mid.S, d = cur.day;
+  let evs = [];
+  S = Object.assign(newState(), JSON.parse(JSON.stringify(cur.dayBase)));
+  try { evs = buildDay(d, setup.day); } catch (e) { evs = []; }
+  S = Object.assign(newState(), cur);
+  const prim = (v) => v === null || ['string', 'number', 'boolean'].includes(typeof v);
+  S.events = (cur.events || []).map(se => { const r = evs.find(e => e.id === se.id); if (!r) return se; for (const k in se) if (prim(se[k])) r[k] = se[k]; return r; });
+  fadeTo(() => {
+    Object.values(NPC).forEach(n => { setEmote(n, null); n.userData.state = n.userData.baseState || 'idle'; setExpr(n, 'normal'); });
+    Object.keys(STUDENTS).forEach(id => { if (NPC[id]) NPC[id].visible = !(S.lost || []).includes(id); });
+    Object.assign(S, { running: true, paused: false, ended: false, planning: false, activity: null, dialog: null, path: [], autoTarget: null, traveling: false, autoRoute: null, autoNext: null });
+    setZone(sv.mid.zone || 'f5'); makePlayer(setup.avatar === 'f');
+    const p = sv.mid.pos || {}; player.position.set(p.x ?? Z.spawn.x, 0, p.z ?? Z.spawn.z); if (p.ry != null) player.rotation.y = p.ry;
+    $('pImg').src = portrait(PLAYER_LOOK(setup.avatar === 'f'), 'normal', 'head');
+    for (const ev of activeEvents()) {
+      if (!ev.phone && HS[ev.loc]) { const h = HS[ev.loc]; ev.marker = makeMarker(h.x, h.z, !!(ev.urgent || ev.alarm), h.zone || 'f5'); }
+      if (ev.npc && NPC[ev.npc]) { const n = NPC[ev.npc]; if (ev.urgent || ev.alarm) { n.userData.state = 'panic'; setExpr(n, 'shock'); setEmote(n, '!!'); } else setEmote(n, '!'); }
+    }
+    camState.orbit = 0; camState.wantAz = camState.az = Math.PI / 4; toggleOverview(false); camState.target.copy(player.position);
+    show(null); $('hud').classList.remove('hidden'); $('pauseVeil').classList.add('hidden'); $('activity').classList.add('hidden'); $('dlg').classList.add('hidden'); document.body.classList.remove('talking'); $('navSheet').classList.add('hidden'); camState.cine = null;
+    questsDirty = true; renderXP(); renderHUD();
+    toast(`已读取：第 ${S.week} 周 · ${DAYS[d].name} ${fmt(S.t)}`, 'good');
+  });
 }
 function startDay(d) {
   fadeTo(() => {
@@ -6070,6 +6199,7 @@ function startDay(d) {
     S.blockUse = []; S.memToday = {}; S.intent = null; S.flow = 0; S.flowCarry = null; S.endT = undefined; S.homeToday = false; S.atHome = false;
     if (S.fam && S.fam.house < 30) { S.t = hm(8, 30); logIt('找不到车钥匙，衬衫也没一件干净的。08:30 才出门。'); }
     Object.keys(STUDENTS).forEach(id => { if (NPC[id]) NPC[id].visible = !S.lost.includes(id); });
+    S.events = []; S.dayBase = snapState(S); S.dayBase.day = d;
     S.events = buildDay(d, setup.day); S.dayLogStart = S.log.length; S.cardStart = S.cards.length; S.kStart = Object.assign({}, S.k);
     saveGame();
     setZone('f5'); S.autoRoute = null; S.autoNext = null; S.zones.f5 = 1;
@@ -6138,7 +6268,7 @@ const TUT = { done: (() => { try { return JSON.parse(localStorage.getItem(TUT_KE
 function tutSave() { try { localStorage.setItem(TUT_KEY, JSON.stringify(TUT.done)); } catch (e) { /* storage blocked */ } }
 function tutHide() { TUT.shown = null; $('tut').classList.add('hidden'); }
 function tutTick() {
-  if (!S || S.week > 1 || TUT.done.all || TUT.shown || S.ended) return;
+  if (!S || S.week > 1 || TUT.done.all || TUT.shown || S.ended || S.quick || BM.m) return;
   if (!S.planning && (!S.running || S.paused)) return;
   const step = TUTORIAL.find(t => !TUT.done[t.id] && t.when());
   if (!step) return;
@@ -6157,6 +6287,7 @@ addEventListener('keydown', (e) => {
   if (e.target && (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT')) return;
   keys[e.code] = true;
   if (BM.m) { bmKey(e); return; }
+  if (!$('saveSheet').classList.contains('hidden')) { if (e.code === 'Escape' || e.code === 'KeyO') toggleSave(false); return; }
   if (!S || !S.running) { if (e.key === 'Enter' && !$('scrHand').classList.contains('hidden')) startGame(); return; }
   if (S.planning) { if (/^Digit[1-4]$/.test(e.code)) beginDay(S.day, INTENTS[+e.code.slice(5) - 1].id); return; }
   if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) e.preventDefault();
@@ -6174,6 +6305,7 @@ addEventListener('keydown', (e) => {
   if (e.code === 'KeyE' || e.code === 'Space') interact();
   if (e.code === 'KeyM') toggleOverview();
   if (e.code === 'KeyN') toggleNav(true);
+  if (e.code === 'KeyO') toggleSave(true);
   if (e.code === 'KeyF') cycleSpeed();
   if (e.code === 'KeyQ') rotateView(-1);
   if (e.code === 'KeyR') rotateView(1);
@@ -6383,6 +6515,7 @@ function frame(now) {
   resize(); placeCamera();
   if (S && S.running) {
     clock.hud += dt; if (clock.hud > 0.12) { clock.hud = 0; renderHUD(); } updatePrompt();
+    clock.save = (clock.save || 0) + dt; if (clock.save > 20) { clock.save = 0; if (canSnapMid()) saveGame(true); }
     clock.map += dt; if (clock.map > 0.1) { clock.map = 0; drawMinimap(); renderNavChip(); }
     if (!clock.fpsChecked && QUALITY === 'high' && !S.paused) { clock.fps.push(dt); if (clock.fps.length > 240) { clock.fpsChecked = true; const avg = clock.fps.reduce((a, b) => a + b, 0) / clock.fps.length; if (avg > 1 / 26) toast('画面有点卡？右上角可以把画质调成「中」。'); } }
   }
@@ -6394,6 +6527,8 @@ camState.orbit = 0.0001; camState.dist = 70;
 buildPost(); resize(); onResizeHooks.forEach(f => f(stage.clientWidth || innerWidth, stage.clientHeight || innerHeight));
 renderSetup();
 requestAnimationFrame(frame);
+// Dev/test hook, only with ?debug in the URL: headless tests (tools/) read and drive the game state through it.
+if (/[?&]debug\b/.test(location.search)) window.__prof = (code) => eval(code);
 /*DEBUG_HOOK*/
 })();
 </script>

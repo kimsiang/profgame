@@ -9,6 +9,7 @@ Living summary of the systems in the build. Full design notes (goal, player expe
 | v8 | Career ladder: titles, posts, academy election | `RANKS`, `POSTS`, `ACADEMY`, `ADMIN_EVENTS`, `ACADEMY_EVENTS` | `promote`, `careerEvents`, `academyVote` |
 | v8.1 | Navigator | `NAV`, `NAV_ANCHOR` | `renderNavChip`, `toggleNav` |
 | v9 | Money | `FIN`, `FIN_EVENTS` | `finSettle`, `financeEvents`, `finFlag`, `finPlannerRow` |
+| v10.2 | Saves: autosave mid-day, 3 slots, export/import | `SAVE_KEY`, `SLOT_KEYS`, `PERSIST`, `SNAP_SKIP` | `saveGame(mid)`, `savePayload`, `continueGame`, `resumeMid`, `renderSaveSheet`, `exportSaves`, `importSaves` |
 | v10 / v10.1 | Badminton: match, footwork, tactics, review, drills | `assets/data/badminton.json`, `badminton-tactics.json`, `badminton-drills.json` | core `assets/js/badminton.js` (`BMCore`, `BMCore.review`, `BMCore.drillReview`); UI in `index.html` (`bmOffer`, `bmStart`, `bmFrame`, `bmVisuals`, `bmEnd`, `quickMenu`, `drillEnd`) |
 
 ## v9 Money — rules in one place
@@ -47,3 +48,8 @@ Living summary of the systems in the build. Full design notes (goal, player expe
 | 阿杰 | 45% | 39% | 25% | 13% |
 
 Games last about 2 minutes (84–138 s). Energy 95 vs 25 is a 32–59 point swing in win rate, which meets the design target of 25–40 points for 小吴 and 阿杰 and exceeds it for 阿强.
+
+## v10.2 Saves — how a mid-day save works
+- Day boundaries store `PERSIST` only (as before). During a day, `saveGame(true)` also stores `mid`: the whole state minus 3D objects, dialogs and activities (`SNAP_SKIP`), the zone and the player's position, and `dayBase` (the state captured at the start of the day, before its events were built).
+- On load, `resumeMid` rebuilds the day's events from `dayBase` with `buildDay` (so data-driven events get their functions back), then copies each saved event's scalar fields (state, deadline, …) onto it. Events created during the day that the rebuild does not produce are restored from the save as plain data.
+- Autosave: every 20 s of real time when not in a dialog or a match, and on `visibilitychange`/`pagehide`. Quick play never saves.

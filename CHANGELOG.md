@@ -1,5 +1,14 @@
 # Changelog
 
+## v10.2 — Save and load (2026-10-22)
+- **Resume where you stopped.** Besides the saves at the start and end of each day, the game now autosaves the day in progress every 20 seconds and whenever the tab is hidden or closed. "继续" on the title page brings you back to the same day, time, floor and spot, with the same events open, done or missed (before, it restarted the day at 08:00). Mid-dialog moments and badminton matches are not saved; the last save before them is used. Work you were doing (writing, a lecture) stops on load, its progress kept.
+- **Three save slots** (存档 button in the top bar, or O): save, overwrite, load, delete. Loading a slot also restores the career it was saved with.
+- **Export / import**: one JSON file with the autosave, the slots, the career and settings, for another browser or computer. Import asks before replacing.
+- **Title page**: "读取存档" opens the same panel; "继续" shows the exact point, e.g. "第 1 周 · 周一 10:30 · 助理教授". Starting a new week asks before overwriting the autosave.
+- Save format v6 (adds the optional mid-day snapshot); v5 saves load as before, at the start of their day.
+- Fixes: the Monday tutorial hint no longer appears over the badminton score; long badminton pop-ups use a smaller font.
+- Dev: `?debug` in the URL exposes a test hook; `tools/e2e/` runs headless browser checks (save → reload → continue, badminton screenshots).
+
 ## v10.1 — Badminton (2026-10-22)
 Tag for the steps below. Also: DESIGN.md gains the badminton rules and balance table; "play it out" win chances re-fit to the final bot runs.
 
