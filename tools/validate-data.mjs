@@ -132,8 +132,26 @@ codex.quiz.forEach((q, i) => { const w = `codex.json quiz[${i}]`; str(w, q.q, 'q
 [...html.matchAll(/card: '(\w+)'/g)].forEach((m) => { if (!CARDS.has(m[1])) err('index.html', `card "${m[1]}" is not in codex.json`); });
 [...html.matchAll(/unlock\('(\w+)'\)/g)].forEach((m) => { if (!ACH.has(m[1])) err('index.html', `achievement "${m[1]}" is not in codex.json`); });
 
+// table.json (v12.2 companions and table talks)
+const table = J('table.json');
+const PEOPLE = new Set(Object.keys(table.people));
+Object.entries(table.places).forEach(([pl, P]) => {
+  if (!['canteen', 'cafe', 'garden'].includes(pl)) err(`table.json places.${pl}`, 'place must be canteen|cafe|garden (the rules key on them)');
+  P.who.forEach((id) => { if (!PEOPLE.has(id)) err(`table.json places.${pl}`, `"${id}" is not in people`); });
+});
+Object.entries(table.people).forEach(([id, p]) => { const w = `table.json people.${id}`; str(w, p.n, 'n'); str(w, p.perk, 'perk', true); if (p.seat) loc(w, p.seat); if (p.from) time(w, p.from); });
+['canteen', 'cafe'].forEach((pl) => { if (!(table.treat[pl] >= 0)) err('table.json treat', `${pl} must be a price`); if (!(table.chance[pl] >= 0 && table.chance[pl] <= 1)) err('table.json chance', `${pl} must be 0–1`); });
+const tids = new Set();
+table.events.forEach((e, i) => {
+  const w = `table.json events #${i} (${e.id})`;
+  if (!/^t_\w+$/.test(e.id || '')) err(w, 'id must look like t_<name>'); if (tids.has(e.id)) err(w, 'duplicate id'); tids.add(e.id);
+  if (!PEOPLE.has(e.npc)) err(w, `npc "${e.npc}" is not in people`);
+  if (!Object.values(table.places).some((P) => P.who.includes(e.npc))) warns.push(`${w}: ${e.npc} cannot be invited anywhere, so this talk never happens`);
+  ['who', 'title', 'open'].forEach((k) => str(w, e[k], k)); choices(w, e.ch);
+});
+
 warns.forEach((w) => console.log('warn ', w));
 errs.forEach((e) => console.log('ERROR', e));
 const n = week.events.length + ev.quick.length + ev.admin.length + ev.academy.length + 1 + Object.keys(ev.finance).length - 1 + ev.finance.shocks.length + ev.home.length;
-console.log(errs.length ? `\n${errs.length} error(s) in ${n} events` : `content ok: ${n} events, ${Object.keys(codex.cards).length} cards, ${Object.keys(codex.achievements).length} achievements, ${STUD.size} students`);
+console.log(errs.length ? `\n${errs.length} error(s) in ${n} events` : `content ok: ${n} events, ${table.events.length} table talks, ${Object.keys(codex.cards).length} cards, ${Object.keys(codex.achievements).length} achievements, ${STUD.size} students`);
 process.exit(errs.length ? 1 : 0);

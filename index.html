@@ -3923,6 +3923,8 @@ function newState(career) {
     blockUse: [], timeWeek: {}, flow: 0, flowCarry: null, focusBlocks: 0, recruit: false, outcomes: null,
     // v6: dossier stars carry over (ideas go stale, see nextWeek); family meters carry over; tutorial progress is per browser.
     dos: career.dos ? JSON.parse(JSON.stringify(career.dos)) : freshDossier(), dataReq: null,
+    // v12.2 companions: who came where today, table talks already had (once per career), garden inspiration, Dr Zhao's flow start
+    companions: {}, tableSeen: (career.tableSeen || []).slice(), tableLog: [], inspired: false, zhaoFlow: false, coachWeek: 0,
     fam: career.fam ? Object.assign({}, career.fam) : freshFamily(), homeNights: 0, famSkip: 0, homeToday: false, famEvents: {},
     // v9: the household ledger carries over in the career; one game week = one financial month.
     fin: JSON.parse(JSON.stringify(career.fin || freshFin(setup.house, setup.commute))),
@@ -4132,6 +4134,74 @@ function settleEvent(ev) {
   if (ev.state === 'resolved' && !activeEvents().length) { S.clears++; if (S.clears >= 3) unlock('allclear'); }
 }
 
+/* ---------------- v12.2: companions (约人) and table talks (assets/data/content/table.json) ---------------- */
+const TABLE = {};
+function compName(id) { const p = TABLE.people && TABLE.people[id]; return p ? p.n : (STUDENTS[id] ? STUDENTS[id].n : id); }
+function compPerk(id) { const p = TABLE.people && TABLE.people[id]; return p && p.perk ? p.perk : '信任 +' + ((TABLE.places.canteen || {}).trust || 6); }
+// Who can come, and why the others cannot. A student who is waiting for you somewhere, in crisis, or already came today is not free.
+function companionsFor(place) {
+  const P = TABLE.places && TABLE.places[place]; if (!P || !S) return { ok: [], no: [] };
+  const today = S.companions[S.day] || {}, ok = [], no = [];
+  for (const id of P.who) {
+    const pp = TABLE.people[id] || {}, name = compName(id);
+    if (S.lost.includes(id)) continue;
+    if (today[id]) { no.push(`${name}今天已经和你吃过/喝过了`); continue; }
+    if (S.crisis[id] === S.day) { no.push(`${name}今天状态不好，先单独谈谈`); continue; }
+    const busy = activeEvents().find(e => e.npc === id);
+    if (busy) { no.push(`${name}在等你处理「${shortTitle(busy.title)}」`); continue; }
+    if (pp.days && !pp.days.includes(S.day)) { no.push(`${name}今天不在`); continue; }
+    if (pp.from && S.t < hm(...pp.from.split(':').map(Number))) { no.push(`${name}这会儿还在上班`); continue; }
+    if (id === 'coach' && S.coachWeek === S.week) { no.push(`${name}这周已经约过了`); continue; }
+    ok.push(id);
+  }
+  return { ok, no };
+}
+// The "who comes along?" question. Returns false when nobody is free (the caller just carries on alone).
+function whoDialog(place, then) {
+  const { ok, no } = companionsFor(place); if (!ok.length) return false;
+  const cost = place === 'canteen' ? TABLE.treat.canteen : TABLE.treat.cafe;
+  const ch = ok.map(id => ({ t: `叫上${compName(id)}（请客 ${fmtY(cost)}）`, d: `多 10 分钟 · ${compPerk(id)}${STUDENTS[id] ? ` · 信任 ${Math.round(S.trust[id])}` : ''}`, run: () => then(id) }));
+  ch.push({ t: '一个人吃', d: '快一点', run: () => then(null) });
+  openDialog({ id: place + 'Who', loc: place === 'canteen' ? 'canteen' : 'roofcafe', who: '约人', tag: '吃饭', title: '叫谁一起？', synthetic: true, start: 'a',
+    nodes: { a: { say: [['', '饭桌上，人会说办公室里不说的话。'], ...(no.length ? [['', no.join('；') + '。']] : [])], choices: ch } } });
+  return true;
+}
+function openGarden() {
+  const { ok } = companionsFor('garden');
+  if (!ok.length) return ACT.walk(20);
+  openDialog({ id: 'gardenWho', loc: 'garden', who: '六楼植物园', tag: '散步', title: '一个人走走，还是给阿玲打个电话？', synthetic: true, start: 'a',
+    nodes: { a: { say: [['', '凉亭里没有人。远处高山区的石头上还有一点“雪”。']], choices: [
+      { t: '一个人走 20 分钟', d: `身心 +9${!S.submitted && S.day <= 4 && !S.inspired ? ' · 也许能想清楚基金的一个点' : ''}`, run: () => ACT.walk(20) },
+      { t: '一边走一边给阿玲打电话', d: `20 分钟 · ${compPerk('partner')}`, run: () => ACT.walk(20, 'partner') },
+      { t: '不走了', d: '' }] } } });
+}
+// After the meal or the coffee: the bill, trust, the place's perk, and maybe something said at the table.
+function companionDone(place, id) {
+  (S.companions[S.day] = S.companions[S.day] || {})[id] = place;
+  const P = TABLE.places[place] || {}, cost = place === 'canteen' ? TABLE.treat.canteen : place === 'cafe' ? TABLE.treat.cafe : 0;
+  if (cost && S.fin) finSpend(cost, `请${compName(id)}`, {});
+  if (S.trust[id] !== undefined && P.trust) S.trust[id] = clamp(S.trust[id] + trustGain(P.trust));
+  if (id === 'zhao' && place === 'cafe') { S.zhaoFlow = true; toast('赵博士把你基金书里卡住的那段讲通了。下一段写作一开始就有专注。', 'good'); }
+  if (id === 'coach') { S.coachWeek = S.week; if (!S.submitted && S.day <= 4 && addStar('grant', 'letter', 1, true)) toast(`陈老师答应在合作信里多写一段：${STAR(S.dos.grant.letter)}`, 'good'); }
+  if (id === 'wang') {
+    if (S.fin && S.fin.reimb && S.fin.reimb.length) { S.fin.reimb.shift(); toast('王老师帮你把一张餐费票据的手续补齐了，不怕审计了。', 'good'); }
+    else { activeEvents().filter(e => e.loc === 'admin').forEach(e => { e.deadline += 60; }); toast('王老师：“院办的事您别急，我先帮您压着。”（院办事项多 1 小时）', 'good'); }
+  }
+  if (id === 'partner') { S.fam.partner = clamp(S.fam.partner + 3); }
+  logIt(`和${compName(id)}在${{ canteen: '食堂', cafe: '天台', garden: '植物园' }[place]}待了一会儿。`);
+  tableTalk(place, id);
+}
+// A table talk: at most one per meal, each once per career, seeded so a reload cannot reroll it.
+function tableTalk(place, id) {
+  const chance = (TABLE.chance || {})[place] || 0; if (!chance || !TABLE.events) return;
+  const pool = TABLE.events.filter(e => e.npc === id && !S.tableSeen.includes(e.id)); if (!pool.length) return;
+  const h = id.split('').reduce((a, c) => a * 31 + c.charCodeAt(0) | 0, 7) >>> 0;
+  if (rng((S.week * 7919 + S.day * 104729 + h) % 2147483646 + 1)() >= chance) return;
+  const e = pool[0]; S.tableSeen.push(e.id); S.tableLog.push({ day: S.day, id: e.id, npc: id });
+  const ev = Object.assign(mkC(S.day, fmt(S.t), place === 'cafe' ? 'roofcafe' : 'canteen', e.who, '饭桌', e.title, e.title, e.open, e.ch, { id: e.id, pro: false }), { state: 'active', table: true });
+  openDialog(ev);
+}
+
 /* ---------------- activities ---------------- */
 // The pantry and takeaway keep the old everyday food; the canteen serves the world kitchens.
 const FOOD_PANTRY = () => S.t < hm(10, 30) ? ['包子和豆浆', '早餐'] : S.t < hm(15) ? ['食堂打包的红烧肉便当', '午饭'] : S.t < hm(20, 30) ? ['外卖的兰州拉面', '晚饭'] : ['办公室囤的泡面', '宵夜'];
@@ -4160,18 +4230,22 @@ function canteenSigns() {
   });
 }
 // At the counter: breakfast is quick; at lunch and dinner you choose a stall. A cuisine new to you this week lifts the mood a little more.
-function canteenMenu() {
+function canteenMenu(comp) {
   const T = canteenToday();
   if (S.t < hm(10, 30) || S.t >= hm(20, 30) || !T.length) return ACT.canteen(20);
+  if (comp === undefined && TABLE.places) { const w = whoDialog('canteen', (id) => canteenMenu(id)); if (w) return; comp = null; }
   canteenSigns();
-  const tried = S.cuisines || {}, ch = T.map(p => ({ t: `${p.c.zh} · ${p.dish[0]}`, d: `${p.c.en} · ${p.dish[1]}${tried[p.c.id] ? '' : ' · 本周第一次'}`, run: () => ACT.canteen(20, [`${p.c.zh}档 · ${p.dish[0]}`, p]) }));
+  const tried = S.cuisines || {}, ch = T.map(p => ({ t: `${p.c.zh} · ${p.dish[0]}`, d: `${p.c.en} · ${p.dish[1]}${tried[p.c.id] ? '' : ' · 本周第一次'}`, run: () => ACT.canteen(comp ? 30 : 20, [`${p.c.zh}档 · ${p.dish[0]}`, p], comp) }));
   ch.push({ t: '算了，不吃了', d: '' });
   openDialog({ id: 'canteenMenu', loc: 'canteen', who: '食堂 · 世界美食档口', tag: '吃饭', title: `今天开张的 6 个档口（第 ${canteenDay() + 1} 天）`, synthetic: true, start: 'a',
     status: [['排名来源', 'TasteAtlas 2025/26'], ['本周尝过', `${Object.keys(tried).length} / 20`]], nodes: { a: { say: [['', '六个档口今天换了菜。每个档口一道主厨招牌。']], choices: ch } } });
 }
 function startActivity(a) {
   S.path = []; S.autoTarget = null;
-  if (a.deep) { S.flow = S.flowCarry && S.t - S.flowCarry.t <= 5 ? S.flowCarry.v : 0; S.flowCarry = null; }
+  if (a.deep) { S.flow = S.flowCarry && S.t - S.flowCarry.t <= 5 ? S.flowCarry.v : 0; S.flowCarry = null;
+    // v12.2: coffee with Dr Zhao means you sit down already thinking; a garden walk brings an idea to the grant
+    if (S.zhaoFlow) { S.flow = Math.max(S.flow, 15); S.zhaoFlow = false; }
+    if (S.inspired && a.kind === 'grant') { S.inspired = false; addStar('grant', 'idea', 1); } }
   S.activity = Object.assign({ done: 0, ff: 8, cancelable: true }, a);
   $('activity').classList.remove('hidden'); $('actIcon').textContent = a.icon || '…';
   renderActivity();
@@ -4285,8 +4359,8 @@ const ACT = {
     onDone: () => { pose('idle', 6, 22.3); toast('下课了。拿出手机一看……'); logIt('上完 90 分钟的大学物理。'); gainXP(40); }, onCancel: () => { pose('idle', 6, 22.3); applyFx({ teaching: -8 }); logIt('提前下课，学生们一脸疑惑。'); } }); },
   meeting: (min) => { pose('sit', 14.75, 21.05, Math.PI / 2, true); startActivity({ type: 'meeting', label: '开会中', icon: '会', min, ff: 12, drain: 0.03, cancelText: '中途离场',
     onDone: () => pose('idle', 16, 18.4), onCancel: () => { pose('idle', 16, 18.4); applyFx({ rep: -4 }); logIt('会开到一半离场。'); } }); },
-  canteen: (min, pick) => { const [food0, meal] = FOOD(), food = pick ? pick[0] : food0, cui = pick && pick[1] ? pick[1].c : null; pose('sit', 28, 3.7, 0, true); setExpr(player, 'happy'); startActivity({ type: 'eat', label: `食堂 · ${food}`, icon: '饭', min, ff: 8, perMin: (dm) => { S.v.full = clamp(S.v.full + 3.6 * dm); S.v.energy = clamp(S.v.energy + 0.4 * dm); },
-    onDone: () => { S.meals++; S.mealsWeek++; const first = cui && !(S.cuisines || {})[cui.id]; if (cui) (S.cuisines = S.cuisines || {})[cui.id] = 1; applyFx({ wellbeing: first ? 5 : 3 }); logIt(`在食堂和同事们一起吃了${meal}：${food}${first ? `（这周第一次吃${cui.zh}菜）` : ''}。`); pose('idle', 28, 2.6); }, onCancel: () => pose('idle', 28, 2.6), cancelText: '先不吃了' }); },
+  canteen: (min, pick, comp) => { const [food0, meal] = FOOD(), food = pick ? pick[0] : food0, cui = pick && pick[1] ? pick[1].c : null; pose('sit', 28, 3.7, 0, true); setExpr(player, 'happy'); startActivity({ type: 'eat', label: `食堂 · ${food}${comp ? ' · 和' + compName(comp) : ''}`, icon: '饭', min, ff: 8, perMin: (dm) => { S.v.full = clamp(S.v.full + 3.6 * dm); S.v.energy = clamp(S.v.energy + 0.4 * dm); },
+    onDone: () => { S.meals++; S.mealsWeek++; const first = cui && !(S.cuisines || {})[cui.id]; if (cui) (S.cuisines = S.cuisines || {})[cui.id] = 1; applyFx({ wellbeing: first ? 5 : 3 }); logIt(`在食堂${comp ? '和' + compName(comp) : '和同事们'}一起吃了${meal}：${food}${first ? `（这周第一次吃${cui.zh}菜）` : ''}。`); pose('idle', 28, 2.6); if (comp) companionDone('canteen', comp); }, onCancel: () => pose('idle', 28, 2.6), cancelText: '先不吃了' }); },
   read: (min) => { pose('read', 13, 18.3, 0, true); startActivity({ type: 'read', label: '在图书馆读论文', icon: '读', min, ff: 10, drain: -0.02, perMin: (dm) => { S.paper = S.paperSubmitted ? S.paper : clamp(S.paper + 0.12 * dm); },
     onDone: () => { applyFx({ research: 2, energy: 4 }); S.reads++; if (!S.submitted && S.day <= 4) { if (addStar('grant', 'idea', 1, true)) toast(`读到一篇好文章，基金书多了一个创新点：${STAR(S.dos.grant.idea)}`, 'good'); else toast('又读了一篇，创新点已经够清楚了；现在缺的是数据和写作。'); } if (S.reads >= 3) unlock('bookworm'); logIt('在图书馆安静地读了半小时论文，记下了两个基金书可以用的想法。'); pose('idle', 13, 17.6); }, onCancel: () => pose('idle', 13, 17.6) }); },
   tennis: (min) => sport('tennis', min, { x: 12, z: 13, lx: 26, lz: 13, label: '和化学系陈老师打网球', fx: { energy: 12, full: -10, bladder: 4, rep: 2, wellbeing: 5 }, partner: 'coach', log: '和化学系的陈老师打了一局网球，聊起了各自的基金。',
@@ -4296,11 +4370,14 @@ const ACT = {
     after: () => { Object.keys(S.trust).forEach(id => { if (!S.lost.includes(id)) S.trust[id] = clamp(S.trust[id] + trustGain(6)); }); toast(`学生们对你的信任都上升了（+${trustGain(6)}）。球场上的老师，和办公室里的不太一样。`, 'good'); } }),
   soccer: (min) => sport('soccer', min, { x: 58, z: 46, lx: 84, lz: 46, label: '和本科生踢球', fx: { energy: 12, full: -14, bladder: 4, team: 4, wellbeing: 4 }, log: '和本科生们在足球场踢了一场球。',
     after: () => { if (!S.recruit) { S.recruit = true; S.flags.recruit = 1; toast('中场休息时，一个大二学生小吴问：“老师，本科生能进您的组吗？”', 'good'); logIt('踢球时认识了大二的小吴，他想进组。'); } } }),
-  walk: (min) => { pose('walk', undefined, undefined, undefined, false); startActivity({ type: 'walk', label: '在植物园里散步 · 身心恢复中', icon: '花', min, ff: 10, drain: -0.06, perMin: (dm) => { S.v.energy = clamp(S.v.energy + 0.55 * dm); S.wb = clamp(S.wb + 0.45 * dm); }, cancelText: '走回去',
+  walk: (min, comp) => { pose('walk', undefined, undefined, undefined, false); startActivity({ type: 'walk', label: comp ? '在植物园里散步 · 和阿玲打电话' : '在植物园里散步 · 身心恢复中', icon: '花', min, ff: 10, drain: -0.06, perMin: (dm) => { S.v.energy = clamp(S.v.energy + 0.55 * dm); S.wb = clamp(S.wb + 0.45 * dm); }, cancelText: '走回去',
     perFrame: (t) => { const a = t * 0.5; player.position.set(20 + Math.cos(a) * 1.6, 0, 13 + Math.sin(a) * 1.0); player.rotation.y = Math.atan2(-Math.sin(a), Math.cos(a)); },
-    onDone: () => { logIt('在六楼植物园里走了一圈。'); pose('idle', 20, 13); }, onCancel: () => pose('idle', 20, 13) }); },
-  roofcoffee: (min) => { const gain = [14, 12, 10, 8, 6][Math.min(4, S.coffees)]; pose('sit', 14 + 1.0, 11, -Math.PI / 2 - 0 + Math.PI, true); startActivity({ type: 'coffee', label: '天台 · 一杯手冲', icon: '啡', min, ff: 8, drain: -0.04,
-    onDone: () => { S.coffees++; S.coffeesWeek++; applyFx({ energy: gain, bladder: 14, wellbeing: 2 }); if (S.coffees >= 4) unlock('caffeine'); logIt('在天台喝了一杯咖啡，看了一会儿城市。'); pose('idle', 9, 7.8); rumour(); }, onCancel: () => pose('idle', 9, 7.8) }); },
+    onDone: () => { logIt(comp ? '在植物园里一边走一边和阿玲打电话。' : '在六楼植物园里走了一圈。'); pose('idle', 20, 13);
+      if (comp) companionDone('garden', comp);
+      else if (min >= 20 && !S.inspired && !S.submitted && S.day <= 4) { S.inspired = true; toast('走到第三圈，基金书的一个想法突然清楚了。下一段写基金时，创新点 +1 星。', 'good'); } },
+    onCancel: () => pose('idle', 20, 13) }); },
+  roofcoffee: (min, comp) => { const gain = [14, 12, 10, 8, 6][Math.min(4, S.coffees)]; pose('sit', 14 + 1.0, 11, -Math.PI / 2 - 0 + Math.PI, true); startActivity({ type: 'coffee', label: '天台 · 一杯手冲', icon: '啡', min, ff: 8, drain: -0.04,
+    onDone: () => { S.coffees++; S.coffeesWeek++; applyFx({ energy: gain, bladder: 14, wellbeing: 2 }); if (S.coffees >= 4) unlock('caffeine'); logIt(comp ? `在天台和${compName(comp)}喝了一杯咖啡。` : '在天台喝了一杯咖啡，看了一会儿城市。'); pose('idle', 9, 7.8); rumour(); if (comp) companionDone('cafe', comp); }, onCancel: () => pose('idle', 9, 7.8) }); },
   roofeat: (min) => { pose('sit', 15, 11, Math.PI / 2, true); setExpr(player, 'happy'); startActivity({ type: 'eat', label: '天台 · 三明治和拿铁', icon: '饭', min, ff: 8, perMin: (dm) => { S.v.full = clamp(S.v.full + 2.6 * dm); S.v.energy = clamp(S.v.energy + 0.6 * dm); },
     onDone: () => { S.meals++; S.mealsWeek++; S.coffees++; applyFx({ bladder: 10 }); logIt('在天台吃了三明治，喝了拿铁。'); pose('idle', 9, 7.8); }, onCancel: () => pose('idle', 9, 7.8) }); },
   multitask: (min) => { pose('type', 14.75, 21.05, Math.PI / 2, true); startActivity({ type: 'multitask', label: '一边开会一边写基金', icon: '双', min, ff: 12, drain: 0.05,
@@ -4910,7 +4987,7 @@ function amenityAt(x, z) {
   if (near('canteen')) return { label: S.t >= hm(10, 30) && S.t < hm(20, 30) && CANTEEN.data ? '食堂：今天 6 个世界美食档口 · 选一家' : `食堂打饭：${FOOD()[0]}`, code: '1F', act: () => canteenMenu() };
   if (near('libdesk', 1.6)) return { label: '读 30 分钟论文 · 论文进度 + 基金创新点', code: '3F', act: () => ACT.read(30) };
   if (near('tennis', 1.8)) return { label: `和陈老师打 30 分钟网球 · 声誉 + 身心${S.flags.ally_coach ? '' : ' · 也许能谈成合作'}`, code: '4F', act: () => ACT.tennis(30) };
-  if (near('garden', 1.8)) return { label: `在植物园里走 20 分钟 · 身心 +9（现在 ${Math.round(S.wb)}）`, code: '6F', act: () => ACT.walk(20) };
+  if (near('garden', 1.8)) return { label: `在植物园里走 20 分钟 · 身心 +9（现在 ${Math.round(S.wb)}）${companionsFor('garden').ok.length ? ' · 可以给阿玲打电话' : ''}`, code: '6F', act: openGarden };
   if (near('roofcafe', 1.6)) return { label: `天台咖啡（第 ${S.coffees + 1} 杯）· 顺便听听明天的八卦`, code: 'R', act: openRoofCafe };
   if (near('pitch', 2.5)) return { label: `和本科生踢 40 分钟球 · 团队 + 身心${S.recruit ? '' : ' · 也许能招到人'}`, code: '校园', act: () => ACT.soccer(40) };
   if (near('courtB', 2.0)) return { label: '和阿强打一局羽毛球（7 分）· 学生信任 +', code: '体育馆', act: () => bmOffer('aqiang') };
@@ -4972,6 +5049,7 @@ function openRoofCafe() {
   openDialog({ id: 'roofcafe', loc: 'roofcafe', who: '咖啡师 · 天台咖啡馆', tag: '天台', title: '要点什么？', synthetic: true, start: 'a', status: [['精力', Math.round(S.v.energy) + '%'], ['饱腹', Math.round(S.v.full) + '%']],
     nodes: { a: { say: [['咖啡师', '教授好，今天风不大，坐外面吧？']], choices: [
       { t: `一杯手冲，坐在天台喝完（精力 +${gain}）`, d: '15 分钟', run: () => ACT.roofcoffee(15) },
+      ...companionsFor('cafe').ok.map(id => ({ t: `约${compName(id)}喝一杯（请客 ${fmtY(TABLE.treat.cafe)}）`, d: `20 分钟 · ${compPerk(id)}`, run: () => ACT.roofcoffee(20, id) })),
       { t: '三明治加一杯拿铁', d: '20 分钟', run: () => ACT.roofeat(20) },
       { t: '只是看看风景', d: '回到天台' },
     ] } } });
@@ -5639,7 +5717,7 @@ function showDaySummary() {
 const SAVE_KEY = 'prof-week-save-v2', SAVE_V1 = 'prof-week-save-v1', CAREER_KEY = 'prof-career-v1';
 const PERSIST = ['bm', 'k', 'xp', 'level', 'ach', 'cards', 'log', 'grant', 'submitted', 'paper', 'paperSubmitted', 'day', 'collapses', 'lastEnd', 'totals', 'muons', 'rooms', 'zones', 'sports', 'reads', 'clears', 'flags', 'coffeesWeek', 'mealsWeek', 'mode', 'avatar',
   'week', 'career', 'wb', 'trust', 'mem', 'lost', 'gq', 'intel', 'crisis', 'crisisSeen', 'timeWeek', 'focusBlocks', 'recruit', 'intents', 'rumours', 'subWb', 'endT',
-  'dos', 'dataReq', 'fam', 'homeNights', 'famSkip', 'famEvents', 'fin'];
+  'dos', 'dataReq', 'fam', 'homeNights', 'famSkip', 'famEvents', 'fin', 'companions', 'tableSeen', 'tableLog', 'inspired', 'zhaoFlow', 'coachWeek'];
 /* v10.2 saves. Day boundaries save PERSIST (as before). During a day, an autosave every 20 s (and when the tab is hidden)
    also stores a mid-day snapshot ("mid"): the whole state minus 3D objects, dialogs and activities, plus the state the
    day started from ("dayBase") so the day's events can be rebuilt with their functions, then given their saved states.
@@ -5884,7 +5962,7 @@ function endWeek(reason) {
       : ['ok', `钱：余额 ${fmtY(F.cash)} · 本月 ${money.net >= 0 ? '+' : ''}${fmtY(money.net)}`, `${F.mortgage ? `房贷还剩 ${fmtY(F.mortgage.bal)}。` : ''}${F.consult === S.week ? '这个月接了横向：科研 −2。' : ''}${money.aud ? '有一张“会议餐费”被审计了。' : ''}`, 0]);
   }
   const carry = freshDossier(); carry.grant.letter = S.dos.grant.letter; carry.grant.idea = Math.max(0, S.dos.grant.idea - 1); carry.grant.data = Math.max(0, S.dos.grant.data - 1);
-  Object.assign(c, { week: S.week + 1, trust: Object.assign({}, S.trust), lost: S.lost.slice(), flags: S.flags.ally_coach ? { ally_coach: 1 } : {}, wb: clamp(S.wb + 8), k: Object.assign({}, S.k), setup: Object.assign({}, setup), fam: Object.assign({}, S.fam), dos: carry, fin: S.fin ? JSON.parse(JSON.stringify(S.fin)) : c.fin });
+  Object.assign(c, { week: S.week + 1, trust: Object.assign({}, S.trust), lost: S.lost.slice(), flags: S.flags.ally_coach ? { ally_coach: 1 } : {}, wb: clamp(S.wb + 8), k: Object.assign({}, S.k), setup: Object.assign({}, setup), fam: Object.assign({}, S.fam), dos: carry, tableSeen: (S.tableSeen || []).slice(), fin: S.fin ? JSON.parse(JSON.stringify(S.fin)) : c.fin });
   saveCareer(c);
   const promoted = c.rank > rank0, nxt = RANKS[c.rank + 1], elected = !!(vote && vote.elected);
   if (elected) unlock('academician');
@@ -6375,8 +6453,9 @@ const tr = (v) => isLoc(v) ? (v[LANG] || v.zh) : Array.isArray(v) ? v.map(tr) : 
 function loadContent() {
   const get = (f) => fetch('assets/data/content/' + f).then(r => { if (!r.ok) throw new Error(f + ' ' + r.status); return r.json(); });
   CONTENT.error = null;
-  CONTENT.p = Promise.all(['week.json', 'events.json', 'people.json', 'calendar.json', 'codex.json'].map(get)).then((files) => {
-    const [wk, ev, pp, cal, cx] = files.map(tr);
+  CONTENT.p = Promise.all(['week.json', 'events.json', 'people.json', 'calendar.json', 'codex.json', 'table.json'].map(get)).then((files) => {
+    const [wk, ev, pp, cal, cx, tb] = files.map(tr);
+    Object.assign(TABLE, tb);
     if (CONTENT.ready) return;
     wk.events.forEach(e => { const { day, time, loc, who, tag, title, line, open, ch, ...o } = e; C(day, time, loc, who, tag, title, line, open, ch, o); });
     QUICK.push(...ev.quick.map(q => [q.who, q.title, q.open, q.ch]));
@@ -6398,6 +6477,7 @@ loadContent();
 if (SIM) window.__sim = {
   get S() { return S; }, get ready() { return CONTENT.ready; }, setup, ACT, HS, ZONES, BLOCKS, DAYS, INTENTS, STUDENTS, KPI, FAMILY, CANTEEN, FIN: typeof FIN !== 'undefined' ? FIN : null,
   startGame, startDay, beginDay, nextWeek, pick, closeDialog, openDialog, openDesk, openRoofCafe, canteenMenu, canteenToday, confirmHome, goHome,
+  openGarden, companionsFor, get TABLE() { return TABLE; },
   minuteTick, simulate, activeEvents, travelMinutes, blockIdx, commitEnd, dossierScore, avgTrust, loadCareer, saveCareer, finishActivity, hm,
   clearAll() { try { localStorage.clear(); } catch (e) { /* storage blocked */ } },
 };

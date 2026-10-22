@@ -1,0 +1,932 @@
+{
+ "_comment": "v12.2 companions (约人) and table events (饭桌上说的话). places: who may come to each place and what their company is good for (the perks are rules in index.html, keyed by place and person). events: two- or three-choice talks that can only happen with that person at the table; one per meal at most, a chance per place (chance), seeded by week, day and person, each event once per career. Text is { zh, en }. Choice: [text, fx, minutes, feedback]. fx as everywhere; trust goes to the companion.",
+ "chance": {
+  "canteen": 0.35,
+  "cafe": 0.25
+ },
+ "treat": {
+  "canteen": 45,
+  "cafe": 28
+ },
+ "places": {
+  "canteen": {
+   "who": [
+    "chen",
+    "zhou",
+    "yu",
+    "lin",
+    "zhao"
+   ],
+   "trust": 6
+  },
+  "cafe": {
+   "who": [
+    "zhao",
+    "coach",
+    "wang"
+   ],
+   "trust": 4
+  },
+  "garden": {
+   "who": [
+    "partner"
+   ],
+   "trust": 0
+  }
+ },
+ "people": {
+  "chen": {
+   "n": {
+    "zh": "小陈",
+    "en": "Xiao Chen"
+   },
+   "seat": "bay"
+  },
+  "zhou": {
+   "n": {
+    "zh": "小周",
+    "en": "Xiao Zhou"
+   },
+   "seat": "bay3"
+  },
+  "yu": {
+   "n": {
+    "zh": "小雨",
+    "en": "Xiao Yu"
+   },
+   "seat": "bay2"
+  },
+  "lin": {
+   "n": {
+    "zh": "小林",
+    "en": "Xiao Lin"
+   },
+   "seat": "detector"
+  },
+  "zhao": {
+   "n": {
+    "zh": "赵博士",
+    "en": "Dr Zhao"
+   },
+   "seat": "rack",
+   "perk": {
+    "zh": "下一段写作一开始就有专注",
+    "en": "your next writing block starts in flow"
+   }
+  },
+  "coach": {
+   "n": {
+    "zh": "化学系陈老师",
+    "en": "Prof. Chen (Chemistry)"
+   },
+   "days": [
+    1,
+    3
+   ],
+   "perk": {
+    "zh": "合作信 +1 星（每周一次）",
+    "en": "+1 star on the collaboration letter (once a week)"
+   }
+  },
+  "wang": {
+   "n": {
+    "zh": "王老师",
+    "en": "Ms Wang"
+   },
+   "seat": "admin",
+   "perk": {
+    "zh": "院办的事她帮你理顺（补一张报销手续，或院办事项多 1 小时）",
+    "en": "she smooths the office side (one reimbursement fixed, or an hour more on office tasks)"
+   }
+  },
+  "partner": {
+   "n": {
+    "zh": "阿玲（电话）",
+    "en": "A-Ling (on the phone)"
+   },
+   "from": "19:00",
+   "perk": {
+    "zh": "阿玲 +3",
+    "en": "A-Ling +3"
+   }
+  }
+ },
+ "events": [
+  {
+   "id": "t_chen_doubt",
+   "npc": "chen",
+   "who": "小陈 · 博士二年级",
+   "title": {
+    "zh": "小陈：我是不是不适合做科研",
+    "en": "Chen: maybe I'm not cut out for research"
+   },
+   "open": {
+    "zh": "小陈戳着碗里的面，半天没动筷子。|小陈：老师，我同学已经三篇一作了。我做了一年半，一个拟合都没对过。我是不是不适合做科研？",
+    "en": "Chen pokes at his noodles without eating.|小陈：Prof, my classmate already has three first-author papers. A year and a half in, I haven't got one fit right. Maybe I'm not cut out for this?"
+   },
+   "ch": [
+    [
+     {
+      "zh": "讲讲你自己博士第二年最狼狈的事",
+      "en": "Tell him about the worst moment of your own second year"
+     },
+     "trust+8 wellbeing+2",
+     20,
+     {
+      "zh": "你讲到第一篇论文被拒三次。小陈笑出了声，然后说：“那我再试试。”",
+      "en": "You get to the part where your first paper was rejected three times. He laughs, then says: \"Okay. I'll keep going.\""
+     }
+    ],
+    [
+     {
+      "zh": "给他一个两周的小目标：把拟合那一章写完",
+      "en": "Give him a two-week target: finish the fit chapter"
+     },
+     "trust+4 research+2 paper+2",
+     10,
+     {
+      "zh": "他把目标写在了手机备忘录里，第一行加了三个感叹号。",
+      "en": "He types the goal into his phone, with three exclamation marks."
+     }
+    ],
+    [
+     {
+      "zh": "“大家都这样。吃吧，面要凉了。”",
+      "en": "\"Everyone feels that way. Eat, it's getting cold.\""
+     },
+     "trust-5",
+     2,
+     {
+      "zh": "他点点头，低头吃面。后面二十分钟没再说话。",
+      "en": "He nods and eats. He doesn't say anything for the next twenty minutes."
+     }
+    ]
+   ]
+  },
+  {
+   "id": "t_chen_bug",
+   "npc": "chen",
+   "who": "小陈 · 博士二年级",
+   "title": {
+    "zh": "小陈：昨天给您的拟合可能有个 bug",
+    "en": "Chen: the fit I gave you yesterday may have a bug"
+   },
+   "open": {
+    "zh": "小陈放下筷子：老师，我昨晚睡前想到，本底那一项我可能算了两遍。那张图……已经放进基金书的预实验部分了吧？",
+    "en": "Chen puts his chopsticks down: Prof, last night I realised I may have counted the background twice. That plot… it's already in the grant's preliminary data, isn't it?"
+   },
+   "ch": [
+    [
+     {
+      "zh": "吃完一起回去查，今天就改",
+      "en": "Go back together after lunch and fix it today"
+     },
+     "integrity+3 research+2 trust+5 energy-3",
+     40,
+     {
+      "zh": "bug 是真的。改完的曲线没那么漂亮，但每个点都站得住。",
+      "en": "The bug is real. The corrected curve is less pretty, and every point holds up."
+     }
+    ],
+    [
+     {
+      "zh": "“谢谢你说出来。写清楚，今晚我来核对。”",
+      "en": "\"Thank you for saying so. Write it up; I'll check it tonight.\""
+     },
+     "integrity+2 trust+6 energy-2",
+     5,
+     {
+      "zh": "晚上十点，你收到一份两页的说明，连修改前后的对比图都画好了。",
+      "en": "At ten that night a two-page note arrives, with before-and-after plots."
+     }
+    ],
+    [
+     {
+      "zh": "“先别动，等周五截止以后再说”",
+      "en": "\"Leave it until after Friday's deadline\""
+     },
+     "integrity-4 grant+3 trust-3",
+     2,
+     {
+      "zh": "小陈说好。你注意到他没再看你的眼睛。",
+      "en": "He says okay. You notice he stops meeting your eyes."
+     }
+    ]
+   ]
+  },
+  {
+   "id": "t_chen_conf",
+   "npc": "chen",
+   "who": "小陈 · 博士二年级",
+   "title": {
+    "zh": "小陈：我想去日本开会",
+    "en": "Chen: I'd like to present in Japan"
+   },
+   "open": {
+    "zh": "小陈把手机推过来：下个月京都有个缪子物理会议，摘要还能投。|小陈：我想讲寿命测量。您觉得……够格吗？",
+    "en": "Chen slides his phone across: a muon physics meeting in Kyoto next month, abstracts still open.|小陈：I'd like to talk about the lifetime measurement. Is it… good enough?"
+   },
+   "ch": [
+    [
+     {
+      "zh": "投口头报告，周四我帮你过一遍幻灯片",
+      "en": "Submit for a talk; you'll go through his slides on Thursday"
+     },
+     "trust+7 rep+2 energy-3",
+     5,
+     {
+      "zh": "他当场就打开了投稿系统。",
+      "en": "He opens the submission page right there at the table."
+     }
+    ],
+    [
+     {
+      "zh": "今年先投海报，经费留给新探测器",
+      "en": "A poster this year; the money goes to the new detector"
+     },
+     "trust-2 research+2",
+     3,
+     {
+      "zh": "“好的老师。”他把手机收了回去。",
+      "en": "\"Okay, Prof.\" He puts the phone away."
+     }
+    ],
+    [
+     {
+      "zh": "“等基金结果出来再说”",
+      "en": "\"Let's wait for the grant result\""
+     },
+     "trust-6",
+     2,
+     {
+      "zh": "摘要截止在基金结果出来之前。你们都知道。",
+      "en": "The abstract deadline is before the grant result. You both know it."
+     }
+    ]
+   ]
+  },
+  {
+   "id": "t_zhou_phd",
+   "npc": "zhou",
+   "who": "小周 · 本科四年级",
+   "title": {
+    "zh": "小周：我可能不读博了",
+    "en": "Zhou: I might not do a PhD"
+   },
+   "open": {
+    "zh": "小周把餐盘推到一边：老师……我可能不读博了。|小周：推荐信您都写了一半了，对不起。我就是越来越不确定，自己是喜欢物理，还是只是习惯了考第一。",
+    "en": "Zhou pushes her tray aside: Prof… I might not do a PhD after all.|小周：You're halfway through my letter, I'm sorry. I'm just less and less sure whether I love physics or I'm just used to coming first."
+   },
+   "ch": [
+    [
+     {
+      "zh": "“先别急着决定。下学期来组里做一个真课题，再看”",
+      "en": "\"Don't decide yet. Do a real project with us next term, then see\""
+     },
+     "trust+8 research-1",
+     10,
+     {
+      "zh": "她想了很久，说：“那我试一个学期。”",
+      "en": "She thinks for a long time: \"One term, then.\""
+     }
+    ],
+    [
+     {
+      "zh": "“这是你的决定。不管去哪，推荐信我都照样写好”",
+      "en": "\"It's your call. Wherever you go, I'll write the letter just as well\""
+     },
+     "trust+5 integrity+1",
+     5,
+     {
+      "zh": "她眼圈红了一下：“谢谢老师。”",
+      "en": "Her eyes go red for a second. \"Thank you.\""
+     }
+    ],
+    [
+     {
+      "zh": "岔开话题：“这周食堂的秘鲁菜你吃了吗？”",
+      "en": "Change the subject: \"Have you tried the Peruvian stall this week?\""
+     },
+     "trust-6",
+     2,
+     {
+      "zh": "她笑了笑，没再提。",
+      "en": "She smiles and doesn't bring it up again."
+     }
+    ]
+   ]
+  },
+  {
+   "id": "t_zhou_letter",
+   "npc": "zhou",
+   "who": "小周 · 本科四年级",
+   "title": {
+    "zh": "小周：推荐信能不能写“厉害”一点",
+    "en": "Zhou: could the letter sound a bit stronger?"
+   },
+   "open": {
+    "zh": "小周有点不好意思：老师，推荐信里能不能写是我“主导”了那个探测器项目？|小周：师姐说国外的信都写得很夸张，不夸张就等于差。",
+    "en": "Zhou, a little embarrassed: Prof, could the letter say I \"led\" the detector project?|小周：A senior said letters abroad are all inflated, and an honest one reads as weak."
+   },
+   "ch": [
+    [
+     {
+      "zh": "照实写，但写具体：她做了哪几件别人做不到的事",
+      "en": "Write it straight but specific: the things she did that others couldn't"
+     },
+     "integrity+3 trust+3",
+     10,
+     {
+      "zh": "你举了她半夜修好读出板的例子。具体的事比形容词有分量。",
+      "en": "You describe the night she fixed the readout board. Specifics outweigh adjectives."
+     }
+    ],
+    [
+     {
+      "zh": "让她先起草一份事实清单，你来改",
+      "en": "Ask her for a list of facts first; you'll edit"
+     },
+     "trust+2 integrity+1 energy+2",
+     3,
+     {
+      "zh": "她的清单比你记得的还多三条。",
+      "en": "Her list has three things you had forgotten."
+     }
+    ],
+    [
+     {
+      "zh": "按她说的写",
+      "en": "Write it the way she asks"
+     },
+     "integrity-6 trust+5 rep-1",
+     3,
+     {
+      "zh": "信发出去了。你希望项目合作者里没有人认识收信的教授。",
+      "en": "The letter goes out. You hope none of the collaborators knows the professor reading it."
+     }
+    ]
+   ]
+  },
+  {
+   "id": "t_zhou_parents",
+   "npc": "zhou",
+   "who": "小周 · 本科四年级",
+   "title": {
+    "zh": "小周：我爸妈想让我考公",
+    "en": "Zhou: my parents want me to sit the civil service exam"
+   },
+   "open": {
+    "zh": "小周：昨晚我爸妈又打电话了，说读博太辛苦，让我考公务员，稳定。|小周：我不知道怎么跟他们说。",
+    "en": "小周：My parents called again last night. A PhD is too hard, they say; sit the civil service exam, it's stable.|小周：I don't know how to talk to them."
+   },
+   "ch": [
+    [
+     {
+      "zh": "“要不要我和你爸妈视频聊一次？”",
+      "en": "\"Would it help if I had a video call with your parents?\""
+     },
+     "trust+8 energy-5",
+     30,
+     {
+      "zh": "视频里她爸爸问了二十分钟奖学金和就业。最后说：“老师，那就拜托您了。”",
+      "en": "Her father asks about stipends and jobs for twenty minutes, then says: \"We'll leave her in your hands.\""
+     }
+    ],
+    [
+     {
+      "zh": "把两条路的事实都摆出来：收入、时间、能做什么",
+      "en": "Lay out the facts of both paths: pay, time, what each lets her do"
+     },
+     "trust+5 teaching+2",
+     15,
+     {
+      "zh": "她拍下你在餐巾纸上画的表。",
+      "en": "She takes a photo of the table you drew on a napkin."
+     }
+    ],
+    [
+     {
+      "zh": "“父母一般都是为你好”",
+      "en": "\"Parents usually know best\""
+     },
+     "trust-6",
+     2,
+     {
+      "zh": "她点点头，说：“嗯，我再想想。”",
+      "en": "She nods. \"Mm. I'll think about it.\""
+     }
+    ]
+   ]
+  },
+  {
+   "id": "t_yu_sleep",
+   "npc": "yu",
+   "who": "小雨 · 硕士二年级",
+   "title": {
+    "zh": "小雨：我这两周每天只睡四个小时",
+    "en": "Yu: I've slept four hours a night for two weeks"
+   },
+   "open": {
+    "zh": "小雨端着饭，眼下一片青：老师，我这两周每天只睡四个小时，论文还是写不完。|小雨：我是不是太慢了？",
+    "en": "Yu holds her tray; there are dark rings under her eyes: Prof, I've slept four hours a night for two weeks and the thesis still isn't done.|小雨：Am I just too slow?"
+   },
+   "ch": [
+    [
+     {
+      "zh": "“今晚九点前回宿舍。这是导师的要求。”然后一起排个现实的进度",
+      "en": "\"Back to your room by nine tonight. That's an instruction.\" Then plan a realistic schedule together"
+     },
+     "trust+7 wellbeing+2 research-1",
+     15,
+     {
+      "zh": "新进度表把答辩前的三周拉成了五周。她松了一口气。",
+      "en": "The new plan stretches three weeks to five. She breathes out."
+     }
+    ],
+    [
+     {
+      "zh": "陪她去学校的心理咨询中心预约，一起走过去",
+      "en": "Walk her over to the university counselling centre to book a session"
+     },
+     "trust+6 energy-3",
+     25,
+     {
+      "zh": "预约排在周四。走回来的路上她说：“谢谢您没觉得我矫情。”",
+      "en": "The appointment is Thursday. On the way back she says: \"Thanks for not thinking I'm being dramatic.\""
+     }
+    ],
+    [
+     {
+      "zh": "“写论文的季节，大家都这样”",
+      "en": "\"It's thesis season, everyone's like this\""
+     },
+     "trust-6",
+     2,
+     {
+      "zh": "她笑了一下，把剩下的饭倒掉了。",
+      "en": "She smiles and throws the rest of her food away."
+     }
+    ]
+   ]
+  },
+  {
+   "id": "t_yu_credit",
+   "npc": "yu",
+   "who": "小雨 · 硕士二年级",
+   "title": {
+    "zh": "小雨：师兄把我的图用进了他的报告",
+    "en": "Yu: a senior student used my figure in his talk"
+   },
+   "open": {
+    "zh": "小雨小声说：老师，上周学院报告会上，隔壁组的师兄用了我做的效率图，没写我的名字。|小雨：我不想闹大，但心里不舒服。",
+    "en": "Yu, quietly: Prof, at last week's department seminar a senior from the next group showed my efficiency plot without my name.|小雨：I don't want to make a fuss, but it bothers me."
+   },
+   "ch": [
+    [
+     {
+      "zh": "周一组会上立个规矩：用别人的图，写上名字",
+      "en": "Make it a rule at Monday's group meeting: use someone's figure, credit them"
+     },
+     "integrity+3 team+2 trust+6",
+     5,
+     {
+      "zh": "规矩写进了组里的 wiki 首页。小雨的名字后来出现在三张幻灯片上。",
+      "en": "The rule goes on the group wiki's front page. Yu's name later appears on three slides."
+     }
+    ],
+    [
+     {
+      "zh": "私下找那位师兄和他导师聊聊",
+      "en": "Have a private word with the senior and his supervisor"
+     },
+     "trust+4 integrity+1 rep-1",
+     15,
+     {
+      "zh": "对方道了歉。隔壁组的老师有点尴尬，你也是。",
+      "en": "He apologises. His supervisor is a bit embarrassed. So are you."
+     }
+    ],
+    [
+     {
+      "zh": "“一个楼里的，算了”",
+      "en": "\"Same building. Let it go\""
+     },
+     "trust-6 integrity-2",
+     2,
+     {
+      "zh": "她说好。下一次组会，她的图没再放进共享文件夹。",
+      "en": "She says fine. At the next group meeting her plots are no longer in the shared folder."
+     }
+    ]
+   ]
+  },
+  {
+   "id": "t_yu_intern",
+   "npc": "yu",
+   "who": "小雨 · 硕士二年级",
+   "title": {
+    "zh": "小雨：我想去企业实习三个月",
+    "en": "Yu: I'd like a three-month industry internship"
+   },
+   "open": {
+    "zh": "小雨：老师，一家做医学影像的公司给了我实习机会，三个月。|小雨：我知道组里缺人……但我想看看外面是什么样。",
+    "en": "小雨：Prof, a medical imaging company offered me a three-month internship.|小雨：I know the group is short-handed… but I want to see what it's like outside."
+   },
+   "ch": [
+    [
+     {
+      "zh": "支持，帮她把论文进度和实习错开排好",
+      "en": "Support it, and help her fit the thesis schedule around it"
+     },
+     "trust+7 research-2",
+     10,
+     {
+      "zh": "她把实习推迟了一个月，两边都排得开。",
+      "en": "She moves the start back a month, and both fit."
+     }
+    ],
+    [
+     {
+      "zh": "“答辩完再去，到时我帮你写推荐”",
+      "en": "\"After your defence, and I'll write you a reference\""
+     },
+     "trust-1 research+2",
+     3,
+     {
+      "zh": "她想了想：“也行。”",
+      "en": "She thinks it over. \"That works.\""
+     }
+    ],
+    [
+     {
+      "zh": "“现在不行，探测器离不开人”",
+      "en": "\"Not now. The detector can't spare anyone\""
+     },
+     "trust-8 research+3",
+     2,
+     {
+      "zh": "她回了公司一封婉拒信，抄送了你。",
+      "en": "She declines the offer by email, and copies you."
+     }
+    ]
+   ]
+  },
+  {
+   "id": "t_lin_cylinder",
+   "npc": "lin",
+   "who": "小林 · 硕士一年级",
+   "title": {
+    "zh": "小林：上周的气瓶检查我没做",
+    "en": "Lin: I skipped last week's gas cylinder check"
+   },
+   "open": {
+    "zh": "小林嚼着饭，突然停住：老师……上周五的气瓶检查我没做，记录本上是我照着前一周抄的。|小林：后天学院安全检查，我越想越怕。",
+    "en": "Lin stops chewing: Prof… I didn't do last Friday's cylinder check. I copied the week before into the log.|小林：The department inspection is the day after tomorrow and I can't stop thinking about it."
+   },
+   "ch": [
+    [
+     {
+      "zh": "吃完一起去实验室，现在就查，记录照实改",
+      "en": "Go to the lab together after lunch, check now, correct the log honestly"
+     },
+     "safety+4 integrity+2 trust+3 energy-4",
+     40,
+     {
+      "zh": "一个减压阀接头有轻微泄漏。检漏液冒了一串小泡。小林脸都白了。",
+      "en": "One regulator fitting has a slow leak; the soap solution bubbles. Lin goes pale."
+     }
+    ],
+    [
+     {
+      "zh": "严肃地讲一遍为什么不能抄记录",
+      "en": "Explain, firmly, why a log is never copied"
+     },
+     "safety+1 trust-4",
+     10,
+     {
+      "zh": "他一直点头。下午你看见他一个人去了气瓶间。",
+      "en": "He nods throughout. In the afternoon you see him go to the cylinder room alone."
+     }
+    ],
+    [
+     {
+      "zh": "“下次注意就行，这次就算了”",
+      "en": "\"Just be careful next time\""
+     },
+     "safety-6 trust+1",
+     2,
+     {
+      "zh": "他松了一口气。气瓶间的门一下午都没人开。",
+      "en": "He looks relieved. Nobody opens the cylinder room all afternoon."
+     }
+    ]
+   ]
+  },
+  {
+   "id": "t_lin_lost",
+   "npc": "lin",
+   "who": "小林 · 硕士一年级",
+   "title": {
+    "zh": "小林：组会上大家说的我都听不懂",
+    "en": "Lin: I don't follow anything at group meetings"
+   },
+   "open": {
+    "zh": "小林：老师，组会上师兄师姐说的 TDC、死时间、堆积……我都听不懂，又不敢问。",
+    "en": "小林：Prof, at group meetings everyone talks about TDCs, dead time, pile-up… I don't understand any of it and I'm afraid to ask."
+   },
+   "ch": [
+    [
+     {
+      "zh": "每周四和他单独聊二十分钟，什么都可以问",
+      "en": "Twenty minutes one-to-one every Thursday; any question allowed"
+     },
+     "trust+8 teaching+2 energy-2",
+     5,
+     {
+      "zh": "他第一周就带来了一张写满问题的纸。",
+      "en": "He turns up the first week with a page full of questions."
+     }
+    ],
+    [
+     {
+      "zh": "让赵博士带他，每天一个术语",
+      "en": "Pair him with Dr Zhao: one term a day"
+     },
+     "trust+4 team+2",
+     5,
+     {
+      "zh": "赵博士在白板角落开了个“今日术语”。",
+      "en": "Dr Zhao starts a \"term of the day\" corner on the whiteboard."
+     }
+    ],
+    [
+     {
+      "zh": "“多看文献就懂了”",
+      "en": "\"Read more papers and it'll come\""
+     },
+     "trust-4",
+     2,
+     {
+      "zh": "他下载了二十篇文献。第一篇看了三天。",
+      "en": "He downloads twenty papers. The first one takes him three days."
+     }
+    ]
+   ]
+  },
+  {
+   "id": "t_lin_phone",
+   "npc": "lin",
+   "who": "小林 · 硕士一年级",
+   "title": {
+    "zh": "小林：我想用手机测宇宙线",
+    "en": "Lin: I want to detect cosmic rays with phones"
+   },
+   "open": {
+    "zh": "小林眼睛发亮：老师，我看到手机摄像头能拍到宇宙线的径迹！|小林：开放日我们能不能让中学生用自己的手机测？",
+    "en": "Lin's eyes light up: Prof, phone cameras can catch cosmic-ray tracks!|小林：At open day, could school students measure them with their own phones?"
+   },
+   "ch": [
+    [
+     {
+      "zh": "给他一个周五下午和一点经费，先做个原型",
+      "en": "Give him a Friday afternoon and a small budget for a prototype"
+     },
+     "trust+7 research+1 rep+1",
+     5,
+     {
+      "zh": "他找到了 DECO 这类已有的应用，周五下午就测到了第一条径迹。",
+      "en": "He finds existing apps like DECO, and catches his first track on Friday afternoon."
+     }
+    ],
+    [
+     {
+      "zh": "“好主意，先把这学期的课上完”",
+      "en": "\"Good idea. Finish this term's courses first\""
+     },
+     "trust+1",
+     2,
+     {
+      "zh": "他把想法记在了本子最后一页。",
+      "en": "He writes the idea on the last page of his notebook."
+     }
+    ],
+    [
+     {
+      "zh": "“手机那点噪声，测不出什么”",
+      "en": "\"Phone sensors are too noisy for that\""
+     },
+     "trust-5",
+     2,
+     {
+      "zh": "其实测得出来，只是计数率很低。他没敢反驳。",
+      "en": "It does work, at a low rate. He doesn't dare say so."
+     }
+    ]
+   ]
+  },
+  {
+   "id": "t_zhao_offer",
+   "npc": "zhao",
+   "who": "赵博士 · 博士后",
+   "title": {
+    "zh": "赵博士：有家公司给了我 offer",
+    "en": "Dr Zhao: a company made me an offer"
+   },
+   "open": {
+    "zh": "赵博士把筷子并在碗上：老师，一家做缪子成像的公司给了我 offer，工资是现在的两倍半。|赵博士：我还没答应。想先听听您怎么说。",
+    "en": "Dr Zhao lays his chopsticks across the bowl: Prof, a muography company offered me a job at two and a half times my salary.|赵博士：I haven't said yes. I wanted to hear what you think first."
+   },
+   "ch": [
+    [
+     {
+      "zh": "真心支持，帮他谈个好条件",
+      "en": "Support him properly, and help him negotiate"
+     },
+     "trust+6 team-4 rep+2 integrity+1",
+     15,
+     {
+      "zh": "他拿到了更好的期权。走之前，他把探测器的交接文档写了四十页。",
+      "en": "He gets better equity. Before leaving he writes a forty-page handover for the detector."
+     }
+    ],
+    [
+     {
+      "zh": "请他再留半年，把探测器论文做完，你帮他发一作",
+      "en": "Ask him to stay six months to finish the detector paper, as first author"
+     },
+     "trust-1 research+3 team+1",
+     10,
+     {
+      "zh": "他想了一晚，回了一句：“行，半年。”",
+      "en": "He sleeps on it, then replies: \"Fine. Six months.\""
+     }
+    ],
+    [
+     {
+      "zh": "“再说吧，先把这周忙完”",
+      "en": "\"Let's talk later. Let's get through this week\""
+     },
+     "trust-8",
+     2,
+     {
+      "zh": "他周五就签了。你是从王老师那里知道的。",
+      "en": "He signs on Friday. You hear it from Ms Wang."
+     }
+    ]
+   ]
+  },
+  {
+   "id": "t_zhao_faculty",
+   "npc": "zhao",
+   "who": "赵博士 · 博士后",
+   "title": {
+    "zh": "赵博士：能帮我看看教职申请吗",
+    "en": "Dr Zhao: could you read my faculty application?"
+   },
+   "open": {
+    "zh": "赵博士：老师，我在申请几所学校的教职，研究陈述写了三版，总觉得不对。|赵博士：您要是有空……",
+    "en": "赵博士：Prof, I'm applying for faculty jobs. Three drafts of the research statement and it still feels wrong.|赵博士：If you have time…"
+   },
+   "ch": [
+    [
+     {
+      "zh": "今晚逐段批注",
+      "en": "Annotate it paragraph by paragraph tonight"
+     },
+     "trust+8 rep+1 energy-6 wellbeing-2",
+     5,
+     {
+      "zh": "批注比原文还长。他回了一句：“我终于知道哪里不对了。”",
+      "en": "Your comments are longer than the text. He replies: \"Now I see what was wrong.\""
+     }
+    ],
+    [
+     {
+      "zh": "介绍两位正在招人的同行给他",
+      "en": "Introduce him to two colleagues who are hiring"
+     },
+     "trust+6 rep+2",
+     5,
+     {
+      "zh": "两封介绍邮件，十分钟。其中一位当天就回了。",
+      "en": "Two introductions, ten minutes. One replies the same day."
+     }
+    ],
+    [
+     {
+      "zh": "“发我吧，周末看”",
+      "en": "\"Send it, I'll look at the weekend\""
+     },
+     "trust+2",
+     2,
+     {
+      "zh": "周末你打开了它，又关上了。",
+      "en": "At the weekend you open it, then close it again."
+     }
+    ]
+   ]
+  },
+  {
+   "id": "t_zhao_load",
+   "npc": "zhao",
+   "who": "赵博士 · 博士后",
+   "title": {
+    "zh": "赵博士：带学生太占时间了",
+    "en": "Dr Zhao: supervising takes all my time"
+   },
+   "open": {
+    "zh": "赵博士揉着眼睛：老师，小林和小敏每天都来问我问题。我自己的分析这个月几乎没动。",
+    "en": "Dr Zhao rubs his eyes: Prof, Lin and Min come to me with questions every day. My own analysis hasn't moved this month."
+   },
+   "ch": [
+    [
+     {
+      "zh": "正式让他做小林的副导师，写进他的简历",
+      "en": "Make him Lin's co-supervisor officially, so it counts on his CV"
+     },
+     "trust+6 team+3 integrity+2",
+     5,
+     {
+      "zh": "他说：“这样带起来有名有分，我愿意。”",
+      "en": "He says: \"With the title it's real work. I'm in.\""
+     }
+    ],
+    [
+     {
+      "zh": "每周收回一个学生的例会，自己带",
+      "en": "Take back one student's weekly meeting yourself"
+     },
+     "trust+4 team+2 energy-3",
+     5,
+     {
+      "zh": "你的周三下午少了一小时。赵博士的分析图周五就出来了。",
+      "en": "Your Wednesday afternoon loses an hour. His analysis plot is ready by Friday."
+     }
+    ],
+    [
+     {
+      "zh": "“博士后本来就要带学生”",
+      "en": "\"Supervising is part of a postdoc's job\""
+     },
+     "trust-6 team-2 research+2",
+     2,
+     {
+      "zh": "他没再提。之后他回答学生问题越来越短。",
+      "en": "He drops it. His answers to the students get shorter."
+     }
+    ]
+   ]
+  },
+  {
+   "id": "t_zhao_dean",
+   "npc": "zhao",
+   "who": "赵博士 · 博士后",
+   "title": {
+    "zh": "赵博士：院长问我愿不愿意转组",
+    "en": "Dr Zhao: the dean asked if I'd move groups"
+   },
+   "open": {
+    "zh": "赵博士压低声音：院长昨天找我，说新引进的那位教授想要个熟悉探测器的博士后，问我愿不愿意过去。",
+    "en": "Dr Zhao lowers his voice: the dean asked me yesterday. The new hire wants a postdoc who knows detectors, and asked if I'd move over."
+   },
+   "ch": [
+    [
+     {
+      "zh": "告诉他你希望他留下，以及你能给他的",
+      "en": "Tell him you want him to stay, and what you can offer"
+     },
+     "trust+7 team+2",
+     10,
+     {
+      "zh": "你说了独立的课题和第一作者。他说：“我本来就不想走。”",
+      "en": "You offer him his own project and first authorship. He says: \"I never wanted to leave.\""
+     }
+    ],
+    [
+     {
+      "zh": "“看哪边对你的发展更好，我都支持”",
+      "en": "\"Whatever's better for your career, I'll back you\""
+     },
+     "trust+3 integrity+1",
+     5,
+     {
+      "zh": "他说要再想想。",
+      "en": "He says he'll think about it."
+     }
+    ],
+    [
+     {
+      "zh": "下午直接去找院长谈",
+      "en": "Go and talk to the dean this afternoon"
+     },
+     "trust+5 team+1 rep-2",
+     15,
+     {
+      "zh": "院长笑着说只是随口一问。你们都知道不是。",
+      "en": "The dean laughs it off as a passing remark. You both know it wasn't."
+     }
+    ]
+   ]
+  }
+ ]
+}
