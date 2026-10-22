@@ -66,7 +66,7 @@
     const tape = M('#ffffff', { roughness: 0.5 }), postM = M('#1b2430', { metalness: 0.5, roughness: 0.4 }), baseM = M('#20262e', { roughness: 0.5 });
     [-13, 0, 13].forEach(x0 => {
       // a slightly darker surround mat under court 2 so the match court reads first
-      if (x0 === 0) flat(7.6, 15.4, M('#16503a', { roughness: 0.7 }), 0, 0.003, 0);
+      if (x0 === 0) flat(7.6, 15.4, M('#12493a', { roughness: 0.95, envMapIntensity: 0.02 }), 0, 0.003, 0);
       flat(6.1, 13.4, courtMat, x0, 0.006, 0);
       add(new THREE.Mesh(new THREE.PlaneGeometry(6.1, 0.76), netMat), x0, 1.524 - 0.38, 0);
       box(6.1, 0.07, 0.012, tape, x0, 1.524 - 0.07, 0, { cast: false });
