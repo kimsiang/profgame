@@ -55,6 +55,7 @@ Games last about 2 minutes (84–138 s). Energy 95 vs 25 is a 32–59 point swin
 - **Broadcast camera.** Behind the player's baseline, 46° lens (40° in portrait), framing fitted to the reference video (far baseline ≈ 30 % from the top, net ≈ 45 %, near baseline ≈ 92 %); drifts 30 % with the player; cuts rather than flies in. Fixed afternoon light and a punchier grade in the venue; bloom held back so the floor does not haze.
 - **Players.** 1.2× during matches; a racket in the right hand; arms posed over the clip each frame by world-space aiming of upper arm, forearm and the free arm: wind-up as the shuttle comes in (type from predicted contact height), stroke at contact, follow-through, release. Overhead > 1.75 m, underarm < 0.95 m and serves, side otherwise. The GLB hand prop (a book) is scaled away.
 - **Feedback.** Contact flash ring; floating label over the hitter (your quality, shot, tactic tag, footwork; smashes show km/h from launch speed); ribbon trail (amber at smash speed); yellow ring at your run target. Perfect smash: 70 ms hit-stop, shake, speed lines. Central pop text is kept for misses, points and match messages.
+- **Sharpness (v10.3.1).** While the venue is on: pixel ratio boosted (`PR_BOOST`, high 1.5–2×, mid 1.25–1.6×), tilt-shift and grain off, shadow camera ±11 m with a 4096² (high) / 2048² (mid) map. Falls back to normal resolution if the 150-frame average is below 45 fps.
 - **Rules untouched.** `badminton.js` is unchanged; balance numbers below still hold.
 
 ## v10.2 Saves — how a mid-day save works
