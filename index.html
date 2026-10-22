@@ -4709,6 +4709,7 @@ function unlock(id) {
   logIt('解锁成就：' + n);
 }
 function toast(msg, kind = '') {
+  placeNavChip();   // keep the notices under the navigator chip, wherever the clock panel has grown to
   const el = document.createElement('div'); el.className = 'toast ' + kind; el.textContent = msg;
   $('toasts').appendChild(el); setTimeout(() => el.remove(), 4200);
   while ($('toasts').children.length > 3) $('toasts').firstChild.remove();
@@ -6076,8 +6077,11 @@ let navSig = '';
 // Desktop: the chip sits 8 px under the clock panel (the panel grows with the day-block bar, so a fixed top overlapped it).
 function placeNavChip() {
   const chip = $('navChip'), pill = $('clockPill'); if (!chip || !pill) return;
-  if (innerWidth <= 900) { chip.style.top = ''; return; }
+  const ts = $('toasts');
+  if (innerWidth <= 900) { chip.style.top = ''; if (ts) ts.style.top = ''; return; }
   const r = pill.getBoundingClientRect(); if (r.height) chip.style.top = Math.round(r.bottom + 8) + 'px';
+  // Notices go under the chip (or under the panel when the chip is hidden), so they never cover it.
+  if (ts) { const c = chip.getBoundingClientRect(), below = c.height ? c.bottom : r.bottom; if (below) ts.style.top = Math.round(below + 8) + 'px'; }
 }
 addEventListener('resize', placeNavChip);
 function renderNavChip() {

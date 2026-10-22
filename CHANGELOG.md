@@ -1,5 +1,8 @@
 # Changelog
 
+## v11.1.1 — Fix (2026-10-23)
+- Notices no longer cover the navigator chip on desktop: they now sit 8 px below it (or below the clock panel when the chip is hidden), wherever the panel has grown to. Test: `tools/e2e/toast_nav.mjs`.
+
 ## v11.1 — Realistic people, and a choice of art style (2026-10-23)
 - **Art style setting: 写实 (realistic) or 微缩模型 (stylized diorama).** On the title page next to 画质, and in the top bar (tap twice; the page reloads, like the quality setting). Remembered in this browser. Realistic is the default.
   - Realistic: v11.0 real materials and HDRI lighting, plus the new realistic cast.
