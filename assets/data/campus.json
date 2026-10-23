@@ -1,0 +1,14 @@
+{
+  "_comment": "v11.4 campus buildings for assets/js/facade.js. x,z = footprint centre (campus zone metres); style = tileA | render | brick | glass; entrance.side = s|n|e|w, u = offset along that face; ac = sides with outdoor AC units.",
+  "buildings": [
+    {
+      "id": "physics", "name_zh": "物理楼", "name_en": "PHYSICS BUILDING",
+      "x": 30, "z": 14, "w": 40, "d": 26,
+      "style": "tileA", "floors": 5, "floorH": 3.4, "podium": { "floors": 2, "h": 4.1 },
+      "module": 3.0, "winW": 1.8, "winH": 1.7, "sill": 0.9,
+      "entrance": { "side": "s", "w": 10, "u": 0, "sign": "物理楼 · 门禁" },
+      "roof": { "plant": true, "tank": true, "ac": true, "antenna": true, "dome": true, "rail": true },
+      "ac": ["e", "w"], "seed": 31
+    }
+  ]
+}

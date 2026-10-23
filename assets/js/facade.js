@@ -1,0 +1,207 @@
+/* v11.4 campus facades. A modular building kit: every building on campus is built from the same parts
+   (floor bands, piers, recessed windows with aluminium frames and glass, a glass podium, entrance canopy and steps,
+   parapet, roof plant, downpipes, AC units, lamps), driven by a spec from assets/data/campus.json.
+   Pure scene building: FacadeKit.building(THREE, spec, o) returns { group, blocks, night(k) }.
+   Everything repeated is instanced, so a 9-floor block costs ~25 draw calls.
+   spec: { x, z, w, d, floors, floorH, podium: { floors, h }, style, entrance: { side, w }, roof: {...}, ac: ['e','w'] }
+   o: { quality, seed } */
+(function (root) {
+  'use strict';
+  function building(THREE, spec, o = {}) {
+    const G = new THREE.Group(), Q = o.quality || 'high', hiQ = Q !== 'low';
+    let s = (o.seed || 11) | 0; const rnd = () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; };
+    const dummy = new THREE.Object3D();
+    const M = {}, mat = (c, x = {}) => M[c + JSON.stringify(x)] || (M[c + JSON.stringify(x)] = new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: 0.7, metalness: 0.0, envMapIntensity: 0.35 }, x)));
+    const tex = (w, h, draw, srgb = true) => { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); if (srgb) t.encoding = THREE.sRGBEncoding; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8; return t; };
+    const shadow = (m, cast = true) => { m.castShadow = cast && hiQ; m.receiveShadow = true; return m; };
+    const inst = (geo, m, list, cast = true) => {   // [x, y, z, ry, sx, sy, sz, colour?]
+      if (!list.length) return null;
+      const im = new THREE.InstancedMesh(geo, m, list.length);
+      list.forEach((a, i) => { dummy.position.set(a[0], a[1], a[2]); dummy.rotation.set(0, a[3] || 0, 0); dummy.scale.set(a[4] || 1, a[5] || 1, a[6] || 1); dummy.updateMatrix(); im.setMatrixAt(i, dummy.matrix); if (a[7]) im.setColorAt(i, new THREE.Color(a[7])); });
+      im.instanceMatrix.needsUpdate = true; if (im.instanceColor) im.instanceColor.needsUpdate = true;
+      shadow(im, cast); G.add(im); return im;
+    };
+    const box = (w, h, d, m, x, y, z, ry = 0, cast = true) => { const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); b.position.set(x, y + h / 2, z); b.rotation.y = ry; shadow(b, cast); G.add(b); return b; };
+
+    /* ---------- materials ---------- */
+    const STYLE = {
+      // A: light grey ceramic tiles, dark anodised frames (a 2000s Chinese lab block)
+      tileA: { wall: '#cfd1cd', wall2: '#bfc2bd', grout: '#a3a6a1', frame: '#2f3438', spandrel: '#aeb2ad', tile: [0.6, 0.3] },
+      // B: beige render, white frames (1990s teaching block)
+      render: { wall: '#d9cfb8', wall2: '#cfc4aa', grout: null, frame: '#e8e8e4', spandrel: '#c4b89c', tile: [1, 1] },
+      // brick: red brick, green frames (old teaching building)
+      brick: { wall: '#9a4a3a', wall2: '#7f3b2f', grout: '#c7b9a8', frame: '#3f6b4a', spandrel: '#8c4538', tile: [0.24, 0.08] },
+      // glass: curtain wall tower
+      glass: { wall: '#6e8898', wall2: '#5e7585', grout: null, frame: '#3a4248', spandrel: '#4a5a66', tile: [1, 1] },
+    };
+    const st = STYLE[spec.style] || STYLE.tileA;
+    const wallTex = tex(512, 512, (g, w, h) => {
+      g.fillStyle = st.wall; g.fillRect(0, 0, w, h);
+      const tw = Math.round(w * st.tile[0] / 2), th = Math.round(h * st.tile[1] / 2);   // texture = 2 m × 2 m
+      if (st.grout) {
+        for (let y = 0, r = 0; y < h; y += th, r++) for (let x = (r % 2) * tw / 2 - tw; x < w; x += tw) {
+          g.fillStyle = Math.random() < 0.5 ? st.wall : st.wall2; g.globalAlpha = 0.5 + Math.random() * 0.5; g.fillRect(x, y, tw, th); g.globalAlpha = 1;
+          g.strokeStyle = st.grout; g.lineWidth = 2; g.strokeRect(x + 1, y + 1, tw - 2, th - 2);
+        }
+      } else { for (let i = 0; i < 4000; i++) { g.fillStyle = Math.random() < 0.5 ? st.wall : st.wall2; g.globalAlpha = 0.15; g.fillRect(Math.random() * w, Math.random() * h, 6, 6); } g.globalAlpha = 1; }
+      // weathering: faint streaks running down
+      for (let i = 0; i < 40; i++) { g.fillStyle = 'rgba(40,40,40,0.06)'; g.fillRect(Math.random() * w, 0, 2 + Math.random() * 6, h); }
+    });
+    const wallM = new THREE.MeshStandardMaterial({ color: '#ffffff', map: wallTex, roughness: 0.85, metalness: 0, envMapIntensity: 0.2 });
+    // tiles are mapped in world metres (one repeat = 2 m), so instanced piers, bands and parapets of any size line up
+    wallM.onBeforeCompile = (sh) => { sh.vertexShader = sh.vertexShader.replace('#include <uv_vertex>', `#include <uv_vertex>
+#ifdef USE_INSTANCING
+  vec4 fkW = modelMatrix * instanceMatrix * vec4(position, 1.0);
+#else
+  vec4 fkW = modelMatrix * vec4(position, 1.0);
+#endif
+  vUv = vec2(fkW.x + fkW.z, fkW.y) * 0.5;`); };
+    const spandrelM = mat(st.spandrel, { roughness: 0.8 });
+    const frameM = mat(st.frame, { roughness: 0.35, metalness: 0.7, envMapIntensity: 0.8 });
+    const glassM = new THREE.MeshStandardMaterial({ color: '#a9c6d8', roughness: 0.06, metalness: 0.9, envMapIntensity: 1.3, transparent: true, opacity: 0.86 });
+    const darkIn = mat('#1b2229', { roughness: 0.95, envMapIntensity: 0 });            // the room behind the glass
+    const litM = new THREE.MeshStandardMaterial({ color: '#2a2a2a', emissive: '#ffd9a6', emissiveIntensity: 0.0, roughness: 1 });   // lit rooms (night)
+    const curtainM = mat('#d9d4c7', { roughness: 1 });
+    const concreteM = mat('#9b9d9a', { roughness: 0.9 });
+    const steelM = mat('#c5c9cc', { roughness: 0.35, metalness: 0.85, envMapIntensity: 0.9 });
+    const acM = mat('#dadcdb', { roughness: 0.6, metalness: 0.2 });
+    const pipeM = mat('#8d9398', { roughness: 0.5, metalness: 0.6 });
+
+    /* ---------- dimensions ---------- */
+    const W = spec.w, D = spec.d, X = spec.x, Zc = spec.z;
+    const fh = spec.floorH || 3.4, floors = spec.floors || 6;
+    const pod = spec.podium || { floors: 0, h: 0 }, podH = pod.floors ? pod.floors * (pod.h || 4.2) : 0;
+    const H = podH + floors * fh;
+    const mod = spec.module || 3.0, winW = spec.winW || 1.8, winH = spec.winH || 1.7, sill = spec.sill || 0.9;
+    const recess = 0.18, pierW = mod - winW;
+    const faces = [   // [name, length, centre x, centre z, rotation, outward normal x, z]
+      ['s', W, X, Zc + D / 2, 0, 0, 1], ['n', W, X, Zc - D / 2, Math.PI, 0, -1],
+      ['e', D, X + W / 2, Zc, Math.PI / 2, 1, 0], ['w', D, X - W / 2, Zc, -Math.PI / 2, -1, 0],
+    ];
+    // local → world for a face: u along the face (−len/2..len/2), v outwards (0 at the wall plane), y up
+    const toW = (f, u, v) => ({ x: f[2] + Math.cos(f[4]) * u + f[5] * v, z: f[3] - Math.sin(f[4]) * u + f[6] * v });
+
+    /* ---------- core (solid, dark, so nothing reads through) ---------- */
+    box(W - (recess + 0.3) * 2, H, D - (recess + 0.3) * 2, darkIn, X, 0, Zc, 0, false);
+
+    /* ---------- upper floors: spandrels, piers, windows ---------- */
+    const piers = [], frames = [], panes = [], lits = [], curtains = [], spandrels = [], acs = [];
+    const acSides = spec.ac || [];
+    for (const f of faces) {
+      const len = f[1], n = Math.max(1, Math.floor((len - pierW) / mod)), start = -((n - 1) * mod) / 2;
+      const ent = spec.entrance && spec.entrance.side === f[0] ? spec.entrance : null;
+      for (let k = 0; k < floors; k++) {
+        const y0 = podH + k * fh;
+        // spandrel band (sill + lintel) runs the whole face, slightly proud of the pier plane
+        const p1 = toW(f, 0, -recess / 2);
+        spandrels.push([p1.x, y0 + sill / 2, p1.z, f[4], len, sill, recess]);
+        spandrels.push([p1.x, y0 + sill + winH + (fh - sill - winH) / 2, p1.z, f[4], len, fh - sill - winH, recess]);
+        // piers between windows, on the outer plane; wider end piers close the face
+        for (let i = 1; i < n; i++) { const p = toW(f, start + (i - 0.5) * mod, -recess / 2); piers.push([p.x, y0 + sill + winH / 2, p.z, f[4], pierW, winH, recess]); }
+        const endW = len / 2 - (Math.abs(start) + winW / 2);
+        [-1, 1].forEach(sg => { const p = toW(f, sg * (len / 2 - endW / 2), -recess / 2); piers.push([p.x, y0 + sill + winH / 2, p.z, f[4], endW, winH, recess]); });
+        // windows: frame + glass + room/curtain behind
+        for (let i = 0; i < n; i++) {
+          const u = start + i * mod; const p = toW(f, u, -recess - 0.02), q = toW(f, u, -recess - 0.14);
+          frames.push([p.x, y0 + sill + winH / 2, p.z, f[4], winW, winH, 0.06]);
+          panes.push([p.x, y0 + sill + winH / 2, p.z, f[4], winW - 0.12, winH - 0.12, 1]);
+          const r = rnd();
+          if (r < 0.22) lits.push([q.x, y0 + sill + winH / 2, q.z, f[4], winW - 0.1, winH - 0.1, 1]);
+          else if (r < 0.4) curtains.push([q.x, y0 + sill + winH / 2 + 0.1, q.z, f[4], winW - 0.2, winH - 0.3, 1]);
+          if (acSides.includes(f[0]) && rnd() < 0.45) { const a = toW(f, u + winW / 2 - 0.4, 0.3); acs.push([a.x, y0 + sill - 0.45, a.z, f[4], 1, 1, 1]); }
+        }
+      }
+    }
+    const unit = new THREE.BoxGeometry(1, 1, 1);
+    const pierM = wallM;
+    inst(unit, pierM, piers); inst(unit, wallM, spandrels);
+    // window frames: four thin bars per window, built as one geometry
+    const frameGeo = (() => { const g = new THREE.BufferGeometry(); const parts = []; const t = 0.06;
+      const add = (w, h, x, y) => { const b = new THREE.BoxGeometry(w, h, 0.08); b.translate(x, y, 0); parts.push(b); };
+      add(1, t, 0, 0.5 - t / 2); add(1, t, 0, -0.5 + t / 2); add(t, 1, -0.5 + t / 2, 0); add(t, 1, 0.5 - t / 2, 0); add(t, 1, 0, 0);   // outer + a mullion
+      const merged = THREE.BufferGeometryUtils ? THREE.BufferGeometryUtils.mergeBufferGeometries(parts) : parts[0]; return merged || g; })();
+    inst(frameGeo, frameM, frames.map(a => [a[0], a[1], a[2], a[3], a[4], a[5], 1]));
+    const paneGeo = new THREE.PlaneGeometry(1, 1);
+    const paneIm = inst(paneGeo, glassM, panes, false);
+    const litIm = inst(paneGeo, litM, lits, false);
+    inst(paneGeo, curtainM, curtains, false);
+    // AC outdoor units on the side walls, each with a bracket
+    const acGeo = (() => { const parts = [new THREE.BoxGeometry(0.85, 0.62, 0.32)]; parts[0].translate(0, 0, 0.16); const br = new THREE.BoxGeometry(0.9, 0.05, 0.4); br.translate(0, -0.33, 0.2); parts.push(br); return THREE.BufferGeometryUtils ? THREE.BufferGeometryUtils.mergeBufferGeometries(parts) : parts[0]; })();
+    inst(acGeo, acM, acs);
+
+    /* ---------- podium: glass curtain wall with mullions, dark base ---------- */
+    if (pod.floors) {
+      const ph = pod.h || 4.2;
+      for (const f of faces) {
+        const len = f[1]; const c = toW(f, 0, -0.1);
+        // base plinth 0.6 m, then glass to the podium top, with a 0.5 m dark fascia at each floor
+        const b = box(len, 0.6, 0.3, mat('#3a3f44', { roughness: 0.6 }), c.x, 0, c.z, f[4]);
+        const gl = new THREE.Mesh(new THREE.PlaneGeometry(len - 0.2, podH - 0.6), glassM); const gp = toW(f, 0, -0.05); gl.position.set(gp.x, 0.6 + (podH - 0.6) / 2, gp.z); gl.rotation.y = f[4]; G.add(gl);
+        const mull = []; for (let u = -len / 2 + 1.5; u < len / 2 - 1; u += 1.5) { const p = toW(f, u, 0.02); mull.push([p.x, 0.6 + (podH - 0.6) / 2, p.z, f[4], 0.08, podH - 0.6, 0.12]); }
+        for (let k = 1; k <= pod.floors; k++) { const p = toW(f, 0, 0.02); mull.push([p.x, k * ph - 0.25, p.z, f[4], len, 0.5, 0.14]); }
+        inst(unit, frameM, mull);
+      }
+      // the podium interior: a lit lobby glimpse — a warm plane inside the glass, lobby columns
+      const lobby = new THREE.Mesh(new THREE.BoxGeometry(W - 2, podH - 0.8, D - 2), new THREE.MeshStandardMaterial({ color: '#d8cfbf', roughness: 0.9, emissive: '#ffe3b8', emissiveIntensity: 0.12 })); lobby.position.set(X, 0.6 + (podH - 0.8) / 2, Zc); G.add(lobby);
+      const cols = []; for (let u = -W / 2 + 4; u < W / 2 - 3; u += 6) { cols.push([X + u, podH / 2, Zc + D / 2 - 1.2, 0, 0.6, podH, 0.6]); cols.push([X + u, podH / 2, Zc - D / 2 + 1.2, 0, 0.6, podH, 0.6]); }
+      inst(unit, concreteM, cols);
+    }
+
+    /* ---------- entrance: canopy, steps, ramp, handrails, doors ---------- */
+    const blocks = [[X - W / 2 - 0.3, Zc - D / 2 - 0.3, X + W / 2 + 0.3, Zc + D / 2 + 0.3]];
+    if (spec.entrance) {
+      const e = spec.entrance, f = faces.find(x => x[0] === e.side), ew = e.w || 10, u0 = e.u || 0;
+      const at = (u, v) => toW(f, u0 + u, v);
+      // canopy: a thin slab on two steel columns, 4.4 m up, projecting 4 m
+      const cp = at(0, 2.2); box(ew + 2, 0.35, 4.2, mat('#3b4145', { roughness: 0.5, metalness: 0.4 }), cp.x, 4.4, cp.z, f[4]);
+      box(ew + 2.4, 0.08, 4.6, steelM, cp.x, 4.75, cp.z, f[4], false);
+      [-ew / 2 + 0.5, ew / 2 - 0.5].forEach(u => { const p = at(u, 3.9); const c = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 4.4, 14), steelM); c.position.set(p.x, 2.2, p.z); shadow(c); G.add(c); blocks.push([p.x - 0.25, p.z - 0.25, p.x + 0.25, p.z + 0.25]); });
+      // a low landing in front of the doors (walkable: 3 cm) with a tactile strip
+      const land = at(0, 1.6); box(ew + 2, 0.03, 3.2, concreteM, land.x, 0, land.z, f[4], false);
+      // doors: dark-framed double doors in the podium glass, steel pull handles
+      const dp = at(0, -0.02); box(ew, 0.12, 0.2, frameM, dp.x, 3.0, dp.z, f[4]);
+      [-1.6, 1.6, -0.05, 0.05].forEach(u => { const p = at(u, 0.04); box(0.08, 2.6, 0.12, frameM, p.x, 0.3, p.z, f[4]); });
+      [-0.6, 0.6].forEach(u => { const h = at(u, 0.14); box(0.03, 0.9, 0.03, steelM, h.x, 0.95, h.z, f[4], false); });
+      if (e.sign) { const sp = at(-ew / 2 - 2.6, 0.25); const t = tex(512, 128, (g, w, h) => { g.fillStyle = '#263238'; g.fillRect(0, 0, w, h); g.fillStyle = '#e8eaed'; g.font = 'bold 54px "Noto Sans SC", sans-serif'; g.textAlign = 'left'; g.textBaseline = 'middle'; g.fillText(e.sign, 24, h / 2); g.fillStyle = '#00A9F4'; g.fillRect(0, 0, 10, h); }); const pl = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 0.6), new THREE.MeshStandardMaterial({ map: t, roughness: 0.4, metalness: 0.3 })); pl.position.set(sp.x, 1.6, sp.z); pl.rotation.y = f[4]; G.add(pl); }
+    }
+
+    /* ---------- parapet, floor-slab edge, downpipes, wall lamps ---------- */
+    const parapet = []; for (const f of faces) { const p = toW(f, 0, -0.1); parapet.push([p.x, H + 0.6, p.z, f[4], f[1] + 0.2, 1.2, 0.3]); }
+    inst(unit, wallM, parapet); const cap = []; for (const f of faces) { const p = toW(f, 0, -0.1); cap.push([p.x, H + 1.22, p.z, f[4], f[1] + 0.3, 0.06, 0.42]); } inst(unit, steelM, cap);
+    const pipes = []; [['s', -W / 2 + 0.6], ['s', W / 2 - 0.6], ['n', -W / 2 + 0.6], ['n', W / 2 - 0.6]].forEach(([side, u]) => { const f = faces.find(x => x[0] === side); const p = toW(f, u, 0.12); pipes.push([p.x, H / 2, p.z, 0, 0.12, H, 0.12]); });
+    inst(new THREE.CylinderGeometry(0.5, 0.5, 1, 10), pipeM, pipes);
+    const lamps = []; for (const f of faces) { for (let u = -f[1] / 2 + 3; u < f[1] / 2 - 2; u += 8) { const p = toW(f, u, 0.15); lamps.push([p.x, podH ? podH - 0.4 : 3.4, p.z, f[4], 0.2, 0.3, 0.3]); } }
+    const lampM = new THREE.MeshStandardMaterial({ color: '#2a2e32', emissive: '#ffe7c4', emissiveIntensity: 0.0, roughness: 0.5 }); inst(unit, lampM, lamps);
+
+    /* ---------- roof: plant room, tank, AC rows, antenna, lightning rod, a small dome ---------- */
+    const R = spec.roof || {};
+    const ry = H;
+    if (R.plant !== false) { box(8, 3.0, 5, wallM, X - W / 4, ry, Zc - D / 6); box(2.2, 2.2, 0.1, mat('#3a3f44'), X - W / 4, ry + 0.2, Zc - D / 6 + 2.55); }   // plant room + its door
+    if (R.tank !== false) { const t = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.4, 2.4, 20), steelM); t.position.set(X + W / 4, ry + 1.6, Zc - D / 4); shadow(t); G.add(t); const legs = []; for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + Math.PI / 4; legs.push([X + W / 4 + Math.cos(a) * 1.1, ry + 0.2, Zc - D / 4 + Math.sin(a) * 1.1, 0, 0.1, 0.4, 0.1]); } inst(unit, steelM, legs); }
+    if (R.ac !== false) { const units = []; const rows = 2, per = Math.max(4, Math.floor(W / 4)); for (let r = 0; r < rows; r++) for (let i = 0; i < per; i++) units.push([X - W / 2 + 3 + i * ((W - 6) / (per - 1)), ry + 0.4, Zc + D / 4 + r * 2.2, 0, 1.2, 1, 1]); inst(new THREE.BoxGeometry(1.0, 0.9, 0.45), acM, units); }
+    if (R.antenna !== false) { const a = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.06, 6, 8), steelM); a.position.set(X + W / 2 - 2, ry + 3, Zc + D / 2 - 2); G.add(a); const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 2.2, 6), steelM); rod.position.set(X - W / 2 + 1, ry + 1.1 + 1, Zc - D / 2 + 1); G.add(rod); }
+    if (R.dome) {   // the small observatory dome: a lab block should look like one
+      const base = new THREE.Mesh(new THREE.CylinderGeometry(2.1, 2.1, 1.6, 24), mat('#e4e5e2', { roughness: 0.6 })); base.position.set(X + W / 4, ry + 0.8, Zc + D / 6); shadow(base); G.add(base);
+      const dome = new THREE.Mesh(new THREE.SphereGeometry(2.1, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), mat('#eef0ee', { roughness: 0.35, metalness: 0.3 })); dome.position.set(X + W / 4, ry + 1.6, Zc + D / 6); shadow(dome); G.add(dome);
+      const slit = new THREE.Mesh(new THREE.BoxGeometry(0.5, 2.2, 0.3), mat('#2b2f33')); slit.position.set(X + W / 4, ry + 2.6, Zc + D / 6 + 1.9); slit.rotation.x = -0.5; G.add(slit);
+    }
+    if (R.rail) { const rails = []; for (const f of faces) { for (let u = -f[1] / 2 + 0.5; u < f[1] / 2; u += 1.5) { const p = toW(f, u, -0.6); rails.push([p.x, H + 1.2 + 0.5, p.z, f[4], 0.04, 1.0, 0.04]); } const p = toW(f, 0, -0.6); rails.push([p.x, H + 2.2, p.z, f[4], f[1] - 1, 0.04, 0.04]); } inst(unit, steelM, rails); }
+
+    /* ---------- ground: plinth, planters along the front ---------- */
+    box(W + 2.4, 0.15, D + 2.4, concreteM, X, 0, Zc, 0, false);
+    if (spec.planters !== false) {
+      const front = spec.entrance ? spec.entrance.side : 's', f = faces.find(x => x[0] === front); const ew = spec.entrance ? (spec.entrance.w || 10) + 4 : 0;
+      const pl = [], gr = [], eu = spec.entrance ? (spec.entrance.u || 0) : 0;
+      for (let u = -f[1] / 2 + 2; u + 4 <= f[1] / 2 - 2; u += 4.8) {
+        if (Math.abs(u + 2 - eu) < ew / 2 + 2) continue;
+        const p = toW(f, u + 2, 2.4); pl.push([p.x, 0.15, p.z, f[4], 4, 0.5, 1.2]); gr.push([p.x, 0.65, p.z, f[4], 3.8, 0.45, 1.0]); blocks.push([p.x - 2.2, p.z - 0.8, p.x + 2.2, p.z + 0.8]);
+      }
+      inst(unit, mat('#8a8c88', { roughness: 0.9 }), pl); inst(unit, mat('#3d6b35', { roughness: 1 }), gr, false);
+    }
+
+    /* ---------- night ---------- */
+    const night = (k) => { litM.emissiveIntensity = 1.4 * k; lampM.emissiveIntensity = 2.2 * k; glassM.opacity = 0.86 - 0.2 * k; };
+    return { group: G, blocks, night, H };
+  }
+  root.FacadeKit = { building };
+})(typeof window !== 'undefined' ? window : this);

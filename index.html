@@ -924,6 +924,7 @@ body.talking #lbT,body.talking #lbB{height:7vh}
 <div id="lbT"></div><div id="lbB"></div>
 <div id="fade"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/BufferGeometryUtils.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/SSAOShader.js"></script>
@@ -948,6 +949,7 @@ body.talking #lbT,body.talking #lbB{height:7vh}
 <script src="assets/js/bm-venue.js"></script>
 <script src="assets/js/music.js"></script>
 <script src="assets/js/garden.js"></script>
+<script src="assets/js/facade.js"></script>
 <script>
 (function(){
 'use strict';
@@ -1269,6 +1271,14 @@ function pbr(id, o = {}) {
 
 // v11.2 canteen data (assets/data/canteen.json); declared before the 1F build, which makes the stall signs
 const CANTEEN = { data: null, stalls: [], signDay: null };
+// v11.4 campus buildings (assets/data/campus.json) and the facades built from them (for the night lights)
+const CAMPUS = { data: null }, FACADES = [];
+// The zones are built at boot, before the fetch returns. A building whose JSON spec differs from the inline one is rebuilt in place,
+// so campus.json is the file to edit; the inline spec is only the boot fallback.
+fetch('assets/data/campus.json').then(r => r.json()).then(d => { CAMPUS.data = d;
+  for (const b of d.buildings || []) { const f = FACADES.find(x => x.spec && x.spec.id === b.id); if (!f || JSON.stringify(f.spec) === JSON.stringify(b)) continue;
+    const nb = FacadeKit.building(THREE, b, { quality: QUALITY, seed: b.seed || 31 }); f.zone.group.remove(f.group); f.zone.group.add(nb.group); Object.assign(f, nb, { spec: b }); }
+}).catch(() => {});
 fetch('assets/data/canteen.json').then(r => r.json()).then(d => { CANTEEN.data = d; CANTEEN.signDay = null; }).catch(() => { /* old fixed menu */ });
 
 /* =========================================================
@@ -2743,15 +2753,13 @@ function sportNPC(id, look, x, z, lx, lz) { look._id = id; const p = makeChar(lo
   floorPlane(0, 0, 90, 60, mat('#ffffff', { map: grass, roughness: 1, envMapIntensity: 0.2 }));
   const pave = (x0, z0, x1, z1) => floorPlane(x0, z0, x1, z1, mat('#ffffff', { map: (() => { const t = T.concrete(1, 1); t.repeat.set((x1 - x0) / 4, (z1 - z0) / 4); return t; })(), roughness: 0.4 }), 0.006);
   pave(0, 28, 90, 32); pave(28, 28, 32, 60); pave(68, 20, 72, 32); pave(8, 0, 54, 30 - 0.2); // plaza in front of physics bldg
-  /* physics building (outside view) */
-  const win = windowsTex(0.5); win.repeat.set(10, 8);
-  const pb = box(40, 23, 26, new THREE.MeshStandardMaterial({ color: '#7f93a8', roughness: 0.55, emissive: '#ffffff', emissiveMap: win, emissiveIntensity: 0.5 }), 30, 0, 14, { block: true, round: 0.1 });
-  Z.anims.push(() => {}); city.push(pb);
-  box(41, 0.6, 27, mat('#2b3d52'), 30, 23, 14, { cast: false }); box(5, 2.4, 4, mat('#9fb0c0'), 46, 23.6, 20, { cast: false });
-  for (let f = 1; f <= 7; f++) box(40.2, 0.12, 26.2, trimGlow, 30, f * 3.2, 14, { cast: false });
-  const nameplate = plane(14, 2.2, new THREE.MeshBasicMaterial({ toneMapped: false, map: canvasTex(1024, 160, (g, w, h) => { g.fillStyle = '#0A2436'; g.fillRect(0, 0, w, h); g.fillStyle = '#00A9F4'; g.fillRect(0, 0, 14, h); g.fillStyle = '#EAF4FB'; g.font = `900 92px ${CN_FONT}`; g.fillText('物 理 楼', 60, 110); g.fillStyle = '#CDEEFF'; g.font = `600 40px ${CN_FONT}`; g.fillText('PHYSICS BUILDING', 520, 105); }) }), 30, 20.5, 27.08); nameplate.material.color.setScalar(1.3);
-  [26, 34].forEach(x => box(0.4, 3.2, 0.5, frameM, x, 0, 27.2)); box(8.4, 0.4, 0.6, frameM, 30, 3.2, 27.2); seg(30, 27.1, true, 7.6, 0, 2.9, 0.1, glassM, false);
-  box(10, 0.3, 3, mat('#9aa39a'), 30, 0, 28.5, { cast: false }); plane(7, 0.12, thresholdM, 30, 0.32, 29.9, { rx: -Math.PI / 2 });
+  /* physics building (outside view). v11.4: built from the facade kit (assets/js/facade.js) with the spec in assets/data/campus.json.
+     The data file is fetched at boot; until it arrives (or if it fails) the inline spec below is used, so the campus never builds without its main building. */
+  const PHYS_SPEC = { id: 'physics', x: 30, z: 14, w: 40, d: 26, style: 'tileA', floors: 5, floorH: 3.4, podium: { floors: 2, h: 4.1 }, module: 3.0, winW: 1.8, winH: 1.7, sill: 0.9, entrance: { side: 's', w: 10, u: 0, sign: '物理楼 · 门禁' }, roof: { plant: true, tank: true, ac: true, antenna: true, dome: true, rail: true }, ac: ['e', 'w'], seed: 31 };
+  const physB = FacadeKit.building(THREE, PHYS_SPEC, { quality: QUALITY, seed: 31 });
+  Z.group.add(physB.group); physB.blocks.forEach(r => blockRect(r[0], r[1], r[2], r[3], 0.2)); FACADES.push(physB); physB.spec = PHYS_SPEC; physB.zone = Z;
+  const nameplate = plane(12, 1.05, new THREE.MeshBasicMaterial({ toneMapped: false, map: canvasTex(1024, 160, (g, w, h) => { g.fillStyle = '#0A2436'; g.fillRect(0, 0, w, h); g.fillStyle = '#00A9F4'; g.fillRect(0, 0, 14, h); g.fillStyle = '#EAF4FB'; g.font = `900 92px ${CN_FONT}`; g.fillText('物 理 楼', 60, 110); g.fillStyle = '#CDEEFF'; g.font = `600 40px ${CN_FONT}`; g.fillText('PHYSICS BUILDING', 520, 105); }) }), 30, physB.H + 0.62, 27.07); nameplate.material.color.setScalar(1.3);
+  plane(7, 0.12, thresholdM, 30, 0.05, 29.9, { rx: -Math.PI / 2 });
   decal('物理楼 · 正门', 30, 33, 3.2, 0.6, { sub: 'MAIN ENTRANCE · 1F', to: 'n' });
   Z.portals.push({ kind: 'door', x: 30, z: 30.6, to: 'f1', spawn: { x: 20, z: 24.4 }, label: '进入物理楼' }); Z.spawn = { x: 30, z: 31.2 };
   /* gym building */
@@ -6387,6 +6395,7 @@ function lighting(t, now) {
   lamps.forEach(l => { l.intensity = 0.2 + night * 2.1; });
   lightPools.forEach(p => { p.m.material.opacity = p.base * (0.6 + night * 2.2); });
   city.forEach(b => { b.material.emissiveIntensity = 0.15 + night * 1.6; });
+  FACADES.forEach(f => f.night(night));
   streetLights.material.opacity = 0.2 + night * 0.8;
   // v7: time-of-day grade. Cool blue morning, neutral noon, amber 17:00, teal-shadow night.
   const morn = Math.max(0, 1 - Math.abs(t - hm(8, 30)) / 120), warm = Math.max(0, 1 - Math.abs(t - hm(17, 15)) / 110);
