@@ -1,5 +1,10 @@
 # Changelog
 
+## v12.3.1 — Renamed to 导师的一周 / My Advisor's Week (2026-10-23)
+- The game is now 《导师的一周》 / *My Advisor's Week* (was 教授的一周 / A Professor's Week; the title screen still said 教授的一天). Main audience is students, so the name takes their point of view: you sit in your advisor's chair for a week.
+- Changed: page title, title screen, Pro-mode system prompt, save-import toast, the gym scoreboard text, the student-council poster line in `week.json`, README and DESIGN headers.
+- Unchanged on purpose: save file tag `professor-week`, localStorage keys, repo name, old design notes.
+
 ## v12.3 — A week with weight: balance pass (2026-10-23)
 Tuned with the harness (`tools/balance/out/v12.3.json`, 400 weeks). Before → after for the "balanced" bot (sensible play: write in the mornings, people in the afternoons, home around 19:00):
 - Grade: S every week → **median B, A in 37% of weeks** (bands now S 92 / A 84 / B 60 / C 46).

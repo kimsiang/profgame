@@ -420,7 +420,7 @@
     "_comment": "v10.3 match venue text (assets/js/bm-venue.js): the gym rebuilt for the broadcast camera. boards/banners/scoreboard show only on Friday's match.",
     "name_zh": "体育馆 · 2 号场", "name_en": "Gym, court 2",
     "notice1": "研究生羽毛球赛 · 周五", "notice2": "物理 vs 化学 · 13:00 开赛",
-    "boards": [["物理 vs 化学", "PHYSICS vs CHEMISTRY", "#00A9F4"], ["研究生羽毛球赛", "GRADUATE OPEN", "#FFB547"], ["教授的一周", "A PROFESSOR'S WEEK", "#ffffff"]],
+    "boards": [["物理 vs 化学", "PHYSICS vs CHEMISTRY", "#00A9F4"], ["研究生羽毛球赛", "GRADUATE OPEN", "#FFB547"], ["导师的一周", "MY ADVISOR'S WEEK", "#ffffff"]],
     "banners": [["物理必胜", "#0341B3"], ["化学加油", "#b8322a"]]
   }
 }

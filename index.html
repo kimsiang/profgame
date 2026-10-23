@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>教授的一天</title>
+<title>导师的一周 · My Advisor's Week</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -672,8 +672,8 @@ body.talking #lbT,body.talking #lbB{height:7vh}
 <section id="scrTitle" class="screen">
   <div class="wrap hero">
     <svg class="emblem" viewBox="0 0 80 80" aria-hidden="true"><defs><linearGradient id="eg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#00A9F4"/><stop offset="1" stop-color="#2251FF"/></linearGradient></defs><polygon points="40,3 75,22 75,58 40,77 5,58 5,22" fill="rgba(5,28,44,.6)" stroke="url(#eg)" stroke-width="2.5"/><ellipse cx="40" cy="40" rx="26" ry="10" fill="none" stroke="#FFC857" stroke-width="1.5" transform="rotate(-25 40 40)"/><text x="40" y="51" text-anchor="middle" font-family="Georgia,serif" font-size="34" font-weight="700" fill="#EAF4FB">μ</text></svg>
-    <h1>教授的一天</h1>
-    <div class="en">A Professor's Week</div>
+    <h1>导师的一周</h1>
+    <div class="en">My Advisor's Week</div>
     <p class="lede">从周一到周日，一位物理教授的一整周：约 150 件大大小小的事，从组会、上课、研究生复试，到高压报警、液氮泄漏、钓鱼邮件。周五 23:59 基金截止，周日 23:59 论文修改稿截止。还要记得吃饭、喝咖啡、上厕所，以及回家睡觉。</p>
     <div class="modes">
       <button class="mode" id="modeBasic" type="button">
@@ -5416,7 +5416,7 @@ async function proSend() {
   const history = d.turns.map(x => `${x.who}：${x.text}`).join('\n');
   const opening = (ev.nodes[ev.start].say || []).filter(l => l[0]).map(l => `${l[0]}：${l[1]}`).join('\n');
   const round = d.turns.filter(x => x.who === '教授').length;
-  const prompt = `你在一款中文教育游戏《教授的一天》中扮演一个角色，玩家扮演一位物理系教授。
+  const prompt = `你在一款中文教育游戏《导师的一周》中扮演一个角色，玩家扮演一位物理系教授。
 角色：${ev.persona}
 情境：${ev.scene}${ev.npc && S.trust[ev.npc] !== undefined ? `
 你对教授的信任：${Math.round(S.trust[ev.npc])}/100（低于 40 时语气更疏远、更防备；高于 75 时更坦诚）。` : ''}${ev.npc && memorySummary(ev.npc) ? `
@@ -5791,7 +5791,7 @@ function importSaves(file) {
   const r = new FileReader();
   r.onload = () => {
     let j; try { j = JSON.parse(r.result); } catch (e) { return toast('这个文件不是存档文件。', 'bad'); }
-    if (!j || j.game !== 'professor-week' || !j.data) return toast('这个文件不是《教授的一周》的存档。', 'bad');
+    if (!j || j.game !== 'professor-week' || !j.data) return toast('这个文件不是《导师的一周》的存档。', 'bad');
     if (!confirm('导入会覆盖这个浏览器里现有的存档、存档位和职业生涯。继续吗？')) return;
     try { Object.keys(localStorage).filter(k => k.startsWith('prof-')).forEach(k => localStorage.removeItem(k)); Object.entries(j.data).forEach(([k, v]) => { if (k.startsWith('prof-')) localStorage.setItem(k, v); }); }
     catch (e) { return toast('导入失败：浏览器存储被禁用或空间不足。', 'bad'); }

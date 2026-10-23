@@ -1,4 +1,4 @@
-# DESIGN — 教授的一周 / A Professor's Week
+# DESIGN — 导师的一周 / My Advisor's Week
 
 Living summary of the systems in the build. Full design notes (goal, player experience, data, edge cases, playtest questions) live in the claude.ai project under `design-notes/`.
 

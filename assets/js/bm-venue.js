@@ -122,7 +122,7 @@
       crowd.instanceMatrix.needsUpdate = true; heads.instanceMatrix.needsUpdate = true;
     });
     const boardTex = (txt, sub, col) => tex(512, 96, (g, w, h) => { const gr = g.createLinearGradient(0, 0, w, 0); gr.addColorStop(0, '#051C2C'); gr.addColorStop(1, '#0341B3'); g.fillStyle = gr; g.fillRect(0, 0, w, h); g.fillStyle = col; g.font = `800 40px ${font}`; g.textBaseline = 'middle'; g.fillText(txt, 22, h / 2 - (sub ? 10 : 0)); if (sub) { g.fillStyle = '#CDEEFF'; g.font = `500 20px ${font}`; g.fillText(sub, 24, h / 2 + 26); } });
-    const boards = (T.boards || [['物理 vs 化学', 'PHYSICS vs CHEMISTRY', '#00A9F4'], ['研究生羽毛球赛', 'GRADUATE OPEN', '#FFB547'], ['教授的一周', "A PROFESSOR'S WEEK", '#ffffff']]).map(b => new THREE.MeshBasicMaterial({ map: boardTex(b[0], b[1], b[2]), toneMapped: false }));
+    const boards = (T.boards || [['物理 vs 化学', 'PHYSICS vs CHEMISTRY', '#00A9F4'], ['研究生羽毛球赛', 'GRADUATE OPEN', '#FFB547'], ['导师的一周', "MY ADVISOR'S WEEK", '#ffffff']]).map(b => new THREE.MeshBasicMaterial({ map: boardTex(b[0], b[1], b[2]), toneMapped: false }));
     const bGeo = new THREE.BoxGeometry(3.0, 0.7, 0.1);
     let bi = 0;
     for (let x = -4.5; x <= 4.5; x += 3.0) add(new THREE.Mesh(bGeo, boards[bi++ % boards.length]), x, 0.35, -8.2, 0, ev);
