@@ -1028,11 +1028,24 @@ function envLoad(key, file) {
   ENV.hdr[key] = null;
   new THREE.RGBELoader().setDataType(THREE.UnsignedByteType).load('assets/textures/' + file, (t) => {
     const pm = new THREE.PMREMGenerator(renderer); ENV.hdr[key] = pm.fromEquirectangular(t).texture; pm.dispose(); t.dispose();
-    if (ENV.want === key) scene.environment = ENV.hdr[key];
+    if (ENV.want === key) { if (REAL) scene.environment = ENV.hdr[key]; cityEnv(); }
   }, undefined, () => { /* keep the studio room */ });
 }
-function setEnvFor(z) { const k = z && z.outdoor ? 'outdoor' : 'indoor'; ENV.want = k; scene.environment = ENV.hdr[k] || ENV.room; }
-if (REAL) { envLoad('indoor', 'blender_institute_1k.hdr'); envLoad('outdoor', 'kloofendal_48d_partly_cloudy_puresky_1k.hdr'); }
+// v12.3.6: the diorama keeps the studio room for its own rooms, but the skyline and the campus facades reflect the same
+// HDRIs as the realistic look, so both styles share one background (the white studio room washed the towers out to a pale grey).
+function cityEnv() {
+  if (REAL) return;
+  let list; try { list = city; } catch (e) { return; }   // skyline not built yet
+  const put = (m, env) => { if (m && m.envMap !== env) { m.envMap = env; m.needsUpdate = true; } };
+  const env = ENV.hdr[ENV.want] || null;
+  list.forEach(b => put(b.material, env));
+  // v11.4 campus facades (physics building, gym, neighbours) stand outdoors: they reflect the sky HDRI, as in 写实
+  let fac; try { fac = FACADES; } catch (e) { return; }
+  const sky = ENV.hdr.outdoor || null;
+  fac.forEach(f => f.group && f.group.traverse(n => { if (n.isMesh || n.isInstancedMesh) [].concat(n.material).forEach(m => put(m, sky)); }));
+}
+function setEnvFor(z) { const k = z && z.outdoor ? 'outdoor' : 'indoor'; ENV.want = k; if (REAL) scene.environment = ENV.hdr[k] || ENV.room; cityEnv(); }
+envLoad('indoor', 'blender_institute_1k.hdr'); envLoad('outdoor', 'kloofendal_48d_partly_cloudy_puresky_1k.hdr');   // both styles: the skyline uses them
 
 /* ---------- camera (perspective, orbit around the player) ---------- */
 const cam = new THREE.PerspectiveCamera(30, 1, 1, 900);
