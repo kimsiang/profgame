@@ -95,11 +95,10 @@ Games last about 2 minutes (84–138 s). Energy 95 vs 25 is a 32–59 point swin
 - HUD folding: `FOLDABLE`, `foldSet(id, on)`, `foldAll()` (H); `.panel.folded` hides everything but `.foldKeep`; `placeLeftCol()` stacks the performance box under the player card. State in localStorage `prof-fold-v1`.
 - Music: `ProfMusic` (look-ahead scheduler on the audio clock; drums, bass, arpeggio, keys and pads synthesised). `MUSIC.pick` ('auto' | track id | 'off', localStorage `prof-music`); `musicWant()` picks by time of day, and the roof zone always plays `auto.cafe`. The old pad generator remains as a fallback if the JSON cannot load.
 
-## v11.1 Art style and realistic cast — how it works
-- `ART` ('diorama' | 'real', localStorage `prof-art`, default diorama; the v12.3 preview value 'figurine' maps to diorama) picks **the cast only** (v12.4). There is one building: realistic floors, walls, glass, light and the Poly Haven HDRIs for everyone. `CAST_REAL` loads the Rocketbox cast; otherwise the Q版 cast renders as vinyl figurines (`toon()` returns a MeshStandardMaterial, roughness 0.48, no ink outline). `setArt()` reloads. Any new room is built once.
-- Characters: `assets/characters/real/manifest.json` overrides the stylised manifest per id when REAL. `loadRealFor()` clones the GLB, keeps its PBR materials, and plays clips from `anim_m.glb` / `anim_f.glb`, filtered to the body's bones (a missing bone would bind to the scene root) and with the root height scaled to the body.
-- Extras: `makeChar()` without a named model gets `genericModel()` from `GEN_POOL` (by hair style → gender), after the caller's own `attachModel`.
-- Gotcha: the old sRGB vertex-colour pass in `gltfFor()` must skip interleaved attributes: FBX2glTF interleaves colours with skin indices, and the pass corrupted them (exploding bodies).
+## v12.5 Look — how it works
+- One look: the realistic building (Poly Haven floors and walls, HDRIs, warm light) with the Q版 cast as vinyl figurines. There is no style toggle; the old `prof-art` setting is ignored.
+- `toon()` keeps its name for its callers but returns a MeshStandardMaterial (roughness 0.48, envMapIntensity 0.9); GLB characters get it through `castMat()`. No ink outlines.
+- History: v11.1 added a Rocketbox realistic cast and a style toggle; v12.4 merged the rooms; v12.5 removed the realistic cast (Kim: it looked ugly) and its 52 MB of assets.
 
 ## v11.0 Real materials — how they work
 - `pbr(id, o)` makes a MeshStandardMaterial from `assets/textures/<id>_{diff,nor_gl,arm}_1k.jpg`, loaded lazily and shared; until a file loads (or if it is missing) `o.fallback` shows. `o.tile` = metres per repeat; `o.noDiff` uses only the relief and roughness over a flat paint colour (walls, epoxy floors, washroom tiles).

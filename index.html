@@ -618,7 +618,6 @@ body.talking #lbT,body.talking #lbB{height:7vh}
       <button class="ib on" id="bSound" type="button" title="音效"><svg class="ic"><use href="#i-sound"/></svg></button>
       <button class="ib" id="bAI" type="button" title="AI 设置"><span>AI</span></button>
       <button class="ib" id="bQual" type="button" title="画质"><span id="qualLbl">画质 高</span></button>
-      <button class="ib" id="bArt" type="button" title="人物：Q版 / 写实"><span id="artLbl">Q版</span></button>
       <button class="ib" id="bSave" type="button" title="存档 / 读档 (O)"><span>存档</span></button>
       <button class="ib" id="bEnd" type="button" title="下班"><svg class="ic"><use href="#i-exit"/></svg><span class="lbl">下班</span></button>
     </div>
@@ -705,10 +704,8 @@ body.talking #lbT,body.talking #lbB{height:7vh}
     </div>
     <div class="qualRow">画质
       <button class="ib" type="button" data-q="high">高</button><button class="ib" type="button" data-q="mid">中</button><button class="ib" type="button" data-q="low">低</button>
-      <span style="margin-left:14px">人物</span>
-      <button class="ib" type="button" data-art="diorama" title="Q版（默认）：手办一样的 Q 版人物">Q版</button><button class="ib" type="button" data-art="real" title="写实：真实比例的写实人物">写实</button>
     </div>
-    <p class="foot">© 2026 许金祥 Khaw Kim Siang · 保留所有权利 All rights reserved · 第三方组件：three.js（MIT）、Microsoft Rocketbox（MIT）、Poly Haven（CC0）。<br>教育模拟游戏。虚构设定，不针对任何单位和个人：人物、机构与情节均为虚构，如有雷同纯属巧合。科普卡中的数据来自公开资料；实验室安全与心理健康内容仅为常识性介绍，遇到真实情况请联系所在单位的安全与心理支持部门。</p>
+    <p class="foot">© 2026 许金祥 Khaw Kim Siang · 保留所有权利 All rights reserved · 第三方组件：three.js（MIT）、Poly Haven（CC0）。<br>教育模拟游戏。虚构设定，不针对任何单位和个人：人物、机构与情节均为虚构，如有雷同纯属巧合。科普卡中的数据来自公开资料；实验室安全与心理健康内容仅为常识性介绍，遇到真实情况请联系所在单位的安全与心理支持部门。</p>
   </div>
 </section>
 
@@ -986,13 +983,7 @@ function setZone(id) {
 }
 const HAS_POST = !!(THREE.EffectComposer && THREE.RenderPass && THREE.ShaderPass && THREE.UnrealBloomPass);
 const IS_TOUCH = matchMedia('(pointer:coarse)').matches;
-// v11.1 art style, v12.4 cast only: 'diorama' (Q版 figurines, default since v12.3.5) or 'real' (Rocketbox).
-// Chosen on the title page or the top bar; reloads like the quality setting. The old saved value 'figurine' maps to 'diorama'.
-const ART = (() => { try { const a = localStorage.getItem('prof-art'); if (a === 'real') return a; if (a === 'diorama' || a === 'figurine') return 'diorama'; } catch (e) { /* storage blocked */ } return 'diorama'; })();   // v12.3.5: diorama is the default; a saved choice still wins
-// v12.4: one building for both styles (realistic rooms, floors and light). ART only picks the cast:
-// 'diorama' = the Q版 cast as vinyl figurines (default), 'real' = the Rocketbox cast.
-const CAST_REAL = ART === 'real';
-function setArt(a) { try { localStorage.setItem('prof-art', a); } catch (e) { /* storage blocked */ } location.reload(); }
+// v12.5: one look only, the Q版 cast as vinyl figurines in the realistic building. The old prof-art setting is ignored.
 let QUALITY = (() => { try { const q = localStorage.getItem('prof-day-q'); if (q) return q; } catch (e) { /* storage blocked */ } return IS_TOUCH || innerWidth < 900 ? 'mid' : 'high'; })();
 if (!HAS_POST && QUALITY !== 'low') QUALITY = 'low';
 
@@ -1930,12 +1921,8 @@ function makeChar(o = {}, parent = Z.group) {
   if (o.label) { const s = nameTag(o.label); s.position.y = 1.86; root.add(s); root.userData.tag = s; }
   root.userData = Object.assign(root.userData, { P, faceM, face: o, state: 'idle', expr: 'normal', blinkT: 1 + Math.random() * 3, phase: Math.random() * 6, baseY: 0, emote: null });
   parent.add(root);
-  // v11.1: everyone without a named model gets a realistic extra from the generic pool (after the caller had its chance to attachModel)
-  if (CAST_REAL && !o.portrait) queueMicrotask(() => { if (!root.userData.modelId) attachModel(root, o.model || genericModel(o)); });
   return root;
 }
-const GEN_POOL = { m: ['gen_m1', 'gen_m2', 'gen_m3', 'gen_m4', 's1', 'grad1'], f: ['gen_f1', 'gen_f2', 'gen_f3', 'gen_f4', 's2', 'zhou'] }, GEN_N = { m: 0, f: 0 };
-function genericModel(o) { const g = ['pony', 'bob', 'bun', 'long'].includes(o.hairStyle) ? 'f' : 'm', L = GEN_POOL[g]; return L[GEN_N[g]++ % L.length]; }
 function setExpr(c, e) { const u = c.userData; if (u.expr === e) return; u.expr = e; if (u.model) return applyMorph(c); u.faceM.map = faceTex(e, u.face.eye, u.face.brow); u.faceM.needsUpdate = true; }
 function nameTag(text) {
   const fs = 34, c = document.createElement('canvas'), g = c.getContext('2d');
@@ -2041,8 +2028,6 @@ const EXPR_KEYS = ['blink', 'happy', 'worried', 'shock', 'sleepy'];
     if (CHAR_MODELS.s1 && !CHAR_MODELS.jie) CHAR_MODELS.jie = CHAR_MODELS.s1;   // v12.3.2: 阿杰 reuses the stylised figure that sat at bay4
     if (CHAR_MODELS.s2 && !CHAR_MODELS.min) CHAR_MODELS.min = CHAR_MODELS.s2;   // 小敏 likewise, bay5
     if (CHAR_MODELS.oldprof && !CHAR_MODELS.nb) CHAR_MODELS.nb = CHAR_MODELS.oldprof;
-    // v11.1: realistic cast (Microsoft Rocketbox, MIT). Any id in the real manifest replaces its stylised model.
-    if (CAST_REAL) try { const rr = await fetch('assets/characters/real/manifest.json'); if (rr.ok) Object.assign(CHAR_MODELS, await rr.json()); } catch (e) { /* stylised cast only */ }
     MODELS_READY = true;
     for (const [id, m] of Object.entries(CHAR_MODELS)) if (m.portrait) { const img = new Image(); img.onload = () => { PORTRAIT_IMG[id] = { img, p: m.portrait }; }; img.src = m.portrait.url; }
     loadVisibleModels();
@@ -2054,7 +2039,7 @@ function attachModel(c, id) { if (c.userData.modelId === id) return; c.userData.
 function gltfFor(url) {
   if (!GLTF_CACHE[url]) GLTF_CACHE[url] = new Promise((ok, bad) => new THREE.GLTFLoader().load(url, (g) => {
     // vertex colours are linear in glTF; the procedural cast feeds hex values straight into toon materials, so match that.
-    g.scene.traverse(n => { const col = n.isMesh && n.geometry.attributes.color; if (col && !col.isInterleavedBufferAttribute && !/\/real\//.test(url) && !n.geometry.userData.srgb) {   // v11.1: never on interleaved data (it shares a buffer with the skin indices) or the realistic cast n.geometry.userData.srgb = 1; const k = col.normalized ? 255 : 1;
+    g.scene.traverse(n => { const col = n.isMesh && n.geometry.attributes.color; if (col && !col.isInterleavedBufferAttribute && !n.geometry.userData.srgb) {   // v11.1: never on interleaved data (it shares a buffer with the skin indices) or the realistic cast n.geometry.userData.srgb = 1; const k = col.normalized ? 255 : 1;
       const toSRGB = (v) => v <= 0.0031308 ? v * 12.92 : 1.055 * Math.pow(v, 1 / 2.4) - 0.055;
       for (let i = 0; i < col.count; i++) for (let j = 0; j < Math.min(3, col.itemSize); j++) { const ix = i * col.itemSize + j, v = toSRGB(col.array[ix] / k); col.array[ix] = k === 1 ? v : Math.round(v * k); }
       col.needsUpdate = true; } });
@@ -2063,46 +2048,16 @@ function gltfFor(url) {
   return GLTF_CACHE[url];
 }
 const castMats = {};
-/* v11.1: a realistic (Rocketbox) character: its own PBR materials, no toon shading or outline, clips from the shared
-   per-gender animation pack (re-targeted by bone name). No face morphs yet: expressions show in the portraits only. */
-const REAL_H = 2.12, REAL_CLIPS = {};   // name tag height over a 1.8 m adult
-function loadRealFor(c, spec) {
-  Promise.all([gltfFor(spec.url), gltfFor(spec.anims)]).then(([g, a]) => {
-    if (!c.parent) return;
-    const m = THREE.SkeletonUtils.clone(g.scene); m.scale.setScalar(spec.scale || 1);
-    m.traverse(n => {
-      if (!n.isMesh) return;
-      n.castShadow = true; n.receiveShadow = true; n.frustumCulled = false;
-      const mt = n.material; if (mt && mt.isMeshStandardMaterial) { mt.envMapIntensity = 0.55; if (mt.alphaTest > 0) mt.alphaTest = 0.45; }
-    });
-    c.children.forEach(ch => { if (!ch.isSprite) ch.visible = false; else ch.position.y = REAL_H; });
-    c.add(m);
-    const mixer = new THREE.AnimationMixer(m), clips = {};
-    // Keep only tracks whose bone this body has: a track for a missing node would bind to the scene root and tip the body over.
-    const have = new Set(); m.traverse(n => have.add(n.name));
-    // The clips were captured on an adult: scale the hip height to this body (children), so nobody floats or sinks.
-    const hip = m.getObjectByName('Bip01'), restY = hip ? hip.position.y : 0.9;
-    (a.animations || []).forEach(an => {
-      const pt = an.tracks.find(t => t.name === 'Bip01.position'), k = pt ? restY / pt.values[1] : 1, kq = Math.abs(k - 1) > 0.04 ? +k.toFixed(2) : 1, key = spec.anims + an.name + kq;
-      const cl = REAL_CLIPS[key] || (REAL_CLIPS[key] = new THREE.AnimationClip(an.name, an.duration, an.tracks.filter(t => have.has(t.name.split('.')[0])).map(t => {
-        if (kq === 1 || t.name !== 'Bip01.position') return t; const c2 = t.clone(); for (let i = 0; i < c2.values.length; i++) c2.values[i] *= kq; return c2; })));
-      clips[an.name] = mixer.clipAction(cl);
-    });
-    c.userData.model = { mixer, clips, map: spec.clips || {}, cur: null, morphs: [], blinkT: 9e9, blinking: 0, real: true };
-    c.userData.real = true;
-  }).catch(() => { c.userData.modelLoading = false; });
-}
 function castMat(name, morph) {
   const k = name + (morph ? 'm' : '');
   if (!castMats[k]) castMats[k] = /emit/.test(name)
     ? new THREE.MeshBasicMaterial({ vertexColors: true, skinning: true, morphTargets: morph, toneMapped: false })
-    : (() => { const m = toon('#ffffff', { vertexColors: true, skinning: true, morphTargets: morph }); return m; })();
+    : toon('#ffffff', { vertexColors: true, skinning: true, morphTargets: morph });
   return castMats[k];
 }
 function loadModelFor(c) {
   const spec = CHAR_MODELS[c.userData.modelId]; if (!spec || !THREE.GLTFLoader || !THREE.SkeletonUtils) return;
   c.userData.modelLoading = true;
-  if (spec.real) return loadRealFor(c, spec);
   gltfFor(spec.url).then((g) => {
     if (!c.parent) return;   // replaced (e.g. a new day made a new player) before the model arrived
     const m = THREE.SkeletonUtils.clone(g.scene); m.scale.setScalar(spec.scale || 1);
@@ -4514,13 +4469,8 @@ function bmRig(c) {
   let r = null;
   if (u.model) {
     const bone = (n) => c.getObjectByName(n) || c.getObjectByName(n.replace('.', ''));   // GLTFLoader strips the dot from bone names
-    if (u.model.real) {   // v11.1 Rocketbox (3ds Max Biped): bones point along their child, whatever the local axis is
-      const ua = bone('Bip01_R_UpperArm'), fa = bone('Bip01_R_Forearm'), hd = bone('Bip01_R_Hand'), ul = bone('Bip01_L_UpperArm');
-      if (ua && fa && hd) r = { kind: 'glb', ua, fa, ul, hand: hd, axisU: fa.position.clone().normalize(), axisF: hd.position.clone().normalize(), axis: hd.position.clone().normalize() };
-    } else {
     const ua = bone('upper_arm.R'), fa = bone('forearm.R'), hd = bone('hand.R'), ul = bone('upper_arm.L');
     if (ua && fa && hd) r = { kind: 'glb', ua, fa, ul, hand: hd, axis: new THREE.Vector3(0, 1, 0) };
-    }
   } else if (u.P && u.P.shR && u.P.elR) r = { kind: 'proc', ua: u.P.shR, fa: u.P.elR, ul: u.P.shL, hand: u.P.elR, axis: new THREE.Vector3(0, -1, 0), off: -0.2 };
   if (!r) return null;
   if (u.bmRacket && u.bmRacket.parent) u.bmRacket.parent.remove(u.bmRacket);
@@ -4528,11 +4478,7 @@ function bmRig(c) {
   r.hand.add(rk); c.updateMatrixWorld(true);
   rk.position.set(0, r.off || 0.04, 0); rk.quaternion.identity();
   if (r.axis.y < 0) rk.rotation.x = Math.PI;   // the procedural forearm hangs along -Y
-  if (u.model && u.model.real) {   // Rocketbox: grip in the palm, shaft along the middle finger
-    const f = c.getObjectByName('Bip01_R_Finger2') || c.getObjectByName('Bip01_R_Finger1'), ax = f ? f.position.clone().normalize() : new THREE.Vector3(1, 0, 0);
-    rk.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), ax); rk.position.copy(ax).multiplyScalar(0.05);
-  }
-  const ws = r.hand.getWorldScale(_bv1).x, cs = c.getWorldScale(_bv2).x; rk.scale.setScalar(cs / (ws || 1) * (u.model && u.model.real ? 1.2 : 1.6));   // chibi proportions: an oversized racket reads at broadcast distance
+  const ws = r.hand.getWorldScale(_bv1).x, cs = c.getWorldScale(_bv2).x; rk.scale.setScalar(cs / (ws || 1) * 1.6);   // chibi proportions: an oversized racket reads at broadcast distance
   if (r.kind === 'proc') rk.position.y = r.off;
   // which local x is the racket side (the rig's right arm), measured once from the shoulder position
   c.worldToLocal(r.ua.getWorldPosition(_bv1)); r.sx = Math.sign(_bv1.x) || -1;
@@ -4689,7 +4635,7 @@ async function bmStart(opp, drillId, ctx) {
   bmVenueOn(); if (npc) bmVenueBorrow(npc); BM.camSnap = true; BMV.v && BMV.v.setEvent(!!(ctx && ctx.event));
   const sh = bmShuttle(); bmLayer().add(sh);
   const fx = bmFx(); bmLayer().add(fx.ring, fx.shadow, fx.mark, fx.trail, fx.ribbon, fx.goal, ...fx.flashes); fx.rhist.length = 0; fx.n = 0; fx.markT = 0; fx.mark.material.opacity = 0; fx.ring.visible = false;
-  const bmS = (c) => c.userData.real ? 1 : BM_SCALE;   // realistic adults are already life size
+  const bmS = () => BM_SCALE;
   player.scale.setScalar(bmS(player)); if (npc) npc.scale.setScalar(bmS(npc));   // players read at broadcast size
   BM.m = { sw: {}, core, D, O, opp, ctx: ctx || {}, drillId: drill ? drillId : null, drill, npc, sh, decor, npcHome: npc ? npc.position.clone() : null, npcRot: npc ? npc.rotation.y : 0, npcVis: npc ? npc.visible : true, pop: 0 };
   if (npc) npc.visible = true;
@@ -6262,10 +6208,6 @@ const QNAME = { high: '高', mid: '中', low: '低' };
 $('qualLbl').textContent = '画质 ' + QNAME[QUALITY];
 $('bQual').onclick = () => { const order = ['high', 'mid', 'low']; const nq = order[(order.indexOf(QUALITY) + 1) % 3]; if ($('bQual').dataset.arm === nq) return setQuality(nq); $('bQual').dataset.arm = nq; $('qualLbl').textContent = `画质 ${QNAME[nq]}？`; toast(`再点一次切换到「${QNAME[nq]}」画质。页面会重新载入，今天的进度会清空。`); };
 // v11.1 art style: title-page pair and a top-bar toggle (two taps, as for quality: it reloads the page)
-const ARTNAME = { real: '写实', diorama: 'Q版' };
-$('artLbl').textContent = ARTNAME[ART];
-$('bArt').onclick = () => { const na = CAST_REAL ? 'diorama' : 'real'; if ($('bArt').dataset.arm === na) return setArt(na); $('bArt').dataset.arm = na; $('artLbl').textContent = `${ARTNAME[na]}？`; toast(`再点一次切换到「${ARTNAME[na]}」人物。页面会重新载入，今天的进度会清空。`); };
-document.querySelectorAll('.qualRow [data-art]').forEach(b => { b.classList.toggle('on', b.dataset.art === ART); b.onclick = () => { if (b.dataset.art !== ART) setArt(b.dataset.art); }; });
 document.querySelectorAll('.qualRow [data-q]').forEach(b => { b.classList.toggle('on', b.dataset.q === QUALITY); b.onclick = () => { if (b.dataset.q !== QUALITY) setQuality(b.dataset.q); }; });
 $('bEnd').onclick = () => { if (S && S.running && !S.dialog) { if (S.activity && S.activity.cancelable) finishActivity(false); if (!S.activity) confirmHome(); } };
 $('btnE').onclick = () => { if (S && S.dialog && S.dialog.mini && S.dialog.mini.press) S.dialog.mini.press(); else interact(); };
