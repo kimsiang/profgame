@@ -1,5 +1,13 @@
 # Changelog
 
+## v13.1 — Skeleton, step 2: build, no CDN, self-hosted fonts, Pages workflow (2026-10-23)
+- `npm install` brings three.js r128 and the fonts (Inter, Playfair Display, JetBrains Mono, Rajdhani, Noto Serif SC) from npm; `tools/sync-vendor.mjs` copies what the page needs into `vendor/` (git-ignored). **No request leaves the site any more** — no cdnjs, no jsDelivr, no Google Fonts — which is what mainland players were waiting on.
+- `npm run build` (Vite) → `dist/`: one `game.js` (the 27 scripts concatenated in page order, same global scope), one `three.js`, hashed CSS and font files under `build/`, `assets/` copied. Fonts are woff2, latin + CJK chunks only, 7.6 MB on disk; a page fetches only the chunks it shows.
+- `.github/workflows/pages.yml` builds and publishes `main` to GitHub Pages. **One-time setting needed: Settings → Pages → Source → "GitHub Actions".** Until then the old raw-repo publishing keeps working *only if* `vendor/` exists — it does not in git — so flip the setting right after merging.
+- The source tree still runs as is (`python3 -m http.server 8123` after `npm run sync-vendor`); all e2e scenarios keep working against it. New: `tools/e2e/dist_check.mjs` (dist boots, no failed requests, fonts loaded).
+- `tools/validate-data.mjs` reads `src/` now.
+- Not done, on purpose: converting the files to ES modules and per-zone code splitting. The game code is 590 KB; the 84 MB that matter are assets and already load lazily. Modules come with v13.2's typed files, one file at a time.
+
 ## v13.0 — Skeleton, step 1: the single script cut into files (2026-10-23)
 - `index.html` (6 582 lines, one 5 600-line script) is now an HTML skeleton plus 27 ordered scripts in `src/` and `src/styles.css`; `assets/js/*` moved to `src/`. Same global scope, same order, no module system yet.
 - Three load-order fixes were needed (function declarations no longer hoist across files): the prop-kit wrapping moved next to the builders it wraps (`props-5f.js`, `floors.js`); the kit-GLB callback guards `lighting` in case the model arrives before `main.js`.
