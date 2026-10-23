@@ -540,3 +540,14 @@ body.talking #lbT,body.talking #lbB{height:7vh}
   .planIntents{grid-template-columns:1fr}
   .planTrust img{width:40px;height:40px}
 }
+/* v14.0 week review: the first screen is one sentence and five moments; .wk hides the dashboard until 看详细 */
+.weekly{max-width:640px;margin-top:18px}
+.wkSub{font:600 13px/1.5 var(--body);color:#9fbccd;margin-top:6px}
+.wkLine{font:600 clamp(18px,2.4vw,24px)/1.55 var(--serif-cn);color:#eaf4fb;margin:22px 0 10px;max-width:600px}
+.wkMoments{display:grid;gap:0;margin-top:6px}
+.wkMoments .wm{display:grid;grid-template-columns:70px 28px 1fr;gap:10px;align-items:start;padding:9px 0;border-top:1px solid rgba(255,255,255,.1);font:400 14px/1.6 var(--body);color:#cfe2ee}
+.wkMoments .wm .d{color:#9fbccd;font-weight:600;font-size:12px;letter-spacing:.06em;padding-top:2px}
+.wkMoments .wm .i{text-align:center}
+#scrEnd.wk .endGrid,#scrEnd.wk #cardsHead,#scrEnd.wk #endCards,#scrEnd.wk .learn{display:none}
+#scrEnd.wk.open .endGrid{display:grid}#scrEnd.wk.open #cardsHead,#scrEnd.wk.open #endCards,#scrEnd.wk.open .learn{display:block}
+#scrEnd.wk.open #endCards{display:grid}

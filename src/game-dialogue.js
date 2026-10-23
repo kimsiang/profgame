@@ -127,6 +127,7 @@ function pickHomeScene() {
 }
 function goHome() {
   S.path = []; S.autoTarget = null; S.atHome = true; S.homeToday = true; S.homeNights++;
+  moment('home', { who: (Object.entries(S.fam).sort((a, b) => a[1] - b[1])[0] || [])[0] === 'child' ? FAMILY.child.n : FAMILY.partner.n });
   if (S.t >= hm(23)) { S.wb = clamp(S.wb + 4); logIt('回到家，灯都黑了。你在沙发上坐了一会儿。'); Object.keys(S.fam).forEach(k => { S.fam[k] = clamp(S.fam[k] - FAM_DRIFT / 2); }); return endDay('home'); }
   S.wb = clamp(S.wb + FAM_HOME_WB); logIt(`${fmt(S.t)} 回家。`);
   const sc = pickHomeScene(), open = parseLines(sc.open);
@@ -249,7 +250,7 @@ function pick(c) {
   (c.flags || []).filter(f => f.startsWith('fin_')).forEach(finFlag);
   sayLines(c.fb);
   if (c.ach) unlock(c.ach);
-  if (d.ev.table) { const tl = S.tableLog[S.tableLog.length - 1]; if (tl && tl.id === d.ev.id) tl.said = c.t; }
+  if (d.ev.table) { const tl = S.tableLog[S.tableLog.length - 1]; if (tl && tl.id === d.ev.id) tl.said = c.t; moment('table', { who: d.ev.who.split(' · ')[0], title: d.ev.title, said: c.t, where: d.ev.loc === 'roofcafe' ? '天台' : '食堂' }); }
   if (c.fx) { const s = Object.values(c.fx).reduce((a, b) => a + b, 0); (s >= 0 ? SFX.good : SFX.bad)(); }
   logIt(`${d.ev.title} → ${c.t}`);
   if (c.min) simulate(c.min);

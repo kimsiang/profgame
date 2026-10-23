@@ -1,5 +1,11 @@
 # Changelog
 
+## v14.0 — Moments and the week review (2026-10-23)
+- `src/moments.js` + `assets/data/content/moments.json`: the game records what a week leaves behind — a table talk and what you answered, a student gone quiet or gone, each night at home or not (Friday and the weekend count double), a submission and its stars, a collapse, the first negative balance, a dinner on the grant, a match, a promotion, a post accepted / declined / resigned, an election. One `moment()` line at each existing decision point; no rule changed (balance table unchanged).
+- The Sunday review now opens with the grade, **one sentence the game writes about your week** (nine templates in order of priority: a lost student, the table, collapses, the home cost, a quiet student, money, no submission, balance, fallback) and **up to five moments** on a timeline. The dashboard is still all there behind 看详细.
+- Saves carry `moments` (no version bump: an older save just has none).
+- Test: `node tools/e2e/run.mjs weekly.mjs` (scripted week in sim mode); `weekly_shot.mjs` for the frame.
+
 ## v13.2.1 — Title music (2026-10-23)
 - The title page was silent until a mode button was pressed: browsers only start audio inside a user gesture, and only those buttons opened the audio context. Now the first tap or key anywhere does, and the evening track plays behind the title. Test: `node tools/e2e/run.mjs title_music.mjs`.
 

@@ -36,6 +36,7 @@ function newState(career) {
     // v6: dossier stars carry over (ideas go stale, see nextWeek); family meters carry over; tutorial progress is per browser.
     dos: career.dos ? JSON.parse(JSON.stringify(career.dos)) : freshDossier(), dataReq: null,
     // v12.2 companions: who came where today, table talks already had (once per career), garden inspiration, Dr Zhao's flow start
+    moments: [],   // v14: what this week leaves behind (src/moments.js)
     companions: {}, tableSeen: (career.tableSeen || []).slice(), tableLog: [], inspired: false, zhaoFlow: false, coachWeek: 0, mealsOut: 0, mealsAlone: 0, tiredDay: null,
     fam: career.fam ? Object.assign({}, career.fam) : freshFamily(), homeNights: 0, famSkip: 0, homeToday: false, famEvents: {},
     // v9: the household ledger carries over in the career; one game week = one financial month.
@@ -202,7 +203,7 @@ function minuteTick(dm) {
   S.muons += 650 * dm;
   S.t += dm;
   if (a) { a.done += dm; if (a.min && a.done >= a.min) finishActivity(true); }
-  if (v.energy < 30 && S.tiredDay == null) S.tiredDay = S.day;
+  if (v.energy < 30 && S.tiredDay == null) { S.tiredDay = S.day; moment('tired'); }
   if (v.energy < 25 && !S.warned.e) { S.warned.e = 1; toast('精力只剩 25%：去沙发小睡，或者喝杯咖啡。', 'bad'); }
   if (v.energy > 40) S.warned.e = 0;
   if (v.full < 15 && !S.warned.f) { S.warned.f = 1; toast('肚子在叫了。饿着肚子，精力掉得更快。', 'bad'); }
@@ -444,7 +445,7 @@ function memorySummary(id) {
 function loseStudent(id) {
   if (S.lost.includes(id)) return;
   S.lost.push(id); applyFx({ team: -10, rep: -3 }); S.wb = clamp(S.wb - 6);
-  const p = STUDENTS[id]; logIt(`${p.n}离开了课题组。`); toast(`${p.n}提交了转导师申请，离开了课题组。`, 'bad'); SFX.bad();
+  const p = STUDENTS[id]; moment('lost', { who: p.n }); logIt(`${p.n}离开了课题组。`); toast(`${p.n}提交了转导师申请，离开了课题组。`, 'bad'); SFX.bad();
   if (NPC[id]) NPC[id].visible = false;
 }
 // Urgent event during deep work: pause and let the player choose.
@@ -475,7 +476,7 @@ const ACT = {
     onDone: () => { pose('idle', 3, 4.75); endFocus(true, kind); if (S[kind] >= 100) { toast(isG ? '基金申请书写完了！在办公桌按 E 提交。' : '论文修改稿改完了！在办公桌按 E 提交。', 'good'); SFX.good(); } else toast(`${BLOCKS[blockIdx(S.t - 1)].name}时段结束：${isG ? '基金' : '论文'} ${Math.floor(S[kind])}%。在办公桌按 E 可以接着写，专注不会断。`); },
     onCancel: () => { pose('idle', 3, 4.75); endFocus(false, kind); } }); },
   submit: (kind = 'grant') => { const isG = kind === 'grant'; pose('type', 3, 3.95, Math.PI, true); startActivity({ type: 'submit', label: isG ? '上传并提交基金申请书' : '在投稿系统提交修改稿', icon: '交', min: 6, ff: 6, cancelable: false,
-    onDone: () => { if (isG) { S.submitted = true; S.subWb = S.wb; } else S.paperSubmitted = true; pose('idle', 3, 4.75); setExpr(player, 'happy'); applyFx({ rep: 4 }); gainXP(80); unlock(isG ? 'grant' : 'paper'); logIt(isG ? '基金申请书提交成功。系统显示：已提交，不可修改。' : '论文修改稿提交成功。'); toast(isG ? '基金提交成功！' : '论文修改稿提交成功！', 'good'); SFX.good(); burst(3, 1.4, 4.5, [0.6, 1.6, 2.2], 60, 2.5); } }); },
+    onDone: () => { if (isG) { S.submitted = true; S.subWb = S.wb; } else S.paperSubmitted = true; moment('submit', { which: isG ? '基金申请书' : '论文修改稿', stars: DOSSIER[isG ? 'grant' : 'paper'].comps.map(c => `${c.n}${STAR(S.dos[isG ? 'grant' : 'paper'][c.id])}`).join(' ') }); pose('idle', 3, 4.75); setExpr(player, 'happy'); applyFx({ rep: 4 }); gainXP(80); unlock(isG ? 'grant' : 'paper'); logIt(isG ? '基金申请书提交成功。系统显示：已提交，不可修改。' : '论文修改稿提交成功。'); toast(isG ? '基金提交成功！' : '论文修改稿提交成功！', 'good'); SFX.good(); burst(3, 1.4, 4.5, [0.6, 1.6, 2.2], 60, 2.5); } }); },
   nap: () => { pose('sit', 1.25, 8, Math.PI / 2, true); setExpr(player, 'sleepy'); setEmote(player, 'zz'); startActivity({ type: 'nap', label: '在沙发上小睡', icon: '眠', min: 25, ff: 12, drain: -0.05, perMin: (dm) => { S.v.energy = clamp(S.v.energy + 1.1 * dm); },
     onDone: () => { setEmote(player, null); pose('idle', 2.3, 8); S.wb = clamp(S.wb + 2); toast('睡醒了，精力回来了一些。'); logIt('在办公室沙发上睡了 25 分钟。'); }, onCancel: () => { setEmote(player, null); pose('idle', 2.3, 8); } }); },
   coffee: () => { const gain = [16, 12, 8, 5, 3][Math.min(4, S.coffees)]; pose('talk', 27.6, 23.9, 0);
@@ -503,7 +504,7 @@ const ACT = {
     perFrame: (t) => { const a = t * 0.5; player.position.set(20 + Math.cos(a) * 1.6, 0, 13 + Math.sin(a) * 1.0); player.rotation.y = Math.atan2(-Math.sin(a), Math.cos(a)); },
     onDone: () => { logIt(comp ? '在植物园里一边走一边和阿玲打电话。' : '在六楼植物园里走了一圈。'); pose('idle', 20, 13);
       if (comp) companionDone('garden', comp);
-      else if (min >= 20 && !S.inspired && !S.submitted && S.day <= 4) { S.inspired = true; toast('走到第三圈，基金书的一个想法突然清楚了。下一段写基金时，创新点 +1 星。', 'good'); } },
+      else if (min >= 20 && !S.inspired && !S.submitted && S.day <= 4) { S.inspired = true; moment('inspired'); toast('走到第三圈，基金书的一个想法突然清楚了。下一段写基金时，创新点 +1 星。', 'good'); } },
     onCancel: () => pose('idle', 20, 13) }); },
   roofcoffee: (min, comp) => { const gain = [14, 12, 10, 8, 6][Math.min(4, S.coffees)]; pose('sit', 14 + 1.0, 11, -Math.PI / 2 - 0 + Math.PI, true); startActivity({ type: 'coffee', label: '天台 · 一杯手冲', icon: '啡', min, ff: 8, drain: -0.04,
     onDone: () => { S.coffees++; S.coffeesWeek++; applyFx({ energy: gain, bladder: 14, wellbeing: 2 }); if (S.coffees >= 4) unlock('caffeine'); logIt(comp ? `在天台和${compName(comp)}喝了一杯咖啡。` : '在天台喝了一杯咖啡，看了一会儿城市。'); pose('idle', 9, 7.8); rumour(); if (comp) companionDone('cafe', comp); }, onCancel: () => pose('idle', 9, 7.8) }); },

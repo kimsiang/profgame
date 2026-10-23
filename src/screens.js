@@ -273,6 +273,10 @@ $('handBack').onclick = () => { SFX.click(); show('scrSetup'); };
 $('startBtn').onclick = startGame;
 $('againBtn').onclick = () => { SFX.click(); const c = loadCareer(); if (c && c.done) { try { localStorage.removeItem(CAREER_KEY); } catch (e) { /* storage blocked */ } show('scrTitle'); refreshContinue(); } else nextWeek(); };
 $('homeBtn').onclick = () => { show('scrTitle'); refreshContinue(); };
+// v14.0 week review buttons: the same actions as the dashboard's, plus the detail toggle
+$('wkAgain').onclick = () => $('againBtn').onclick();
+$('wkHome').onclick = () => $('homeBtn').onclick();
+$('wkDetail').onclick = () => { const sc = $('scrEnd'), open = !sc.classList.contains('open'); sc.classList.toggle('open', open); $('wkDetail').textContent = open ? '收起 ▴' : '看详细 ▾'; SFX.click(); };
 setTimeout(() => (CONTENT.p || Promise.resolve()).then(refreshContinue), 0);   // the label names the day, which comes with the content
 initAI();
 (async () => {

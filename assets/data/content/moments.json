@@ -1,0 +1,193 @@
+{
+  "_comment": "v14 moments: what a week leaves behind. kinds: weight and a line template ({day} {t} {who} {said} {title} {score} {n} {stars} {which}). weekly: the one sentence, first template whose `when` holds wins (fields from weeklyFacts()).",
+  "kinds": {
+    "table": {
+      "w": 5,
+      "icon": "🍜",
+      "zh": "{day}在{where}，{who}说：“{title}”。你说：“{said}”",
+      "en": "{day} at the {where}, {who} said “{title}”. You said “{said}”"
+    },
+    "crisis": {
+      "w": 5,
+      "icon": "…",
+      "zh": "{day}，{who}一整天没怎么说话",
+      "en": "{day}: {who} hardly spoke all day"
+    },
+    "lost": {
+      "w": 6,
+      "icon": "✕",
+      "zh": "{day}，{who}决定离开课题组",
+      "en": "{day}: {who} left the group"
+    },
+    "home": {
+      "w": 2,
+      "icon": "🏠",
+      "zh": "{day}晚上回家，{who}在等你",
+      "en": "{day} evening at home; {who} was waiting"
+    },
+    "nohome": {
+      "w": 2,
+      "icon": "🌙",
+      "zh": "{day}没有回家",
+      "en": "{day}: did not go home"
+    },
+    "nohome_w": {
+      "w": 4,
+      "icon": "🌙",
+      "zh": "{day}也没有回家",
+      "en": "{day}: still did not go home"
+    },
+    "submit": {
+      "w": 4,
+      "icon": "📨",
+      "zh": "{day} {t} 提交{which}：{stars}",
+      "en": "{day} {t}: submitted the {which}: {stars}"
+    },
+    "collapse": {
+      "w": 4,
+      "icon": "💤",
+      "zh": "{day} {t}，在办公桌前倒下了",
+      "en": "{day} {t}: collapsed at the desk"
+    },
+    "debt": {
+      "w": 3,
+      "icon": "¥",
+      "zh": "{day}，余额第一次变成负数",
+      "en": "{day}: the balance went negative for the first time"
+    },
+    "reimb": {
+      "w": 3,
+      "icon": "🧾",
+      "zh": "{day}，把一顿饭走了课题报销",
+      "en": "{day}: put a dinner on the grant"
+    },
+    "car": {
+      "w": 3,
+      "icon": "🚗",
+      "zh": "{day}，把车卖了",
+      "en": "{day}: sold the car"
+    },
+    "match": {
+      "w": 2,
+      "icon": "🏸",
+      "zh": "{day}，{score} {win}{who}",
+      "en": "{day}: {score} {win} {who}"
+    },
+    "promote": {
+      "w": 5,
+      "icon": "🎓",
+      "zh": "晋升：{n}",
+      "en": "Promoted: {n}"
+    },
+    "post": {
+      "w": 5,
+      "icon": "🏛",
+      "zh": "{n}",
+      "en": "{n}"
+    },
+    "academy": {
+      "w": 6,
+      "icon": "★",
+      "zh": "院士增选：{n}",
+      "en": "Academy election: {n}"
+    },
+    "tired": {
+      "w": 1,
+      "icon": "☕",
+      "zh": "{day}，第一次累到精力 30 以下",
+      "en": "{day}: first time under 30 energy"
+    },
+    "inspired": {
+      "w": 1,
+      "icon": "🌿",
+      "zh": "{day}，在植物园走到第三圈时想到了基金的创新点",
+      "en": "{day}: the grant's idea came on the third lap of the garden"
+    }
+  },
+  "weekly": [
+    {
+      "id": "lost",
+      "when": {
+        "hasKind": [
+          "lost"
+        ]
+      },
+      "zh": "这周你失去了一个学生。其他的事，都排在这后面。",
+      "en": "This week you lost a student. Everything else comes after that."
+    },
+    {
+      "id": "people",
+      "when": {
+        "hasKind": [
+          "table"
+        ]
+      },
+      "zh": "这周最重要的事发生在饭桌上：{moment}",
+      "en": "The most important thing this week happened over a meal: {moment}"
+    },
+    {
+      "id": "collapse",
+      "when": {
+        "collapsesMin": 1,
+        "submitted": true
+      },
+      "zh": "你交了基金，也倒下了 {collapses} 次。那之后的几天，你比之前清醒。",
+      "en": "You submitted the grant, and collapsed {collapses} time(s). The days after were clearer than the days before."
+    },
+    {
+      "id": "home_cost",
+      "when": {
+        "homeMax": 1,
+        "submitted": true
+      },
+      "zh": "你交了基金，代价是一周只回了 {home} 晚家。",
+      "en": "You submitted the grant; the price was {home} night(s) at home all week."
+    },
+    {
+      "id": "crisis",
+      "when": {
+        "hasKind": [
+          "crisis"
+        ]
+      },
+      "zh": "有一天，{moment}。你注意到了吗？",
+      "en": "One day, {moment}. Did you notice?"
+    },
+    {
+      "id": "money",
+      "when": {
+        "hasKind": [
+          "debt",
+          "reimb",
+          "car"
+        ]
+      },
+      "zh": "这周钱的事比基金的事更难：{moment}",
+      "en": "This week money was harder than the grant: {moment}"
+    },
+    {
+      "id": "nosubmit",
+      "when": {
+        "submitted": false
+      },
+      "zh": "基金没有提交。申报系统周五 23:59 准时关闭，你在 {where} 。",
+      "en": "The grant was not submitted. The portal closed at 23:59 on Friday; you were at the {where}."
+    },
+    {
+      "id": "balance",
+      "when": {
+        "homeMin": 3,
+        "submitted": true,
+        "collapsesMax": 0
+      },
+      "zh": "一周 {home} 晚回家，两个截止都赶上了，没人注意到你是怎么做到的。",
+      "en": "{home} nights at home, both deadlines met, and nobody noticed how."
+    },
+    {
+      "id": "fallback",
+      "when": {},
+      "zh": "这一周冒出 {all} 件事，你亲手做了 {done} 件。",
+      "en": "{all} things came up this week; you handled {done} of them yourself."
+    }
+  ]
+}
