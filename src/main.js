@@ -194,6 +194,7 @@ function loadContent() {
 function needContent(fn) { if (CONTENT.ready) return true; (CONTENT.p || loadContent()).then(() => { if (CONTENT.ready) fn(); }); return false; }
 $('contentRetry').onclick = loadContent;
 loadContent();
+(CONTENT.p || Promise.resolve()).then(refreshContinue);   // the continue label names the day, which comes with the content (was a setTimeout in screens.js that could fire before this file loaded)
 /*DEBUG_HOOK*/
 // v12 balance harness API (tools/balance/agent.js). Only exists with ?sim; costs nothing otherwise.
 if (SIM) window.__sim = {

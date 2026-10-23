@@ -1,5 +1,11 @@
 # Changelog
 
+## v14.2.2 — Bug hunt (2026-10-23)
+- Fixed: a `CONTENT is not defined` error at boot on slower connections — a `setTimeout` in `screens.js` could fire before `main.js` (which defines `CONTENT`) had loaded; the continue-label refresh now runs from `main.js` after `loadContent()`.
+- Fixed: a post accepted or declined on the week review screen was not kept in the career's moments (the merge had already happened), so it could never appear among "the three decisions".
+- Hunted and found nothing: `tools/e2e/monkey.mjs` (random / grinder / balanced / mentor bots × 4 seeds × 3 weeks with state invariants: no NaN, KPIs/meters/trust in range, dossier stars 0–3, event states, career points), `ui_sweep.mjs` (every panel, dialog and zone in a rendered session), `save_quick.mjs` (autosave → continue round-trip identical), the data validator, `split-check`, `npm test`, dist boot.
+- Remaining warnings, not bugs: four one-off speakers (招生办老师, "小陈 & 小敏") have no portrait; the full rendered e2e suite is slow (minutes per scenario) through the python server because of the model loads — scenarios time out at 400 s rather than fail.
+
 ## v14.2.1 — No brand on the card (2026-10-23)
 - The share card's footer is the fiction note and the game's address only; the 从槟城出发的粒子 mark is gone (Kim).
 
