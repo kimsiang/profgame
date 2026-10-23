@@ -330,8 +330,8 @@
     },
     "jay": {
       "npc": "jay",
-      "name_zh": "阿杰",
-      "name_en": "Jay",
+      "name_zh": "阿伟",
+      "name_en": "Wei",
       "level_zh": "槟城来的交换博士后 · 快攻",
       "level_en": "Exchange postdoc from Penang · attacker",
       "reaction": 0.16,
@@ -369,15 +369,15 @@
         "fake": 0.22
       },
       "lines": {
-        "intro_zh": "阿杰：教授，我们槟城人打球，就是一个字——快！",
+        "intro_zh": "阿伟：教授，我们槟城人打球，就是一个字——快！",
         "intro_en": "Jay: Prof, in Penang we play one way: fast!",
-        "win_zh": "阿杰：wah，教授厉害！下次请你吃炒粿条。",
+        "win_zh": "阿伟：wah，教授厉害！下次请你吃炒粿条。",
         "win_en": "Jay: Wah, Prof, not bad! Char kway teow on me next time.",
-        "lose_zh": "阿杰：教授，跟上我的节奏先啦！",
+        "lose_zh": "阿伟：教授，跟上我的节奏先啦！",
         "lose_en": "Jay: Keep up with the tempo first, Prof!",
-        "rematchWon_zh": "阿杰：上次是我太嚣张了。今天认真打。",
+        "rematchWon_zh": "阿伟：上次是我太嚣张了。今天认真打。",
         "rematchWon_en": "Jay: I got cocky last time. Serious today.",
-        "rematchLost_zh": "阿杰：又来？好，我慢一点给你看清楚。",
+        "rematchLost_zh": "阿伟：又来？好，我慢一点给你看清楚。",
         "rematchLost_en": "Jay: Again? Fine, I'll slow down so you can see."
       }
     }

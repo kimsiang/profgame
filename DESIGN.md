@@ -46,7 +46,7 @@ Living summary of the systems in the build. Full design notes (goal, player expe
 |---|---|---|---|---|
 | 阿强 | 88% | 79% | 59% | 29% |
 | 小吴 | 63% | 43% | 43% | 18% |
-| 阿杰 | 45% | 39% | 25% | 13% |
+| 阿伟 | 45% | 39% | 25% | 13% |
 
 Games last about 2 minutes (84–138 s). Energy 95 vs 25 is a 32–59 point swing in win rate, which meets the design target of 25–40 points for 小吴 and 阿杰 and exceeds it for 阿强.
 

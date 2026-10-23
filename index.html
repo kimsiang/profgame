@@ -2023,6 +2023,8 @@ const CAST = {
   dean: { shirt: '#e8edf2', coat: '#2f3e52', tie: '#c0392b', hair: '#9a9a9e', hairStyle: 'bald', glasses: true, pants: '#2f3e52', label: '院长', skin: '#efc6a2' },
   rep: { shirt: '#e74c3c', hair: '#3a2418', hairStyle: 'long', pants: '#1b2430', label: '记者', mic: true },
   s1: { shirt: '#5a6b7c', hair: '#151518', hairStyle: 'short' },
+  // v12.3.2: 阿杰 (first-year master's) was a voice with no body: seven events, no figure, no trust. Now a real member of the group at bay4.
+  jie: { shirt: '#3d7a3a', hair: '#151518', hairStyle: 'short', pants: '#2a3442', label: '阿杰', accent: '#f2c574' },
   s2: { shirt: '#8e44ad', hair: '#4a2a1a', hairStyle: 'pony', accent: '#f2c574' },
   // family (v7.1): portraits for the evening scenes; looks follow docs/characters/roster.json
   partner_ling: { shirt: '#c9a7b8', coat: '#5a6b7c', hair: '#2a1a14', hairStyle: 'bob', pants: '#2a3442', eye: '#2b2a3a', accent: '#e8a0b4' },
@@ -2042,6 +2044,7 @@ const EXPR_KEYS = ['blink', 'happy', 'worried', 'shock', 'sleepy'];
   try {
     const r = await fetch('assets/characters/manifest.json'); if (!r.ok) return;
     Object.assign(CHAR_MODELS, await r.json());
+    if (CHAR_MODELS.s1 && !CHAR_MODELS.jie) CHAR_MODELS.jie = CHAR_MODELS.s1;   // v12.3.2: 阿杰 reuses the stylised figure that sat at bay4
     // v11.1: realistic cast (Microsoft Rocketbox, MIT). Any id in the real manifest replaces its stylised model.
     if (REAL) try { const rr = await fetch('assets/characters/real/manifest.json'); if (rr.ok) Object.assign(CHAR_MODELS, await rr.json()); } catch (e) { /* stylised cast only */ }
     MODELS_READY = true;
@@ -2163,7 +2166,8 @@ placeNPC('zhou', 13.8, 3.95, 13.8, 3, { seated: true, type: true });
 placeNPC('yu', 17.0, 7.95, 17.0, 7, { seated: true, type: true });
 placeNPC('lin', 23.4, 6.2, 26, 4);
 placeNPC('zhao', 34.2, 8.3, 36, 6);
-placeNPC('s1', 17.0, 3.95, 17, 3, { seated: true, type: true });
+placeNPC('jie', 17.0, 3.95, 17, 3, { seated: true, type: true });   // bay4 · 阿杰的座位
+const s1 = placeNPC('s1', 17.0, 3.95, 17, 3, { seated: true, type: true, block: false }); s1.visible = false;   // 课代表: bust only, lives in the lecture hall
 placeNPC('s2', 10.6, 7.95, 10.6, 7, { seated: true, type: true });
 const dean = placeNPC('dean', 16, 24.4, 16, 20, { block: false });
 const reporter = placeNPC('rep', 38.4, 21.2, 38, 18, { block: false });
@@ -2846,7 +2850,7 @@ function sportNPC(id, look, x, z, lx, lz) { look._id = id; const p = makeChar(lo
   });
   sportNPC('grad1', { shirt: '#7a5cff', hairStyle: 'spiky', pants: '#ffffff', label: '研究生会 · 阿强' }, 20, 9.5, 20, 16);
   { const wu = makeChar({ model: 'gen_f1', shirt: '#f2c574', hair: '#1a1a1e', hairStyle: 'pony', pants: '#ffffff', accent: '#c0392b', label: '化学系 · 小吴' }); wu.position.set(24.4, 0, 9); face(wu, 20, 9); wu.userData.baseState = 'idle'; wu.visible = false; Z.npcs.push(wu); NPC.wu = wu; }
-  { const jay = makeChar({ model: 'gen_m4', shirt: '#FFCC00', hair: '#121216', hairStyle: 'spiky', pants: '#1b2430', accent: '#2251FF', label: '槟城 · 阿杰' }); jay.position.set(24.4, 0, 7.5); face(jay, 20, 7.5); jay.userData.baseState = 'idle'; jay.visible = false; Z.npcs.push(jay); NPC.jay = jay; }
+  { const jay = makeChar({ model: 'gen_m4', shirt: '#FFCC00', hair: '#121216', hairStyle: 'spiky', pants: '#1b2430', accent: '#2251FF', label: '槟城 · 阿伟' }); jay.position.set(24.4, 0, 7.5); face(jay, 20, 7.5); jay.userData.baseState = 'idle'; jay.visible = false; Z.npcs.push(jay); NPC.jay = jay; }
   const sh2 = ball(20, 1.6, 13, 0.07, '#ffffff', 'shuttle'); sh2.from = [20, 9.8]; sh2.to = [20, 16.6];
   bench(6, 2.4, 0); bench(20, 2.4, 0); bench(33, 2.4, 0); bench(6, 23.6, Math.PI); bench(33, 23.6, Math.PI);
   for (let i = 0; i < 6; i++) { box(0.5, 0.04, 0.02, mat(['#c0392b', '#2251FF', '#3DDC97'][i % 3]), 4.4 + i * 0.5, 0.52, 2.4, { cast: false }); }
@@ -3299,7 +3303,7 @@ const QUIZ = [];   // v12.1: filled from assets/data/content by loadContent()
 
 const ACHIEVEMENTS = {};   // v12.1: filled from assets/data/content by loadContent()
 const LEVELS = [[0, '讲师'], [120, '助理教授'], [300, '副教授'], [540, '教授'], [820, '讲席教授'], [1150, '杰出教授'], [1500, '传奇导师']];
-const SPEAKERS = { '小陈': 'chen', '小周': 'zhou', '小雨': 'yu', '小林': 'lin', '赵博士': 'zhao', '王老师': 'wang', '院长': 'dean', '记者': 'rep', '课代表': 's1', '阿玲': 'partner_ling', '小宇': 'child_xiaoyu' };
+const SPEAKERS = { '小陈': 'chen', '小周': 'zhou', '小雨': 'yu', '小林': 'lin', '赵博士': 'zhao', '王老师': 'wang', '院长': 'dean', '记者': 'rep', '课代表': 's1', '阿杰': 'jie', '阿玲': 'partner_ling', '小宇': 'child_xiaoyu' };
 /* =========================================================
    A WEEK OF WORK — compact event script (Mon → Sun)
    C(day, time, loc, who, tag, title, line, opening, choices, opts)
@@ -4120,13 +4124,28 @@ function minuteTick(dm) {
 function simulate(minutes) { let left = minutes; while (left > 0 && !S.ended) { const d = Math.min(1, left); minuteTick(d); left -= d; } }
 
 /* ---------------- events lifecycle ---------------- */
+// v12.3.2: "阿杰在茶水间等你" used to mean a marker at the pantry and 阿杰 still typing at his desk.
+// While an event is active its NPC stands beside the event's hotspot (same floor only), and goes back to his seat when it settles.
+function npcToEvent(n, ev) {
+  const h = !ev.phone && HS[ev.loc]; if (!h || !n.visible) return;
+  const u = n.userData; if ((h.zone || 'f5') !== (u.zone || 'f5')) return;
+  const dx = n.position.x - h.x, dz = n.position.z - h.z; if (dx * dx + dz * dz < 2.5 * 2.5) return;   // already there (his own desk, the detector…)
+  if (!u.home) u.home = { x: n.position.x, z: n.position.z, ry: n.rotation.y, seated: !!u.seated, base: u.baseState };
+  u.away = ev.id || true; u.seated = false; u.baseState = 'idle'; u.state = 'idle';
+  n.position.set(h.x + 0.9, 0, h.z + 0.6); face(n, h.x, h.z);
+}
+function npcHome(n) {
+  const u = n.userData, h = u.home; if (!h || !u.away) return;
+  if (activeEvents().some(e => e.npc === u.modelId && e.id !== u.away && HS[e.loc])) { u.away = null; return; }   // another event still wants him elsewhere
+  n.position.set(h.x, 0, h.z); n.rotation.y = h.ry; u.seated = h.seated; u.baseState = h.base; u.state = h.base || 'idle'; u.away = null;
+}
 function activeEvents() { return S.events.filter(e => e.state === 'active'); }
 function updateEvents() {
   for (const ev of S.events) {
     if (ev.state === 'pending' && S.t >= ev.at) {
       ev.state = 'active'; ev.deadline = ev.until ?? (ev.at + ev.win); S.hadQuests = true;
       if (!ev.phone) { const h = HS[ev.loc]; ev.marker = makeMarker(h.x, h.z, !!(ev.urgent || ev.alarm), h.zone || 'f5'); }
-      if (ev.npc && NPC[ev.npc]) { const n = NPC[ev.npc]; if (ev.urgent || ev.alarm) { n.userData.state = 'panic'; setExpr(n, 'shock'); setEmote(n, '!!'); } else { setEmote(n, '!'); if (ev.mood) setExpr(n, ev.mood); } }
+      if (ev.npc && NPC[ev.npc]) { const n = NPC[ev.npc]; npcToEvent(n, ev); if (ev.urgent || ev.alarm) { n.userData.state = 'panic'; setExpr(n, 'shock'); setEmote(n, '!!'); } else { setEmote(n, '!'); if (ev.mood) setExpr(n, ev.mood); } }
       if (ev.phone) { SFX.ring(); toast('电话：' + ev.title); }
       else if (ev.alarm) { SFX.alarm(); toast('警报：' + ev.title, 'bad'); }
       else { SFX.ping(); toast((ev.urgent ? '紧急：' : '新任务：') + ev.line, ev.urgent ? 'bad' : ''); }
@@ -4146,7 +4165,7 @@ function updateEvents() {
 }
 function settleEvent(ev) {
   if (ev.marker) { ev.marker.parent.remove(ev.marker); ev.marker = null; }
-  if (ev.npc && NPC[ev.npc]) { const n = NPC[ev.npc]; setEmote(n, null); n.userData.state = n.userData.baseState || 'idle'; setExpr(n, ev.state === 'resolved' ? 'happy' : 'normal'); setTimeout(() => { if (n.userData.expr === 'happy') setExpr(n, 'normal'); }, 6000); }
+  if (ev.npc && NPC[ev.npc]) { const n = NPC[ev.npc]; setEmote(n, null); npcHome(n); n.userData.state = n.userData.baseState || 'idle'; setExpr(n, ev.state === 'resolved' ? 'happy' : 'normal'); setTimeout(() => { if (n.userData.expr === 'happy') setExpr(n, 'normal'); }, 6000); }
   if (ev.state === 'resolved' && !activeEvents().length) { S.clears++; if (S.clears >= 3) unlock('allclear'); }
 }
 
@@ -4938,7 +4957,7 @@ function showQuickMenu() {
   box.innerHTML = `<h3>打一局，还是练一练？</h3>
     <button class="btn gold" type="button" data-o="aqiang">对阿强 · 研究生 · 业余</button>
     <button class="btn" type="button" data-o="wu">对小吴 · 化学系博士后 · 校队</button>
-    <button class="btn" type="button" data-o="jay">对阿杰 · 槟城来的交换博士后 · 快攻</button>
+    <button class="btn" type="button" data-o="jay">对阿伟 · 槟城来的交换博士后 · 快攻</button>
     <p style="margin-top:6px">训练 · 每组 10 球</p>
     <button class="btn" type="button" data-d="rearHead">后场头顶区 · 马来步还是中国跳${bmBest('rearHead') ? ` · 最好 ${bmBest('rearHead')} 分` : ''}</button>
     <button class="btn" type="button" data-d="defense">接杀 · 挡网前或挑后场${bmBest('defense') ? ` · 最好 ${bmBest('defense')} 分` : ''}</button>
@@ -6087,7 +6106,7 @@ function resumeMid(sv) {
     $('pImg').src = portrait(PLAYER_LOOK(setup.avatar === 'f'), 'normal', 'head');
     for (const ev of activeEvents()) {
       if (!ev.phone && HS[ev.loc]) { const h = HS[ev.loc]; ev.marker = makeMarker(h.x, h.z, !!(ev.urgent || ev.alarm), h.zone || 'f5'); }
-      if (ev.npc && NPC[ev.npc]) { const n = NPC[ev.npc]; if (ev.urgent || ev.alarm) { n.userData.state = 'panic'; setExpr(n, 'shock'); setEmote(n, '!!'); } else setEmote(n, '!'); }
+      if (ev.npc && NPC[ev.npc]) { const n = NPC[ev.npc]; npcToEvent(n, ev); if (ev.urgent || ev.alarm) { n.userData.state = 'panic'; setExpr(n, 'shock'); setEmote(n, '!!'); } else setEmote(n, '!'); }
     }
     camState.orbit = 0; camState.wantAz = camState.az = Math.PI / 4; toggleOverview(false); camState.target.copy(player.position);
     show(null); $('hud').classList.remove('hidden'); $('pauseVeil').classList.add('hidden'); $('activity').classList.add('hidden'); $('dlg').classList.add('hidden'); document.body.classList.remove('talking'); $('navSheet').classList.add('hidden'); camState.cine = null;

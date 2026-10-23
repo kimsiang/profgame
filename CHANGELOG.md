@@ -1,5 +1,13 @@
 # Changelog
 
+## v12.3.2 — 阿杰 has a body (2026-10-23)
+- Bug: "阿杰在茶水间等你" put a marker at the pantry and nobody there. 阿杰 (硕士一年级) had seven events in `week.json` but no NPC, no portrait, no trust, no memory — a voice with no body. He is now a member of the group (`jie`): seated at bay4 (his desk was already labelled 阿杰的座位), in `SPEAKERS`, `people.json` (trust and memory lines) and the canteen companion list.
+- New rule for every NPC: while one of his events is active he stands beside the event's hotspot (same floor only; not if he is already within 2.5 m, e.g. at his own desk) and goes back to his seat when the event settles. So "小林在门口" and "阿杰在茶水间" now look like what they say.
+- The badminton exchange postdoc from Penang was also called 阿杰; he is now 阿伟 (`jay` id unchanged) so the two cannot be confused.
+- The anonymous 课代表 figure (`s1`) that used to sit at bay4 is hidden; his bust still appears in the lecture.
+- Test: `node tools/e2e/run.mjs ajie.mjs` — 阿杰 at the pantry at 12:20, bust shown, trust 60 → 67, back at bay4 after the talk.
+- Still bodiless (validator warnings): 隔壁组老师, 小敏 (2 events), 陈老师. Candidates for the same treatment.
+
 ## v12.3.1 — Renamed to 导师的一周 / My Advisor's Week (2026-10-23)
 - The game is now 《导师的一周》 / *My Advisor's Week* (was 教授的一周 / A Professor's Week; the title screen still said 教授的一天). Main audience is students, so the name takes their point of view: you sit in your advisor's chair for a week.
 - Changed: page title, title screen, Pro-mode system prompt, save-import toast, the gym scoreboard text, the student-council poster line in `week.json`, README and DESIGN headers.

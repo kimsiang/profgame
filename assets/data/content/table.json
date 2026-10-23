@@ -15,7 +15,8 @@
     "zhou",
     "yu",
     "lin",
-    "zhao"
+    "zhao",
+    "jie"
    ],
    "trust": 6
   },
@@ -109,6 +110,13 @@
     "zh": "阿玲 +3",
     "en": "A-Ling +3"
    }
+  },
+  "jie": {
+   "n": {
+    "zh": "阿杰",
+    "en": "A-Jie"
+   },
+   "seat": "bay4"
   }
  },
  "events": [
