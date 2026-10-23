@@ -1,5 +1,6 @@
 // v14.0: a rendered frame of the week review (debug mode, so screens fade; see weekly.mjs for the checks).
 const SHOT = new URL('./out/', import.meta.url).pathname;
+import { createRequire } from 'module'; const require = createRequire(import.meta.url);
 export default async ({ page, sleep }) => {
   const ev = (code) => page.evaluate((c) => window.__prof(c), code);
   await page.evaluateOnNewDocument(() => { try { localStorage.clear(); localStorage.setItem('prof-day-q', 'mid'); } catch (e) {} });
@@ -18,6 +19,9 @@ export default async ({ page, sleep }) => {
   }
   await sleep(2500);
   await page.screenshot({ path: SHOT + 'v14_weekly.png' });
+  // the share card, saved as a file for the frame check
+  const png = await page.evaluate(() => window.__prof(`weeklyCardCanvas().toDataURL('image/png')`));
+  require('fs').writeFileSync(SHOT + 'v14_card.png', Buffer.from(png.split(',')[1], 'base64'));
   await ev(`$('wkDetail').click()`); await sleep(600);
   await page.screenshot({ path: SHOT + 'v14_weekly_open.png' });
 };

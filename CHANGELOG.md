@@ -1,5 +1,9 @@
 # Changelog
 
+## v14.1 — The share card (2026-10-23)
+- 保存卡片 on the week review draws a 1080×1350 (4:5) picture: grade, title, the one sentence, up to five moments, the fiction note, a small 从槟城出发的粒子 mark and a QR code to the game (`src/weekly-card.js`, `vendor/qrcode/qrcode.js`, MIT). Phones get the share sheet; desktops a PNG download. Text comes from the same templates as the review — nothing generated goes into the picture.
+- Test: `weekly_shot.mjs` writes `out/v14_card.png`.
+
 ## v14.0 — Moments and the week review (2026-10-23)
 - `src/moments.js` + `assets/data/content/moments.json`: the game records what a week leaves behind — a table talk and what you answered, a student gone quiet or gone, each night at home or not (Friday and the weekend count double), a submission and its stars, a collapse, the first negative balance, a dinner on the grant, a match, a promotion, a post accepted / declined / resigned, an election. One `moment()` line at each existing decision point; no rule changed (balance table unchanged).
 - The Sunday review now opens with the grade, **one sentence the game writes about your week** (nine templates in order of priority: a lost student, the table, collapses, the home cost, a quiet student, money, no submission, balance, fallback) and **up to five moments** on a timeline. The dashboard is still all there behind 看详细.

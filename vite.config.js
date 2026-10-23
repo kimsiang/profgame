@@ -30,7 +30,7 @@ export default defineConfig({
   build: { outDir: 'dist', emptyOutDir: true, assetsInlineLimit: 0, assetsDir: 'build', rollupOptions: { input: 'index.html' } },
   plugins: [
     { name: 'sync-vendor', apply: 'build', buildStart() { execSync('node tools/sync-vendor.mjs', { cwd: root, stdio: 'inherit' }); } },
-    bundleClassic(/<script src="(vendor\/three\/[^"]+)"><\/script>\n?/g, 'three', false),
+    bundleClassic(/<script src="(vendor\/(?:three|qrcode)\/[^"]+)"><\/script>\n?/g, 'three', false),
     bundleClassic(/<script src="(src\/[^"]+\.js)"><\/script>\n?/g, 'game', false),
     { name: 'copy-assets', apply: 'build', closeBundle() { fs.cpSync(path.join(root, 'assets'), path.join(root, 'dist', 'assets'), { recursive: true }); for (const f of ['LICENSE', 'THIRD-PARTY-NOTICES.md']) fs.copyFileSync(path.join(root, f), path.join(root, 'dist', f)); } },
   ],
