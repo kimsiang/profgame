@@ -278,7 +278,7 @@ $('wkAgain').onclick = () => $('againBtn').onclick();
 $('wkHome').onclick = () => $('homeBtn').onclick();
 $('wkCard').onclick = () => { SFX.click(); weeklyCardSave(); };
 $('wkDetail').onclick = () => { const sc = $('scrEnd'), open = !sc.classList.contains('open'); sc.classList.toggle('open', open); $('wkDetail').textContent = open ? '收起 ▴' : '看详细 ▾'; SFX.click(); };
-setTimeout(() => (CONTENT.p || Promise.resolve()).then(refreshContinue), 0);   // the label names the day, which comes with the content
+// (the continue-label refresh that waits for the content now runs from main.js, after CONTENT exists — v14.2.2)
 initAI();
 (async () => {
   try {
