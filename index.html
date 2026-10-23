@@ -2025,6 +2025,9 @@ const CAST = {
   s1: { shirt: '#5a6b7c', hair: '#151518', hairStyle: 'short' },
   // v12.3.2: 阿杰 (first-year master's) was a voice with no body: seven events, no figure, no trust. Now a real member of the group at bay4.
   jie: { shirt: '#3d7a3a', hair: '#151518', hairStyle: 'short', pants: '#2a3442', label: '阿杰', accent: '#f2c574' },
+  min: { shirt: '#8e44ad', hair: '#4a2a1a', hairStyle: 'pony', pants: '#2a3442', label: '小敏', accent: '#f2c574' },   // 博士一年级, bay5 (was the anonymous s2)
+  nb: { shirt: '#5d6d7e', coat: '#2c3e50', hair: '#3a3a3e', hairStyle: 'short', glasses: true, pants: '#2c3e50', label: '隔壁组老师' },   // visitor: only shown while his event is active
+  coach: { shirt: '#ffffff', pants: '#2251FF', hair: '#2a1a14', hairStyle: 'pony', label: '陈老师 · 化学系', accent: '#2251FF', skin: '#e9b58a' },   // same look as the tennis-court figure; here so her bust renders
   s2: { shirt: '#8e44ad', hair: '#4a2a1a', hairStyle: 'pony', accent: '#f2c574' },
   // family (v7.1): portraits for the evening scenes; looks follow docs/characters/roster.json
   partner_ling: { shirt: '#c9a7b8', coat: '#5a6b7c', hair: '#2a1a14', hairStyle: 'bob', pants: '#2a3442', eye: '#2b2a3a', accent: '#e8a0b4' },
@@ -2045,6 +2048,8 @@ const EXPR_KEYS = ['blink', 'happy', 'worried', 'shock', 'sleepy'];
     const r = await fetch('assets/characters/manifest.json'); if (!r.ok) return;
     Object.assign(CHAR_MODELS, await r.json());
     if (CHAR_MODELS.s1 && !CHAR_MODELS.jie) CHAR_MODELS.jie = CHAR_MODELS.s1;   // v12.3.2: 阿杰 reuses the stylised figure that sat at bay4
+    if (CHAR_MODELS.s2 && !CHAR_MODELS.min) CHAR_MODELS.min = CHAR_MODELS.s2;   // 小敏 likewise, bay5
+    if (CHAR_MODELS.oldprof && !CHAR_MODELS.nb) CHAR_MODELS.nb = CHAR_MODELS.oldprof;
     // v11.1: realistic cast (Microsoft Rocketbox, MIT). Any id in the real manifest replaces its stylised model.
     if (REAL) try { const rr = await fetch('assets/characters/real/manifest.json'); if (rr.ok) Object.assign(CHAR_MODELS, await rr.json()); } catch (e) { /* stylised cast only */ }
     MODELS_READY = true;
@@ -2168,7 +2173,9 @@ placeNPC('lin', 23.4, 6.2, 26, 4);
 placeNPC('zhao', 34.2, 8.3, 36, 6);
 placeNPC('jie', 17.0, 3.95, 17, 3, { seated: true, type: true });   // bay4 · 阿杰的座位
 const s1 = placeNPC('s1', 17.0, 3.95, 17, 3, { seated: true, type: true, block: false }); s1.visible = false;   // 课代表: bust only, lives in the lecture hall
-placeNPC('s2', 10.6, 7.95, 10.6, 7, { seated: true, type: true });
+placeNPC('min', 10.6, 7.95, 10.6, 7, { seated: true, type: true });   // bay5 · 小敏的座位
+const s2 = placeNPC('s2', 10.6, 7.95, 10.6, 7, { seated: true, type: true, block: false }); s2.visible = false;
+const nb = placeNPC('nb', 29, 25.5, 27.6, 23.9, { block: false }); nb.visible = false; nb.userData.visitor = true;   // 隔壁组: appears at the pantry when he has something to ask
 const dean = placeNPC('dean', 16, 24.4, 16, 20, { block: false });
 const reporter = placeNPC('rep', 38.4, 21.2, 38, 18, { block: false });
 dean.visible = false; reporter.visible = false;
@@ -2579,7 +2586,7 @@ function sportNPC(id, look, x, z, lx, lz) { look._id = id; const p = makeChar(lo
   box(0.8, 0.9, 0.8, mat('#2f3e52', { metalness: 0.5 }), 34.5, 0, 4, { block: true, round: 0.05 }); cyl(0.2, 0.2, 0.3, mat('#1b2430'), 34.5, 0.9, 4);
   for (let i = 0; i < 14; i++) { const b = new THREE.Mesh(new THREE.SphereGeometry(0.07, 10, 8), mat('#d8ff3a', { roughness: 0.8 })); b.position.set(33.6 + (i % 5) * 0.15, 0.07 + Math.floor(i / 5) * 0.12, 5.2 + Math.floor(i / 5) * 0.14); Z.group.add(b); }
   const sb = plane(3.6, 1.0, new THREE.MeshBasicMaterial({ toneMapped: false, map: canvasTex(512, 140, (g, w, h) => { g.fillStyle = '#0a1a28'; g.fillRect(0, 0, w, h); g.fillStyle = '#3DDC97'; g.font = `800 72px ${CN_FONT}`; g.fillText('3 : 2', 180, 92); g.fillStyle = '#EAF4FB'; g.font = `600 26px ${CN_FONT}`; g.fillText('物理楼网球馆', 20, 40); }) }), 20, 2.0, 0.14); sb.material.color.setScalar(1.5);
-  sportNPC('coach', { shirt: '#ffffff', pants: '#2251FF', hair: '#2a1a14', hairStyle: 'pony', label: '陈老师 · 化学系', accent: '#2251FF', skin: '#e9b58a' }, 26, 13, 10, 13);
+  sportNPC('coach', CAST.coach, 26, 13, 10, 13);
   const bl = ball(12, 1.0, 13, 0.07, '#d8ff3a', 'tennis'); bl.from = [11, 12.2]; bl.to = [25, 13.8];
   box(0.5, 0.05, 0.02, mat('#c0392b'), 26.2, 1.1, 13.3); // racket on bench
   decal('网球馆 · TENNIS', 18, 23.6, 3, 0.55, { sub: '08:00 – 22:00 · 请穿运动鞋' });
@@ -2848,8 +2855,8 @@ function sportNPC(id, look, x, z, lx, lz) { look._id = id; const p = makeChar(lo
     blockRect(cx - 3.05, 12.85, cx + 3.05, 13.15, 0.1);
     if (i !== 1) { const a = makeChar({ shirt: ['#2251FF', '#3DDC97'][i / 2 | 0], hairStyle: 'short', pants: '#ffffff' }); a.position.set(cx, 0, 9); face(a, cx, 17); a.userData.state = 'play'; a.userData.baseState = 'play'; Z.npcs.push(a); const b = makeChar({ shirt: ['#c0392b', '#f2c574'][i / 2 | 0], hairStyle: 'pony', pants: '#ffffff' }); b.position.set(cx, 0, 17); face(b, cx, 9); b.userData.state = 'play'; b.userData.baseState = 'play'; Z.npcs.push(b); const sh = ball(cx, 1.6, 13, 0.07, '#ffffff', 'shuttle'); sh.from = [cx, 9.5]; sh.to = [cx, 16.5]; sh.active = true; }
   });
-  sportNPC('grad1', { shirt: '#7a5cff', hairStyle: 'spiky', pants: '#ffffff', label: '研究生会 · 阿强' }, 20, 9.5, 20, 16);
-  { const wu = makeChar({ model: 'gen_f1', shirt: '#f2c574', hair: '#1a1a1e', hairStyle: 'pony', pants: '#ffffff', accent: '#c0392b', label: '化学系 · 小吴' }); wu.position.set(24.4, 0, 9); face(wu, 20, 9); wu.userData.baseState = 'idle'; wu.visible = false; Z.npcs.push(wu); NPC.wu = wu; }
+  sportNPC('grad1', { shirt: '#7a5cff', hairStyle: 'spiky', pants: '#ffffff', label: '研究生会 · 阿丹' }, 20, 9.5, 20, 16);
+  { const wu = makeChar({ model: 'gen_f1', shirt: '#f2c574', hair: '#1a1a1e', hairStyle: 'pony', pants: '#ffffff', accent: '#c0392b', label: '化学系 · 阿龙' }); wu.position.set(24.4, 0, 9); face(wu, 20, 9); wu.userData.baseState = 'idle'; wu.visible = false; Z.npcs.push(wu); NPC.wu = wu; }
   { const jay = makeChar({ model: 'gen_m4', shirt: '#FFCC00', hair: '#121216', hairStyle: 'spiky', pants: '#1b2430', accent: '#2251FF', label: '槟城 · 阿伟' }); jay.position.set(24.4, 0, 7.5); face(jay, 20, 7.5); jay.userData.baseState = 'idle'; jay.visible = false; Z.npcs.push(jay); NPC.jay = jay; }
   const sh2 = ball(20, 1.6, 13, 0.07, '#ffffff', 'shuttle'); sh2.from = [20, 9.8]; sh2.to = [20, 16.6];
   bench(6, 2.4, 0); bench(20, 2.4, 0); bench(33, 2.4, 0); bench(6, 23.6, Math.PI); bench(33, 23.6, Math.PI);
@@ -3303,7 +3310,7 @@ const QUIZ = [];   // v12.1: filled from assets/data/content by loadContent()
 
 const ACHIEVEMENTS = {};   // v12.1: filled from assets/data/content by loadContent()
 const LEVELS = [[0, '讲师'], [120, '助理教授'], [300, '副教授'], [540, '教授'], [820, '讲席教授'], [1150, '杰出教授'], [1500, '传奇导师']];
-const SPEAKERS = { '小陈': 'chen', '小周': 'zhou', '小雨': 'yu', '小林': 'lin', '赵博士': 'zhao', '王老师': 'wang', '院长': 'dean', '记者': 'rep', '课代表': 's1', '阿杰': 'jie', '阿玲': 'partner_ling', '小宇': 'child_xiaoyu' };
+const SPEAKERS = { '小陈': 'chen', '小周': 'zhou', '小雨': 'yu', '小林': 'lin', '赵博士': 'zhao', '王老师': 'wang', '院长': 'dean', '记者': 'rep', '课代表': 's1', '阿杰': 'jie', '小敏': 'min', '陈老师': 'coach', '隔壁组老师': 'nb', '阿玲': 'partner_ling', '小宇': 'child_xiaoyu' };
 /* =========================================================
    A WEEK OF WORK — compact event script (Mon → Sun)
    C(day, time, loc, who, tag, title, line, opening, choices, opts)
@@ -4127,9 +4134,9 @@ function simulate(minutes) { let left = minutes; while (left > 0 && !S.ended) { 
 // v12.3.2: "阿杰在茶水间等你" used to mean a marker at the pantry and 阿杰 still typing at his desk.
 // While an event is active its NPC stands beside the event's hotspot (same floor only), and goes back to his seat when it settles.
 function npcToEvent(n, ev) {
-  const h = !ev.phone && HS[ev.loc]; if (!h || !n.visible) return;
-  const u = n.userData; if ((h.zone || 'f5') !== (u.zone || 'f5')) return;
-  const dx = n.position.x - h.x, dz = n.position.z - h.z; if (dx * dx + dz * dz < 2.5 * 2.5) return;   // already there (his own desk, the detector…)
+  const h = !ev.phone && HS[ev.loc]; const u = n.userData; if (!h || (!n.visible && !u.visitor)) return;
+  if (u.visitor) n.visible = true; if ((h.zone || 'f5') !== (u.zone || 'f5')) return;
+  const dx = n.position.x - h.x, dz = n.position.z - h.z; if (!u.visitor && dx * dx + dz * dz < 2.5 * 2.5) return;   // already there (his own desk, the detector…)
   if (!u.home) u.home = { x: n.position.x, z: n.position.z, ry: n.rotation.y, seated: !!u.seated, base: u.baseState };
   u.away = ev.id || true; u.seated = false; u.baseState = 'idle'; u.state = 'idle';
   n.position.set(h.x + 0.9, 0, h.z + 0.6); face(n, h.x, h.z);
@@ -4138,6 +4145,7 @@ function npcHome(n) {
   const u = n.userData, h = u.home; if (!h || !u.away) return;
   if (activeEvents().some(e => e.npc === u.modelId && e.id !== u.away && HS[e.loc])) { u.away = null; return; }   // another event still wants him elsewhere
   n.position.set(h.x, 0, h.z); n.rotation.y = h.ry; u.seated = h.seated; u.baseState = h.base; u.state = h.base || 'idle'; u.away = null;
+  if (u.visitor) n.visible = false;
 }
 function activeEvents() { return S.events.filter(e => e.state === 'active'); }
 function updateEvents() {
@@ -4660,7 +4668,7 @@ function bmAfter(opp, win, ctx, score) {
   bmRecord(opp, win);
   if (ctx && ctx.event === 'chem') {
     applyFx(win ? { team: 3, rep: 3, wellbeing: 2 } : { rep: 1 });
-    logIt(win ? `决胜单打 ${score} 赢了化学系的小吴，物理系拿下研究生羽毛球赛。` : `决胜单打 ${score} 输给化学系的小吴。阿强说明年再来。`);
+    logIt(win ? `决胜单打 ${score} 赢了化学系的阿龙，物理系拿下研究生羽毛球赛。` : `决胜单打 ${score} 输给化学系的阿龙。阿丹说明年再来。`);
     if (win) S.flags.chemWin = 1;
   }
   ACT.badminton(30);
@@ -4955,8 +4963,8 @@ function showQuickMenu() {
   $('bmScore').classList.remove('pills'); $('bmScore').innerHTML = '<span>体育馆 · 2 号场</span>'; $('bmHint').textContent = '快速对局和训练都不影响职业生涯存档。';
   const box = $('bmEndBox'); box.className = 'panel';
   box.innerHTML = `<h3>打一局，还是练一练？</h3>
-    <button class="btn gold" type="button" data-o="aqiang">对阿强 · 研究生 · 业余</button>
-    <button class="btn" type="button" data-o="wu">对小吴 · 化学系博士后 · 校队</button>
+    <button class="btn gold" type="button" data-o="aqiang">对阿丹 · 研究生 · 业余</button>
+    <button class="btn" type="button" data-o="wu">对阿龙 · 化学系博士后 · 校队</button>
     <button class="btn" type="button" data-o="jay">对阿伟 · 槟城来的交换博士后 · 快攻</button>
     <p style="margin-top:6px">训练 · 每组 10 球</p>
     <button class="btn" type="button" data-d="rearHead">后场头顶区 · 马来步还是中国跳${bmBest('rearHead') ? ` · 最好 ${bmBest('rearHead')} 分` : ''}</button>
@@ -5025,7 +5033,7 @@ function amenityAt(x, z) {
   if (near('garden', 1.8)) return { label: `在植物园里走 20 分钟 · 身心 +9（现在 ${Math.round(S.wb)}）${companionsFor('garden').ok.length ? ' · 可以给阿玲打电话' : ''}`, code: '6F', act: openGarden };
   if (near('roofcafe', 1.6)) return { label: `天台咖啡（第 ${S.coffees + 1} 杯）· 顺便听听明天的八卦`, code: 'R', act: openRoofCafe };
   if (near('pitch', 2.5)) return { label: `和本科生踢 40 分钟球 · 团队 + 身心${S.recruit ? '' : ' · 也许能招到人'}`, code: '校园', act: () => ACT.soccer(40) };
-  if (near('courtB', 2.0)) return { label: '和阿强打一局羽毛球（7 分）· 学生信任 +', code: '体育馆', act: () => bmOffer('aqiang') };
+  if (near('courtB', 2.0)) return { label: '和阿丹打一局羽毛球（7 分）· 学生信任 +', code: '体育馆', act: () => bmOffer('aqiang') };
   if (near('desk')) return { label: `办公桌 · 专注写到 ${fmt(commitEnd())} · 基金 ${S.submitted ? '已交' : Math.floor(S.grant) + '%'} · 论文 ${S.paperSubmitted ? '已交' : Math.floor(S.paper) + '%'}`, code: '503', act: openDesk };
   if (near('sofa')) return { label: '在沙发上小睡 25 分钟', code: '503', act: ACT.nap };
   if (near('coffee')) return { label: `冲一杯咖啡（今天第 ${S.coffees + 1} 杯）`, code: '508', act: ACT.coffee };

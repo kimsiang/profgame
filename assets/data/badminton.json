@@ -232,8 +232,8 @@
   "opponents": {
     "aqiang": {
       "npc": "grad1",
-      "name_zh": "阿强",
-      "name_en": "Ah Qiang",
+      "name_zh": "阿丹",
+      "name_en": "Ah Dan",
       "level_zh": "研究生会 · 业余",
       "level_en": "Grad union · casual",
       "reaction": 0.22,
@@ -263,15 +263,15 @@
         }
       },
       "lines": {
-        "intro_zh": "阿强：老师，我让您三分？……开玩笑的，来吧！",
+        "intro_zh": "阿丹：老师，我让您三分？……开玩笑的，来吧！",
         "intro_en": "Ah Qiang: Shall I spot you three points? Kidding. Let's go!",
-        "win_zh": "阿强：老师您这杀球……下周我还要来！",
+        "win_zh": "阿丹：老师您这杀球……下周我还要来！",
         "win_en": "Ah Qiang: That smash, Prof… I want a rematch next week!",
-        "lose_zh": "阿强：承让承让！老师写基金太累了吧？",
+        "lose_zh": "阿丹：承让承让！老师写基金太累了吧？",
         "lose_en": "Ah Qiang: Thanks for the game! Grant writing wearing you out?",
-        "rematchWon_zh": "阿强：上次输给您之后，我回去练了一周反手。",
+        "rematchWon_zh": "阿丹：上次输给您之后，我回去练了一周反手。",
         "rematchWon_en": "Ah Qiang: After you beat me I practised my backhand all week.",
-        "rematchLost_zh": "阿强：老师，今天还让我赢吗？",
+        "rematchLost_zh": "阿丹：老师，今天还让我赢吗？",
         "rematchLost_en": "Ah Qiang: Going to let me win again today, Prof?"
       },
       "tactics": {
@@ -280,8 +280,8 @@
     },
     "wu": {
       "npc": "wu",
-      "name_zh": "小吴",
-      "name_en": "Xiao Wu",
+      "name_zh": "阿龙",
+      "name_en": "Ah Long",
       "level_zh": "化学系博士后 · 校队",
       "level_en": "Chemistry postdoc · varsity",
       "reaction": 0.17,
@@ -311,15 +311,15 @@
         }
       },
       "lines": {
-        "intro_zh": "小吴：听说物理系请了教授出山。我不会手下留情的。",
+        "intro_zh": "阿龙：听说物理系请了教授出山。我不会手下留情的。",
         "intro_en": "Xiao Wu: So physics sent a professor. I won't go easy.",
-        "win_zh": "小吴：……好吧，物理系赢了。今晚的奶茶我请。",
+        "win_zh": "阿龙：……好吧，物理系赢了。今晚的奶茶我请。",
         "win_en": "Xiao Wu: …Fine, physics wins. Bubble tea is on me tonight.",
-        "lose_zh": "小吴：化学系拿下！教授打得不错，就是步子慢了点。",
+        "lose_zh": "阿龙：化学系拿下！教授打得不错，就是步子慢了点。",
         "lose_en": "Xiao Wu: Chemistry takes it! Good game, Prof — a step slow, though.",
-        "rematchWon_zh": "小吴：上次是我状态不好。",
+        "rematchWon_zh": "阿龙：上次是我状态不好。",
         "rematchWon_en": "Xiao Wu: I was off my game last time.",
-        "rematchLost_zh": "小吴：又来送分？",
+        "rematchLost_zh": "阿龙：又来送分？",
         "rematchLost_en": "Xiao Wu: Back for more points?"
       },
       "tactics": {
@@ -418,9 +418,36 @@
   "fakeDelay": 0.15,
   "venue": {
     "_comment": "v10.3 match venue text (assets/js/bm-venue.js): the gym rebuilt for the broadcast camera. boards/banners/scoreboard show only on Friday's match.",
-    "name_zh": "体育馆 · 2 号场", "name_en": "Gym, court 2",
-    "notice1": "研究生羽毛球赛 · 周五", "notice2": "物理 vs 化学 · 13:00 开赛",
-    "boards": [["物理 vs 化学", "PHYSICS vs CHEMISTRY", "#00A9F4"], ["研究生羽毛球赛", "GRADUATE OPEN", "#FFB547"], ["导师的一周", "MY ADVISOR'S WEEK", "#ffffff"]],
-    "banners": [["物理必胜", "#0341B3"], ["化学加油", "#b8322a"]]
+    "name_zh": "体育馆 · 2 号场",
+    "name_en": "Gym, court 2",
+    "notice1": "研究生羽毛球赛 · 周五",
+    "notice2": "物理 vs 化学 · 13:00 开赛",
+    "boards": [
+      [
+        "物理 vs 化学",
+        "PHYSICS vs CHEMISTRY",
+        "#00A9F4"
+      ],
+      [
+        "研究生羽毛球赛",
+        "GRADUATE OPEN",
+        "#FFB547"
+      ],
+      [
+        "导师的一周",
+        "MY ADVISOR'S WEEK",
+        "#ffffff"
+      ]
+    ],
+    "banners": [
+      [
+        "物理必胜",
+        "#0341B3"
+      ],
+      [
+        "化学加油",
+        "#b8322a"
+      ]
+    ]
   }
 }

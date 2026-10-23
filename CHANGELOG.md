@@ -1,5 +1,12 @@
 # Changelog
 
+## v12.3.3 — No more ghosts; badminton names (2026-10-23)
+- 小敏 (博士一年级) is a member of the group (`min`): seated at bay5, trust, memory lines, lunch companion. The anonymous `s2` figure that sat there is hidden.
+- 陈老师 (化学系) now shows her bust in dialogs (she already had a figure on the tennis court).
+- 隔壁组老师 (`nb`) is a visitor: he appears beside the pantry while his Tuesday event is active and leaves afterwards. Visitors always register a home position, so they hide again even when standing right at the hotspot.
+- Badminton opponents renamed on Kim's list: 研究生会 阿强 → **阿丹**, 化学系博士后 小吴 → **阿龙**, 槟城交换博士后 → **阿伟** (v12.3.2). **阿嘉** is reserved for the next badminton character. Ids (`aqiang`, `wu`, `jay`) unchanged, so saves and the balance tables still line up. The sophomore recruit 小吴 (football, email) is a different person and keeps his name.
+- Test: `node tools/e2e/run.mjs ghosts.mjs` — roster has 7 students, three busts render, 隔壁组老师 visible at 13:05 Tuesday, hidden again after the talk.
+
 ## v12.3.2 — 阿杰 has a body (2026-10-23)
 - Bug: "阿杰在茶水间等你" put a marker at the pantry and nobody there. 阿杰 (硕士一年级) had seven events in `week.json` but no NPC, no portrait, no trust, no memory — a voice with no body. He is now a member of the group (`jie`): seated at bay4 (his desk was already labelled 阿杰的座位), in `SPEAKERS`, `people.json` (trust and memory lines) and the canteen companion list.
 - New rule for every NPC: while one of his events is active he stands beside the event's hotspot (same floor only; not if he is already within 2.5 m, e.g. at his own desk) and goes back to his seat when the event settles. So "小林在门口" and "阿杰在茶水间" now look like what they say.

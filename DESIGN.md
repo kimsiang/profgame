@@ -38,14 +38,14 @@ Living summary of the systems in the build. Full design notes (goal, player expe
 - Timing windows by energy: ≥70: perfect ±110 ms, good ±200, fair ±300; ≥40: 80/160/250; below: 50/110/190. Player running speed also falls with energy.
 - Footwork (rear court only, set ≥0.25 s before contact): default → round-the-head ball one grade down; 马来步 needs ≥0.75 s margin (else two grades down), smash +15%; 中国跳 replans contact 0.45 m higher and 0.25 m further, smash +10%, 2 energy each, below 40 energy 30% shaky landing (+0.2 s reaction next ball).
 - Unforced error = net/out with margin ≥0.25 s and an incoming shuttle slower than 22 m/s.
-- Career: play / play it out (`autoWin`, a little below the bot results) / don't. Friday 13:00 deciding singles vs 小吴: win team +3, rep +3, wellbeing +2. The usual 30-minute badminton activity follows either way. Records per opponent in `S.bm` (save).
+- Career: play / play it out (`autoWin`, a little below the bot results) / don't. Friday 13:00 deciding singles vs 阿龙: win team +3, rep +3, wellbeing +2. The usual 30-minute badminton activity follows either way. Records per opponent in `S.bm` (save).
 - Quick play and drills from the title page never save; review history and drill bests are kept in localStorage only.
 
 ### Balance (bot, timing noise σ = 85 ms, no footwork, 80 games per cell — `node tools/bm_balance.js 80`)
 | Opponent | energy 95 | 70 | 50 | 25 |
 |---|---|---|---|---|
-| 阿强 | 88% | 79% | 59% | 29% |
-| 小吴 | 63% | 43% | 43% | 18% |
+| 阿丹 | 88% | 79% | 59% | 29% |
+| 阿龙 | 63% | 43% | 43% | 18% |
 | 阿伟 | 45% | 39% | 25% | 13% |
 
 Games last about 2 minutes (84–138 s). Energy 95 vs 25 is a 32–59 point swing in win rate, which meets the design target of 25–40 points for 小吴 and 阿杰 and exceeds it for 阿强.

@@ -16,7 +16,8 @@
     "yu",
     "lin",
     "zhao",
-    "jie"
+    "jie",
+    "min"
    ],
    "trust": 6
   },
@@ -117,6 +118,13 @@
     "en": "A-Jie"
    },
    "seat": "bay4"
+  },
+  "min": {
+   "n": {
+    "zh": "小敏",
+    "en": "Xiao Min"
+   },
+   "seat": "bay5"
   }
  },
  "events": [
