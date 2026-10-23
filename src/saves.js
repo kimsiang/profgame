@@ -182,7 +182,10 @@ function weekOutcomes() {
 /* v8: a post offer (or the option to step down) on the week's end screen. Decisions write straight to the saved career. */
 function renderOffer(offer, c) {
   const el = $('endOffer'); if (!el) return;
-  const set = (fn, msg) => { const cc = loadCareer(); if (!cc) return; fn(cc); saveCareer(cc); el.innerHTML = `<div class="offerDone">${esc(msg)}</div>`; SFX.click(); };
+  const set = (fn, msg) => { const cc = loadCareer(); if (!cc) return; const n0 = (S.moments || []).length; fn(cc);
+    // v14.2.2: a post accepted or declined here is a career decision, but the week's moments were merged before this screen; add it now
+    (S.moments || []).slice(n0).forEach(m => { cc.moments = (cc.moments || []).concat([Object.assign({}, m, { week: S.week })]).slice(-60); });
+    saveCareer(cc); el.innerHTML = `<div class="offerDone">${esc(msg)}</div>`; SFX.click(); };
   if (offer === 'vice_dean') {
     el.innerHTML = `<div class="offer"><b>院长：“下学期想请你当副院长，分管科研。”</b><small>每天多 3–4 件行政事务（院务会、评估、招聘、预算），声誉和团队更容易涨，专注时段会更少。三周后若声誉 ≥ 75，可能被提名为院长。</small><div class="row"><button class="btn gold" type="button" id="ofYes">接受</button><button class="btn ghost" type="button" id="ofNo">婉拒，专心做科研</button></div></div>`;
     $('ofYes').onclick = () => set(cc => { cc.post = 'vice_dean'; cc.postWeeks = 0; (cc.postLog = cc.postLog || []).push({ week: cc.week, n: '副院长' }); moment('post', { n: '接受了副院长的邀请' }); }, '你接受了。下周起，你是副院长。');
