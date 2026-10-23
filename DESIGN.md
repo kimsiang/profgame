@@ -80,6 +80,14 @@ Games last about 2 minutes (84–138 s). Energy 95 vs 25 is a 32–59 point swin
 - `tools/balance/agent.js` (injected by `tools/e2e/balance.mjs`) plays a week: morning intention, then a loop of dialog → choice, activity → tick minutes, free time → policy action. Walking is charged as minutes (5 on a floor, lift time + 7 between floors). `Math.random` is seeded per career, so a row can be replayed.
 - `tools/balance/report.mjs` prints the §2.3 table of `design-notes/v12-week-with-weight.md`; `tools/balance/compare.mjs` checks two runs row by row (used to prove a refactor changes nothing).
 
+## v11.4 Campus facades — how they work
+- `assets/js/facade.js` is a kit, not a model: `building(spec)` (floor bands, piers, windows recessed 18 cm with frames and glass, a glass podium, canopy and doors, parapet, roof plant, downpipes, AC units, lamps, planters), `hall(spec)` (the gym: concrete base, ribbed panels, high windows, louvres, glazed gable, standing-seam vault), `forest(list)` (London planes: trunks, branches and leaf cards as three instanced meshes), `bikeShed()`, `skyline(list)` (slab / tower / podium types for the city below the plateau). Everything repeated is instanced; the physics building is ~50 draw calls, the whole campus ~150 per pass.
+- Walls are tiled in world metres through a tiny vertex-shader patch (`vUv = (x+z, y)/2`), so instanced pieces of any size line up without per-piece UVs.
+- Building specs live in `assets/data/campus.json` (physics, 第二教学楼, 交叉科学楼; the gym under `halls`). The same specs are inlined in `index.html` as a boot fallback; when the JSON differs it is rebuilt in place, so the JSON is the file to edit.
+- Style A (light grey tiles, dark frames) is the physics building (Kim, 2026-10-23); `brick` is the old teaching block, `glass` the tower. Entrances are at grade (the game walks on a flat grid), so there are canopies and planters but no steps.
+- Night: `lighting()` calls `night(k)` on every facade (lit rooms, wall lamps, skyline windows). Outdoors the shadow frustum is ±30 m so the main building's shadow fits.
+- Frames: `HUD=0 CAM=x,y,z,tx,ty,tz node tools/e2e/run.mjs campus_shot.mjs` (also `T=minutes`, `Q=`, `ART=`).
+
 ## v11.2 — where the new parts live
 - Garden: `GardenKit.bed(THREE, {kind, x0, z0, x1, z1, y, seed, avoid})` in `assets/js/garden.js`; the f6 zone builds four beds (`ZONES6`). Leaves are bent planes (`leafGeo`) with canvas vein/frond textures; repeated parts are InstancedMesh.
 - Football: a small simulation in the campus `Z.anims` (ball with friction and gravity; chaser + shape-keeping players); the ball is flagged `sim` so the generic ball bobbing skips it.

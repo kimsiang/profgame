@@ -1,0 +1,131 @@
+{
+  "_comment": "v11.4 campus buildings for assets/js/facade.js. x,z = footprint centre (campus zone metres); style = tileA | render | brick | glass; entrance.side = s|n|e|w, u = offset along that face; ac = sides with outdoor AC units.",
+  "buildings": [
+    {
+      "id": "physics",
+      "name_zh": "物理楼",
+      "name_en": "PHYSICS BUILDING",
+      "x": 30,
+      "z": 14,
+      "w": 40,
+      "d": 26,
+      "style": "tileA",
+      "floors": 5,
+      "floorH": 3.4,
+      "podium": {
+        "floors": 2,
+        "h": 4.1
+      },
+      "module": 3.0,
+      "winW": 1.8,
+      "winH": 1.7,
+      "sill": 0.9,
+      "entrance": {
+        "side": "s",
+        "w": 10,
+        "u": 0,
+        "sign": "物理楼 · 门禁"
+      },
+      "roof": {
+        "plant": true,
+        "tank": true,
+        "ac": true,
+        "antenna": true,
+        "dome": true,
+        "rail": true
+      },
+      "ac": [
+        "e",
+        "w"
+      ],
+      "seed": 31
+    },
+    {
+      "id": "teach2",
+      "name_zh": "第二教学楼",
+      "name_en": "TEACHING BLOCK 2",
+      "x": 14,
+      "z": 47,
+      "w": 22,
+      "d": 12,
+      "style": "brick",
+      "floors": 5,
+      "floorH": 3.3,
+      "module": 2.7,
+      "winW": 1.5,
+      "winH": 1.8,
+      "sill": 0.9,
+      "entrance": {
+        "side": "e",
+        "w": 5,
+        "u": 0,
+        "sign": "第二教学楼"
+      },
+      "roof": {
+        "plant": false,
+        "tank": true,
+        "ac": false,
+        "antenna": true,
+        "dome": false,
+        "rail": false
+      },
+      "ac": [
+        "s",
+        "n",
+        "w"
+      ],
+      "planters": false,
+      "seed": 7
+    },
+    {
+      "id": "tower",
+      "name_zh": "交叉科学楼",
+      "name_en": "INTERDISCIPLINARY SCIENCE TOWER",
+      "x": 98,
+      "z": 13,
+      "w": 16,
+      "d": 16,
+      "style": "glass",
+      "floors": 11,
+      "floorH": 3.3,
+      "podium": {
+        "floors": 1,
+        "h": 4.5
+      },
+      "module": 2.0,
+      "winW": 1.7,
+      "winH": 2.4,
+      "sill": 0.5,
+      "entrance": {
+        "side": "s",
+        "w": 6,
+        "u": 0,
+        "sign": "交叉科学楼"
+      },
+      "roof": {
+        "plant": true,
+        "tank": false,
+        "ac": true,
+        "antenna": true,
+        "dome": false,
+        "rail": true
+      },
+      "ac": [],
+      "seed": 19
+    }
+  ],
+  "halls": [
+    {
+      "id": "gym",
+      "name_zh": "体育馆",
+      "x": 72,
+      "z": 11,
+      "w": 28,
+      "d": 18,
+      "h": 9,
+      "gable": "s",
+      "doorW": 6,
+      "rise": 4.6
+    }
+  ]
+}

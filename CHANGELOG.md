@@ -1,5 +1,15 @@
 # Changelog
 
+## v11.4 — Campus facades (2026-10-23)
+Kim: "每一个大楼的外貌有点粗糙". The buildings were textured boxes; now they are built from a facade kit (`assets/js/facade.js`, specs in `assets/data/campus.json`).
+- 物理楼: grey ceramic tiles, dark aluminium frames, windows recessed with real depth, a two-storey glass podium with a lit lobby, canopy and double doors, planters, parapet and roof plant (plant room, tank, AC rows, antenna, a small observatory dome), downpipes, AC units on the side walls, wall lamps that come on at night.
+- 体育馆: concrete base, ribbed metal panels, a band of high windows, louvres, a glazed gable with the entrance, standing-seam barrel roof with a ridge vent.
+- Two buildings you cannot enter, so the campus reads as one: 第二教学楼 (red brick, 1990s) in the south-west and 交叉科学楼 (11-floor glass tower) to the east; the campus is 18 m wider for it.
+- Trees are London planes (悬铃木) with leaf-card crowns instead of three-ball blobs; bike sheds by the plaza and the gym; grass retextured.
+- Skyline: 52 seeded buildings of three types (slab, tower, podium) with per-window lit/dark colour, 6 draw calls in all, instead of 46 random boxes.
+- Cost: whole campus ~150 draw calls per pass (shadow pass doubles it), 320k triangles at mid quality; the ≤45 fps auto-downgrade (v10.4) still applies.
+- Test: walk out of the physics building; `HUD=0 CAM=120,24,100,52,8,20 node tools/e2e/run.mjs campus_shot.mjs` for the reference frame.
+
 ## v12.3.4 — Disclaimer (2026-10-23)
 - Title screen, under the English name: 虚构设定，不针对任何单位和个人 (zh + en). The footer's existing fiction note says the same in full.
 

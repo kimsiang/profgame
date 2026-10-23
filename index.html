@@ -924,6 +924,7 @@ body.talking #lbT,body.talking #lbB{height:7vh}
 <div id="lbT"></div><div id="lbB"></div>
 <div id="fade"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/BufferGeometryUtils.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/SSAOShader.js"></script>
@@ -948,6 +949,7 @@ body.talking #lbT,body.talking #lbB{height:7vh}
 <script src="assets/js/bm-venue.js"></script>
 <script src="assets/js/music.js"></script>
 <script src="assets/js/garden.js"></script>
+<script src="assets/js/facade.js"></script>
 <script>
 (function(){
 'use strict';
@@ -1269,6 +1271,15 @@ function pbr(id, o = {}) {
 
 // v11.2 canteen data (assets/data/canteen.json); declared before the 1F build, which makes the stall signs
 const CANTEEN = { data: null, stalls: [], signDay: null };
+// v11.4 campus buildings (assets/data/campus.json) and the facades built from them (for the night lights)
+const CAMPUS = { data: null }, FACADES = [];
+// The zones are built at boot, before the fetch returns. A building whose JSON spec differs from the inline one is rebuilt in place,
+// so campus.json is the file to edit; the inline spec is only the boot fallback.
+fetch('assets/data/campus.json').then(r => r.json()).then(d => { CAMPUS.data = d;
+  const core = (o) => { const c = Object.assign({}, o); delete c.name_zh; delete c.name_en; return JSON.stringify(c); };
+  for (const b of d.buildings || []) { const f = FACADES.find(x => x.spec && x.spec.id === b.id); if (!f || core(f.spec) === core(b)) continue;
+    const nb = FacadeKit.building(THREE, b, { quality: QUALITY, seed: b.seed || 31 }); f.zone.group.remove(f.group); f.zone.group.add(nb.group); Object.assign(f, nb, { spec: b }); }
+}).catch(() => {});
 fetch('assets/data/canteen.json').then(r => r.json()).then(d => { CANTEEN.data = d; CANTEEN.signDay = null; }).catch(() => { /* old fixed menu */ });
 
 /* =========================================================
@@ -1808,14 +1819,14 @@ whiteboard(24.4, 1.2, 11.12, 0, 1.4, 0.8, boardTex(320, 180, (g) => { g.fillStyl
    ========================================================= */
 const city = []; const cityGroup = new THREE.Group(); scene.add(cityGroup);
 function windowsTex(lit) { const t = canvasTex(64, 128, (g) => { g.fillStyle = '#000'; g.fillRect(0, 0, 64, 128); for (let r = 0; r < 16; r++) for (let c = 0; c < 6; c++) if (Math.random() < lit) { g.fillStyle = Math.random() < 0.7 ? '#ffd38a' : '#9fd8ff'; g.fillRect(4 + c * 10, 4 + r * 8, 6, 4); } }, false); t.wrapS = t.wrapT = THREE.RepeatWrapping; return t; }
-const winTexes = [windowsTex(0.35), windowsTex(0.55), windowsTex(0.2)];
-for (let i = 0; i < 46; i++) {
-  let x, z, r; do { x = -90 + Math.random() * 220; z = -90 + Math.random() * 206; r = Math.hypot(x - 20, z - 13); } while (r < 34);
-  const w = 6 + Math.random() * 12, d = 6 + Math.random() * 12, top = r > 85 ? -10 + Math.random() * 30 : -6 - Math.random() * 22, h = top + 70;
-  const tex = winTexes[i % 3].clone(); tex.needsUpdate = true; tex.repeat.set(Math.max(1, w / 6), h / 12);
-  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshStandardMaterial({ color: '#0e2236', roughness: 0.6, metalness: 0.3, emissive: '#ffffff', emissiveMap: tex, emissiveIntensity: 0.2, envMapIntensity: 0.4 }));
-  m.position.set(x, top - h / 2, z); cityGroup.add(m); city.push(m);
-  if (Math.random() < 0.4) { const b = new THREE.Mesh(new THREE.SphereGeometry(0.35, 8, 6), glow('#ff4455', 3)); b.position.set(x, top + 0.5, z); cityGroup.add(b); }
+// v11.4: three building types from the facade kit (slabs, towers, podium towers), placed around the campus plateau; seeded, so the skyline is the same every boot.
+{ let sd = 2026; const rnd = () => { sd = (sd * 16807) % 2147483647; return (sd - 1) / 2147483646; }; const list = [];
+  for (let i = 0; i < 52; i++) {
+    let x, z, r; do { x = -100 + rnd() * 240; z = -90 + rnd() * 210; r = Math.hypot(x - 54, z - 30); } while ((x > -16 && x < 124 && z > -14 && z < 74) || r > 150);
+    const type = ['slab', 'tower', 'podium', 'slab', 'tower'][i % 5], w = type === 'slab' ? 22 + rnd() * 18 : 10 + rnd() * 8, d = type === 'slab' ? 9 + rnd() * 4 : 10 + rnd() * 8;
+    const top = r > 95 ? -8 + rnd() * 30 : -6 - rnd() * 22, h = top + 70; list.push([x, z, type, w, d, top, h, i + 1]);
+  }
+  const sk = FacadeKit.skyline(THREE, list, { quality: QUALITY }); cityGroup.add(sk.group); city.push({ material: sk.material });
 }
 const streetGeo = new THREE.BufferGeometry(); const sg = [];
 for (let i = 0; i < 1400; i++) { const lane = Math.random() < 0.5; const x = lane ? -120 + Math.random() * 280 : -100 + Math.floor(Math.random() * 12) * 22, z = lane ? -100 + Math.floor(Math.random() * 10) * 24 : -120 + Math.random() * 260; sg.push(x, -62, z); }
@@ -2737,29 +2748,26 @@ function sportNPC(id, look, x, z, lx, lz) { look._id = id; const p = makeChar(lo
    校园 · CAMPUS
    ========================================================= */
 (() => {
-  beginZone('campus', { name: '校园', floor: 0, outdoor: true, view: 230, W: 90, D: 60 });
-  slab(90, 60, 45, 30, '#2a3b2e');
-  const grass = tiled((g, w, h) => { g.fillStyle = '#3f7a34'; g.fillRect(0, 0, w, h); for (let i = 0; i < 2600; i++) { g.fillStyle = `rgba(${30 + Math.random() * 60},${95 + Math.random() * 60},${25 + Math.random() * 30},.6)`; g.fillRect(Math.random() * w, Math.random() * h, 2, 5); } }, 22, 15);
-  floorPlane(0, 0, 90, 60, mat('#ffffff', { map: grass, roughness: 1, envMapIntensity: 0.2 }));
+  beginZone('campus', { name: '校园', floor: 0, outdoor: true, view: 240, W: 108, D: 60 });   // v11.4: 18 m wider to the east for the research tower
+  slab(108, 60, 54, 30, '#2a3b2e');
+  const grass = tiled((g, w, h) => { g.fillStyle = '#4a7a38'; g.fillRect(0, 0, w, h); for (let i = 0; i < 60; i++) { g.fillStyle = `rgba(${40 + Math.random() * 30},${80 + Math.random() * 30},${30 + Math.random() * 20},.35)`; g.beginPath(); g.ellipse(Math.random() * w, Math.random() * h, 10 + Math.random() * 30, 6 + Math.random() * 18, Math.random() * 3, 0, 6.3); g.fill(); } for (let i = 0; i < 2600; i++) { g.fillStyle = `rgba(${45 + Math.random() * 60},${100 + Math.random() * 50},${30 + Math.random() * 30},.5)`; g.fillRect(Math.random() * w, Math.random() * h, 2, 5); } }, 22, 15);
+  floorPlane(0, 0, 108, 60, mat('#ffffff', { map: grass, roughness: 1, envMapIntensity: 0.2 }));
   const pave = (x0, z0, x1, z1) => floorPlane(x0, z0, x1, z1, mat('#ffffff', { map: (() => { const t = T.concrete(1, 1); t.repeat.set((x1 - x0) / 4, (z1 - z0) / 4); return t; })(), roughness: 0.4 }), 0.006);
-  pave(0, 28, 90, 32); pave(28, 28, 32, 60); pave(68, 20, 72, 32); pave(8, 0, 54, 30 - 0.2); // plaza in front of physics bldg
-  /* physics building (outside view) */
-  const win = windowsTex(0.5); win.repeat.set(10, 8);
-  const pb = box(40, 23, 26, new THREE.MeshStandardMaterial({ color: '#7f93a8', roughness: 0.55, emissive: '#ffffff', emissiveMap: win, emissiveIntensity: 0.5 }), 30, 0, 14, { block: true, round: 0.1 });
-  Z.anims.push(() => {}); city.push(pb);
-  box(41, 0.6, 27, mat('#2b3d52'), 30, 23, 14, { cast: false }); box(5, 2.4, 4, mat('#9fb0c0'), 46, 23.6, 20, { cast: false });
-  for (let f = 1; f <= 7; f++) box(40.2, 0.12, 26.2, trimGlow, 30, f * 3.2, 14, { cast: false });
-  const nameplate = plane(14, 2.2, new THREE.MeshBasicMaterial({ toneMapped: false, map: canvasTex(1024, 160, (g, w, h) => { g.fillStyle = '#0A2436'; g.fillRect(0, 0, w, h); g.fillStyle = '#00A9F4'; g.fillRect(0, 0, 14, h); g.fillStyle = '#EAF4FB'; g.font = `900 92px ${CN_FONT}`; g.fillText('物 理 楼', 60, 110); g.fillStyle = '#CDEEFF'; g.font = `600 40px ${CN_FONT}`; g.fillText('PHYSICS BUILDING', 520, 105); }) }), 30, 20.5, 27.08); nameplate.material.color.setScalar(1.3);
-  [26, 34].forEach(x => box(0.4, 3.2, 0.5, frameM, x, 0, 27.2)); box(8.4, 0.4, 0.6, frameM, 30, 3.2, 27.2); seg(30, 27.1, true, 7.6, 0, 2.9, 0.1, glassM, false);
-  box(10, 0.3, 3, mat('#9aa39a'), 30, 0, 28.5, { cast: false }); plane(7, 0.12, thresholdM, 30, 0.32, 29.9, { rx: -Math.PI / 2 });
+  pave(0, 28, 108, 32); pave(28, 28, 32, 60); pave(68, 20, 72, 32); pave(8, 0, 54, 30 - 0.2); pave(95, 20, 101, 28); pave(25, 44, 29, 50); // plaza in front of physics bldg, paths to the tower and the old teaching block
+  /* physics building (outside view). v11.4: built from the facade kit (assets/js/facade.js) with the spec in assets/data/campus.json.
+     The data file is fetched at boot; until it arrives (or if it fails) the inline spec below is used, so the campus never builds without its main building. */
+  const PHYS_SPEC = { id: 'physics', x: 30, z: 14, w: 40, d: 26, style: 'tileA', floors: 5, floorH: 3.4, podium: { floors: 2, h: 4.1 }, module: 3.0, winW: 1.8, winH: 1.7, sill: 0.9, entrance: { side: 's', w: 10, u: 0, sign: '物理楼 · 门禁' }, roof: { plant: true, tank: true, ac: true, antenna: true, dome: true, rail: true }, ac: ['e', 'w'], seed: 31 };
+  const physB = FacadeKit.building(THREE, PHYS_SPEC, { quality: QUALITY, seed: 31 });
+  Z.group.add(physB.group); physB.blocks.forEach(r => blockRect(r[0], r[1], r[2], r[3], 0.2)); FACADES.push(physB); physB.spec = PHYS_SPEC; physB.zone = Z;
+  const nameplate = plane(12, 1.05, new THREE.MeshBasicMaterial({ toneMapped: false, map: canvasTex(1024, 160, (g, w, h) => { g.fillStyle = '#0A2436'; g.fillRect(0, 0, w, h); g.fillStyle = '#00A9F4'; g.fillRect(0, 0, 14, h); g.fillStyle = '#EAF4FB'; g.font = `900 92px ${CN_FONT}`; g.fillText('物 理 楼', 60, 110); g.fillStyle = '#CDEEFF'; g.font = `600 40px ${CN_FONT}`; g.fillText('PHYSICS BUILDING', 520, 105); }) }), 30, physB.H + 0.62, 27.07); nameplate.material.color.setScalar(1.3);
+  plane(7, 0.12, thresholdM, 30, 0.05, 29.9, { rx: -Math.PI / 2 });
   decal('物理楼 · 正门', 30, 33, 3.2, 0.6, { sub: 'MAIN ENTRANCE · 1F', to: 'n' });
   Z.portals.push({ kind: 'door', x: 30, z: 30.6, to: 'f1', spawn: { x: 20, z: 24.4 }, label: '进入物理楼' }); Z.spawn = { x: 30, z: 31.2 };
-  /* gym building */
-  const gwin = windowsTex(0.3); gwin.repeat.set(6, 2);
-  box(28, 9, 18, new THREE.MeshStandardMaterial({ color: '#8a9db0', roughness: 0.6, emissive: '#ffffff', emissiveMap: gwin, emissiveIntensity: 0.4 }), 72, 0, 11, { block: true, round: 0.1 });
-  const roofG = new THREE.Mesh(new THREE.CylinderGeometry(9.2, 9.2, 28.4, 24, 1, false, 0, Math.PI), mat('#2b3d52', { roughness: 0.5 })); roofG.rotation.z = Math.PI / 2; roofG.rotation.y = 0; roofG.position.set(72, 9, 11); roofG.scale.set(0.5, 1, 1); roofG.castShadow = true; Z.group.add(roofG);
-  const gymSign = plane(10, 1.6, new THREE.MeshBasicMaterial({ toneMapped: false, map: canvasTex(800, 128, (g, w, h) => { g.fillStyle = '#1b2430'; g.fillRect(0, 0, w, h); g.fillStyle = '#FFB547'; g.font = `900 70px ${CN_FONT}`; g.fillText('体育馆 · GYMNASIUM', 40, 90); }) }), 72, 7.2, 20.08); gymSign.material.color.setScalar(1.3);
-  [67, 73].forEach(x => box(0.4, 3.0, 0.5, frameM, x, 0, 20.2)); seg(70, 20.1, true, 5.6, 0, 2.8, 0.1, glassM, false); plane(5, 0.12, thresholdM, 70, 0.012, 21.2, { rx: -Math.PI / 2 });
+  /* gym building. v11.4: from the facade kit's hall(): concrete base, ribbed metal panels, high windows, louvres, a glazed gable with the doors, standing-seam barrel roof */
+  const GYM_SPEC = { id: 'gym', x: 72, z: 11, w: 28, d: 18, h: 9, gable: 's', doorW: 6, rise: 4.6 };
+  const gymB = FacadeKit.hall(THREE, GYM_SPEC, { quality: QUALITY }); Z.group.add(gymB.group); gymB.blocks.forEach(r => blockRect(r[0], r[1], r[2], r[3], 0.2)); FACADES.push(gymB); gymB.spec = GYM_SPEC; gymB.zone = Z; gymB.kind = 'hall';
+  const gymSign = plane(10, 1.6, new THREE.MeshBasicMaterial({ toneMapped: false, map: canvasTex(800, 128, (g, w, h) => { g.fillStyle = '#1b2430'; g.fillRect(0, 0, w, h); g.fillStyle = '#FFB547'; g.font = `900 70px ${CN_FONT}`; g.fillText('体育馆 · GYMNASIUM', 40, 90); }) }), 72, 7.0, 20.1); gymSign.material.color.setScalar(1.3);
+  plane(5, 0.12, thresholdM, 70, 0.012, 21.2, { rx: -Math.PI / 2 });
   decal('体育馆 · 羽毛球馆', 70, 24.5, 3.4, 0.6, { sub: 'BADMINTON HALL', to: 'n' });
   Z.portals.push({ kind: 'door', x: 70, z: 21.8, to: 'gym', spawn: { x: 20, z: 24.2 }, label: '进入体育馆' });
   /* soccer field */
@@ -2814,15 +2822,24 @@ function sportNPC(id, look, x, z, lx, lz) { look._id = id; const p = makeChar(lo
   [[36, 60], [86, 60], [36, 32], [86, 32]].forEach(([x, z]) => lampPost(x - (x > 50 ? 0.6 : -0.6), z - (z > 40 ? 1.2 : -1.2), 5));
   bench(40, 32.8, 0); bench(50, 32.8, 0); bench(60, 32.8, 0);
   decal('足球场 · FOOTBALL', 61, 35.3, 4, 0.7, { sub: '校队训练 周二 / 周四 17:00', bg: 'rgba(30,70,40,.85)', accent: '#7aa83a' });
+  /* v11.4: two buildings you cannot enter, for the campus to read as a campus: an old red-brick teaching block and a new glass research tower */
+  const NB_SPECS = [
+    { id: 'teach2', x: 14, z: 47, w: 22, d: 12, style: 'brick', floors: 5, floorH: 3.3, module: 2.7, winW: 1.5, winH: 1.8, sill: 0.9, entrance: { side: 'e', w: 5, u: 0, sign: '第二教学楼' }, roof: { plant: false, tank: true, ac: false, antenna: true, dome: false, rail: false }, ac: ['s', 'n', 'w'], planters: false, seed: 7 },
+    { id: 'tower', x: 98, z: 13, w: 16, d: 16, style: 'glass', floors: 11, floorH: 3.3, podium: { floors: 1, h: 4.5 }, module: 2.0, winW: 1.7, winH: 2.4, sill: 0.5, entrance: { side: 's', w: 6, u: 0, sign: '交叉科学楼' }, roof: { plant: true, tank: false, ac: true, antenna: true, dome: false, rail: true }, ac: [], seed: 19 },
+  ];
+  NB_SPECS.forEach(sp => { const b = FacadeKit.building(THREE, sp, { quality: QUALITY, seed: sp.seed }); Z.group.add(b.group); b.blocks.forEach(r => blockRect(r[0], r[1], r[2], r[3], 0.2)); FACADES.push(b); b.spec = sp; b.zone = Z; });
   /* trees, lamps, bikes */
-  [[4, 6], [6, 20], [4, 36], [8, 46], [18, 44], [22, 54], [88, 4], [86, 24], [60, 4], [58, 26], [14, 56], [80, 28]].forEach(([x, z], i) => tree(x, z, 1.4 + (i % 3) * 0.3, i));
-  [[14, 30.5], [46, 30.5], [66, 30.5], [29.5, 44], [29.5, 56], [70, 26]].forEach(([x, z]) => lampPost(x, z, 3.6));
-  for (let i = 0; i < 8; i++) { box(0.08, 0.6, 1.2, mat('#9aa7b3', { metalness: 0.8 }), 12 + i * 0.7, 0, 32.8, { cast: false }); if (i % 2) { const bk = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.03, 6, 14), mat(['#2251FF', '#c0392b', '#3DDC97'][i % 3])); bk.position.set(12 + i * 0.7, 0.3, 33.3); Z.group.add(bk); const bk2 = bk.clone(); bk2.position.z = 34.3; Z.group.add(bk2); } }
-  blockRect(11.5, 32.2, 18, 34.8);
+  // v11.4: London planes (悬铃木) from the kit instead of the three-ball trees; rows along the main path (west half) and the south edge
+  { const trees = [[4, 6], [6, 20], [4, 36], [22, 38], [8, 57], [20, 57], [88, 4], [86, 24], [60, 4], [58, 26], [80, 28], [92, 38], [104, 42], [100, 56], [8, 33.5], [16, 33.5], [24, 33.5], [92, 48], [54, 3], [2, 50], [2, 58]].map(([x, z], i) => [x, z, 1 + (i % 3) * 0.15, i + 1]);
+    const f = FacadeKit.forest(THREE, trees, { quality: QUALITY }); Z.group.add(f.group); f.blocks.forEach(r => blockRect(...r)); }
+  [[14, 30.5], [46, 30.5], [66, 30.5], [29.5, 44], [29.5, 56], [70, 26], [90, 30.5], [104, 30.5]].forEach(([x, z]) => lampPost(x, z, 3.6));
+  // v11.4: bike sheds (a campus is where the bikes are) by the plaza and by the gym
+  [[14.5, 34.8, 10, 0], [62, 24.2, 9, 0]].forEach(([x, z, len, ry]) => { const sh = FacadeKit.bikeShed(THREE, x, z, len, ry, { quality: QUALITY }); Z.group.add(sh.group); blockRect(...sh.block); });
+
   box(2.6, 1.4, 0.3, mat('#2b3d52'), 20, 0, 34.6, { block: true });
   const map = plane(2.4, 1.2, new THREE.MeshBasicMaterial({ toneMapped: false, map: canvasTex(480, 240, (g, w, h) => { g.fillStyle = '#0A2436'; g.fillRect(0, 0, w, h); g.fillStyle = '#EAF4FB'; g.font = `800 30px ${CN_FONT}`; g.fillText('校园导览', 20, 44); g.fillStyle = '#2251FF'; g.fillRect(40, 70, 200, 90); g.fillStyle = '#FFB547'; g.fillRect(300, 70, 120, 60); g.fillStyle = '#3DDC97'; g.fillRect(160, 170, 280, 50); g.fillStyle = '#fff'; g.font = `600 22px ${CN_FONT}`; g.fillText('物理楼', 100, 120); g.fillText('体育馆', 320, 108); g.fillText('足球场', 260, 202); }) }), 20, 0.75, 34.44); map.material.color.setScalar(1.3);
   const wk = [['#5a6b7c', 'short'], ['#e67e22', 'pony']]; wk.forEach(([c, h], i) => { const p = makeChar({ shirt: c, hairStyle: h }); p.position.set(10 + i * 30, 0, 30); face(p, 45, 30); Z.npcs.push(p); });
-  Z.rooms = { plaza: { x0: 8, z0: 26, x1: 54, z1: 34, name: '物理楼前广场' }, field: { x0: 36, z0: 34, x1: 86, z1: 58, name: '足球场' }, gym: { x0: 58, z0: 0, x1: 86, z1: 26, name: '体育馆外' } };
+  Z.rooms = { plaza: { x0: 8, z0: 26, x1: 54, z1: 34, name: '物理楼前广场' }, field: { x0: 36, z0: 34, x1: 86, z1: 58, name: '足球场' }, gym: { x0: 58, z0: 0, x1: 86, z1: 26, name: '体育馆外' }, tower: { x0: 88, z0: 2, x1: 108, z1: 28, name: '交叉科学楼' }, teach2: { x0: 2, z0: 40, x1: 27, z1: 54, name: '第二教学楼' } };
 })();
 
 /* =========================================================
@@ -6371,7 +6388,7 @@ function placeSun(t, f, sc) {
 function lighting(t, now) {
   const f = t < hm(16, 30) ? 1 : t < hm(19, 30) ? 1 - (t - hm(16, 30)) / 180 : 0;
   const dusk = Math.max(0, 1 - Math.abs(t - hm(18)) / 70);
-  const sc = BMV.cur ? 11 : (camState.overview || !S || !S.running) ? Math.max(26, Z.W * 0.62) : (Z.outdoor ? 22 : 15);   // v10.3.1: the match court only, so shadow texels are ~2× denser if (sun.shadow.camera.right !== sc) { Object.assign(sun.shadow.camera, { left: -sc, right: sc, top: sc * 0.85, bottom: -sc * 0.85 }); sun.shadow.camera.updateProjectionMatrix(); }
+  const sc = BMV.cur ? 11 : (camState.overview || !S || !S.running) ? Math.max(26, Z.W * 0.62) : (Z.outdoor ? 30 : 15);   // v11.4: 30 outdoors so the physics building's shadow fits; v10.3.1: the match court only, so shadow texels are ~2× denser if (sun.shadow.camera.right !== sc) { Object.assign(sun.shadow.camera, { left: -sc, right: sc, top: sc * 0.85, bottom: -sc * 0.85 }); sun.shadow.camera.updateProjectionMatrix(); }
   placeSun(t, f, sc);
   sun.intensity = 0.1 + 1.1 * f;
   sun.color.setRGB(1, 0.92 - dusk * 0.25, 0.82 - dusk * 0.4);
@@ -6387,6 +6404,7 @@ function lighting(t, now) {
   lamps.forEach(l => { l.intensity = 0.2 + night * 2.1; });
   lightPools.forEach(p => { p.m.material.opacity = p.base * (0.6 + night * 2.2); });
   city.forEach(b => { b.material.emissiveIntensity = 0.15 + night * 1.6; });
+  FACADES.forEach(f => f.night(night));
   streetLights.material.opacity = 0.2 + night * 0.8;
   // v7: time-of-day grade. Cool blue morning, neutral noon, amber 17:00, teal-shadow night.
   const morn = Math.max(0, 1 - Math.abs(t - hm(8, 30)) / 120), warm = Math.max(0, 1 - Math.abs(t - hm(17, 15)) / 110);
