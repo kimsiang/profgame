@@ -235,13 +235,13 @@
     box(W + 0.2, baseH, D + 0.2, concreteM, X, 0, Zc);
     const faces = [['s', W, X, Zc + D / 2, 0, 0, 1], ['n', W, X, Zc - D / 2, Math.PI, 0, -1], ['e', D, X + W / 2, Zc, Math.PI / 2, 1, 0], ['w', D, X - W / 2, Zc, -Math.PI / 2, -1, 0]];
     const toW = (f, u, v) => ({ x: f[2] + Math.cos(f[4]) * u + f[5] * v, z: f[3] - Math.sin(f[4]) * u + f[6] * v });
-    const louvres = [], lamps = [];
+    const louvres = [], lamps = [], hiWin = [], hiFrame = [];
     for (const f of faces) {
       const len = f[1], gable = f[0] === spec.gable;
       if (!gable) {
         const c = toW(f, 0, -0.1); box(len, H - baseH - 1.2, 0.2, panelM, c.x, baseH, c.z, f[4]);
         // a band of high windows (sports halls light from above) and the louvre strip under the eaves
-        for (let u = -len / 2 + 2; u + 2.4 <= len / 2 - 1.5; u += 3.2) { const p = toW(f, u + 1.2, 0.02); box(2.4, 1.6, 0.06, glassM, p.x, H - 3.6, p.z, f[4], false); box(2.5, 0.06, 0.1, frameM, p.x, H - 3.6, p.z, f[4], false); box(2.5, 0.06, 0.1, frameM, p.x, H - 2.0, p.z, f[4], false); }
+        for (let u = -len / 2 + 2; u + 2.4 <= len / 2 - 1.5; u += 3.2) { const p = toW(f, u + 1.2, 0.02); hiWin.push([p.x, H - 2.8, p.z, f[4], 2.4, 1.6, 0.06]); hiFrame.push([p.x, H - 3.6, p.z, f[4], 2.5, 0.06, 0.1], [p.x, H - 2.0, p.z, f[4], 2.5, 0.06, 0.1]); }
         for (let u = -len / 2 + 0.4; u < len / 2 - 0.4; u += 0.25) { const p = toW(f, u, -0.08); louvres.push([p.x, H - 0.6, p.z, f[4], 0.2, 1.2, 0.03]); }
       } else {
         // the glazed gable end: full-height curtain wall with a mullion grid, the entrance doors in it
@@ -258,7 +258,7 @@
       }
       for (let u = -len / 2 + 3; u < len / 2 - 2; u += 7) { const p = toW(f, u, 0.15); lamps.push([p.x, 3.2, p.z, f[4], 0.2, 0.3, 0.3]); }
     }
-    inst(unit, louvreM, louvres, false);
+    inst(unit, louvreM, louvres, false); inst(unit, glassM, hiWin, false); inst(unit, frameM, hiFrame, false);
     const lampM = new THREE.MeshStandardMaterial({ color: '#2a2e32', emissive: '#ffe7c4', emissiveIntensity: 0.0, roughness: 0.5 }); inst(unit, lampM, lamps);
     // roof: a standing-seam barrel vault along x (as before), with a ridge ventilator and eaves gutters
     const along = spec.gable === 's' || spec.gable === 'n';   // the barrel runs from gable to gable
@@ -347,5 +347,44 @@
     const c = Math.cos(ry), sn = Math.sin(ry), hx = Math.abs(c) * len / 2 + Math.abs(sn) * 1.3, hz = Math.abs(sn) * len / 2 + Math.abs(c) * 1.3;
     return { group: G, block: [x - hx, z - hz, x + hx, z + hz] };
   }
-  root.FacadeKit = { building, hall, forest, bikeShed };
+
+  /* ---------- the skyline: the city around the campus, from three building types instead of random boxes.
+     slab = a long thin residential block (板楼) with a flat roof and water tanks; tower = a point block (塔楼) with a crown;
+     podium = a tower on a wide base. Bodies are instanced per material, every window is one card in one InstancedMesh
+     (per-instance colour: lit warm / lit cool / dark), so ~50 buildings cost 6 draw calls. list: [x, z, type, w, d, top, h, seed] ---------- */
+  function skyline(THREE, list, o = {}) {
+    const G = new THREE.Group(), dummy = new THREE.Object3D();
+    const bodyCols = ['#2b3b4c', '#3a4553', '#1f2d3b', '#4a5560'];
+    const bodyM = bodyCols.map(c => new THREE.MeshStandardMaterial({ color: c, roughness: 0.7, metalness: 0.15, envMapIntensity: 0.3 }));
+    const winM = new THREE.MeshStandardMaterial({ color: '#ffffff', emissive: '#ffffff', emissiveIntensity: 0.3, roughness: 0.4, metalness: 0.2, toneMapped: true });
+    const topM = new THREE.MeshStandardMaterial({ color: '#56606b', roughness: 0.6, metalness: 0.4 });
+    const bodies = bodyCols.map(() => []), wins = [], tops = [], beacons = [];
+    const unit = new THREE.BoxGeometry(1, 1, 1);
+    list.forEach((b, i) => {
+      const [x, z, type, w, d, top, h] = b; let sd = (b[7] || i + 1) * 7919 + 17; const rnd = () => { sd = (sd * 16807) % 2147483647; return (sd - 1) / 2147483646; };
+      const cm = i % bodyCols.length, floorH = 3.2;
+      const addBody = (bw, bh, bd, bx, by, bz) => { bodies[cm].push([bx, by + bh / 2, bz, 0, bw, bh, bd]); 
+        // windows on the four faces of the top 40 m (what can be seen from the campus)
+        const yTop = by + bh, yBot = Math.max(by, yTop - 40);
+        [[bw, bx, bz + bd / 2 + 0.02, 0], [bw, bx, bz - bd / 2 - 0.02, Math.PI], [bd, bx + bw / 2 + 0.02, bz, Math.PI / 2], [bd, bx - bw / 2 - 0.02, bz, -Math.PI / 2]].forEach(([len, fx, fz, ry]) => {
+          const n = Math.max(1, Math.floor(len / 2.8)), start = -((n - 1) * 2.8) / 2;
+          for (let y = yTop - floorH * 0.55; y > yBot; y -= floorH) for (let k = 0; k < n; k++) { const u = start + k * 2.8; const px = fx + Math.cos(ry) * u, pz = fz - Math.sin(ry) * u; const r = rnd(); wins.push([px, y, pz, ry, 1.7, 1.6, 1, r < 0.3 ? '#ffd9a0' : r < 0.42 ? '#b9e4ff' : '#101a26']); }
+        });
+        tops.push([bx, yTop + 0.3, bz, 0, bw + 0.3, 0.6, bd + 0.3]);   // parapet / roof slab
+      };
+      if (type === 'slab') { addBody(w, h, d, x, top - h, z); for (let k = 0; k < 1 + Math.floor(rnd() * 3); k++) tops.push([x - w / 2 + 2 + rnd() * (w - 4), top + 1.4, z + (rnd() - 0.5) * (d - 3), 0, 1.6, 1.8, 1.6]); }
+      else if (type === 'tower') { addBody(w, h, d, x, top - h, z); tops.push([x, top + 1.5, z, 0, w * 0.55, 2.4, d * 0.55]); if (rnd() < 0.7) beacons.push([x, top + 3.2, z]); }
+      else { addBody(w * 1.8, Math.min(14, h), d * 1.8, x, top - h, z); addBody(w, h, d, x, top - h, z); if (rnd() < 0.5) beacons.push([x, top + 0.8, z]); }
+    });
+    bodies.forEach((lst, i) => { if (!lst.length) return; const im = new THREE.InstancedMesh(unit, bodyM[i], lst.length); lst.forEach((a, k) => { dummy.position.set(a[0], a[1], a[2]); dummy.rotation.set(0, 0, 0); dummy.scale.set(a[4], a[5], a[6]); dummy.updateMatrix(); im.setMatrixAt(k, dummy.matrix); }); G.add(im); });
+    const wim = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), winM, wins.length);
+    wins.forEach((a, k) => { dummy.position.set(a[0], a[1], a[2]); dummy.rotation.set(0, a[3], 0); dummy.scale.set(a[4], a[5], 1); dummy.updateMatrix(); wim.setMatrixAt(k, dummy.matrix); wim.setColorAt(k, new THREE.Color(a[7])); }); wim.instanceColor.needsUpdate = true; G.add(wim);
+    const tim = new THREE.InstancedMesh(unit, topM, tops.length); tops.forEach((a, k) => { dummy.position.set(a[0], a[1], a[2]); dummy.rotation.set(0, 0, 0); dummy.scale.set(a[4], a[5], a[6]); dummy.updateMatrix(); tim.setMatrixAt(k, dummy.matrix); }); G.add(tim);
+    const beaconM = new THREE.MeshBasicMaterial({ color: new THREE.Color('#ff4455').multiplyScalar(3), toneMapped: false, fog: false });
+    const bim = new THREE.InstancedMesh(new THREE.SphereGeometry(0.35, 8, 6), beaconM, Math.max(1, beacons.length)); beacons.forEach((a, k) => { dummy.position.set(a[0], a[1], a[2]); dummy.rotation.set(0, 0, 0); dummy.scale.set(1, 1, 1); dummy.updateMatrix(); bim.setMatrixAt(k, dummy.matrix); }); if (beacons.length) G.add(bim);
+    // night(k): windows glow; the per-instance colour keeps lit and dark apart
+    const night = (k) => { winM.emissiveIntensity = 0.15 + 1.6 * k; };
+    return { group: G, night, material: winM };
+  }
+  root.FacadeKit = { building, hall, forest, bikeShed, skyline };
 })(typeof window !== 'undefined' ? window : this);

@@ -1276,7 +1276,8 @@ const CAMPUS = { data: null }, FACADES = [];
 // The zones are built at boot, before the fetch returns. A building whose JSON spec differs from the inline one is rebuilt in place,
 // so campus.json is the file to edit; the inline spec is only the boot fallback.
 fetch('assets/data/campus.json').then(r => r.json()).then(d => { CAMPUS.data = d;
-  for (const b of d.buildings || []) { const f = FACADES.find(x => x.spec && x.spec.id === b.id); if (!f || JSON.stringify(f.spec) === JSON.stringify(b)) continue;
+  const core = (o) => { const c = Object.assign({}, o); delete c.name_zh; delete c.name_en; return JSON.stringify(c); };
+  for (const b of d.buildings || []) { const f = FACADES.find(x => x.spec && x.spec.id === b.id); if (!f || core(f.spec) === core(b)) continue;
     const nb = FacadeKit.building(THREE, b, { quality: QUALITY, seed: b.seed || 31 }); f.zone.group.remove(f.group); f.zone.group.add(nb.group); Object.assign(f, nb, { spec: b }); }
 }).catch(() => {});
 fetch('assets/data/canteen.json').then(r => r.json()).then(d => { CANTEEN.data = d; CANTEEN.signDay = null; }).catch(() => { /* old fixed menu */ });
@@ -1818,14 +1819,14 @@ whiteboard(24.4, 1.2, 11.12, 0, 1.4, 0.8, boardTex(320, 180, (g) => { g.fillStyl
    ========================================================= */
 const city = []; const cityGroup = new THREE.Group(); scene.add(cityGroup);
 function windowsTex(lit) { const t = canvasTex(64, 128, (g) => { g.fillStyle = '#000'; g.fillRect(0, 0, 64, 128); for (let r = 0; r < 16; r++) for (let c = 0; c < 6; c++) if (Math.random() < lit) { g.fillStyle = Math.random() < 0.7 ? '#ffd38a' : '#9fd8ff'; g.fillRect(4 + c * 10, 4 + r * 8, 6, 4); } }, false); t.wrapS = t.wrapT = THREE.RepeatWrapping; return t; }
-const winTexes = [windowsTex(0.35), windowsTex(0.55), windowsTex(0.2)];
-for (let i = 0; i < 46; i++) {
-  let x, z, r; do { x = -90 + Math.random() * 220; z = -90 + Math.random() * 206; r = Math.hypot(x - 20, z - 13); } while (r < 34);
-  const w = 6 + Math.random() * 12, d = 6 + Math.random() * 12, top = r > 85 ? -10 + Math.random() * 30 : -6 - Math.random() * 22, h = top + 70;
-  const tex = winTexes[i % 3].clone(); tex.needsUpdate = true; tex.repeat.set(Math.max(1, w / 6), h / 12);
-  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshStandardMaterial({ color: '#0e2236', roughness: 0.6, metalness: 0.3, emissive: '#ffffff', emissiveMap: tex, emissiveIntensity: 0.2, envMapIntensity: 0.4 }));
-  m.position.set(x, top - h / 2, z); cityGroup.add(m); city.push(m);
-  if (Math.random() < 0.4) { const b = new THREE.Mesh(new THREE.SphereGeometry(0.35, 8, 6), glow('#ff4455', 3)); b.position.set(x, top + 0.5, z); cityGroup.add(b); }
+// v11.4: three building types from the facade kit (slabs, towers, podium towers), placed around the campus plateau; seeded, so the skyline is the same every boot.
+{ let sd = 2026; const rnd = () => { sd = (sd * 16807) % 2147483647; return (sd - 1) / 2147483646; }; const list = [];
+  for (let i = 0; i < 52; i++) {
+    let x, z, r; do { x = -100 + rnd() * 240; z = -90 + rnd() * 210; r = Math.hypot(x - 54, z - 30); } while ((x > -16 && x < 124 && z > -14 && z < 74) || r > 150);
+    const type = ['slab', 'tower', 'podium', 'slab', 'tower'][i % 5], w = type === 'slab' ? 22 + rnd() * 18 : 10 + rnd() * 8, d = type === 'slab' ? 9 + rnd() * 4 : 10 + rnd() * 8;
+    const top = r > 95 ? -8 + rnd() * 30 : -6 - rnd() * 22, h = top + 70; list.push([x, z, type, w, d, top, h, i + 1]);
+  }
+  const sk = FacadeKit.skyline(THREE, list, { quality: QUALITY }); cityGroup.add(sk.group); city.push({ material: sk.material });
 }
 const streetGeo = new THREE.BufferGeometry(); const sg = [];
 for (let i = 0; i < 1400; i++) { const lane = Math.random() < 0.5; const x = lane ? -120 + Math.random() * 280 : -100 + Math.floor(Math.random() * 12) * 22, z = lane ? -100 + Math.floor(Math.random() * 10) * 24 : -120 + Math.random() * 260; sg.push(x, -62, z); }
@@ -6387,7 +6388,7 @@ function placeSun(t, f, sc) {
 function lighting(t, now) {
   const f = t < hm(16, 30) ? 1 : t < hm(19, 30) ? 1 - (t - hm(16, 30)) / 180 : 0;
   const dusk = Math.max(0, 1 - Math.abs(t - hm(18)) / 70);
-  const sc = BMV.cur ? 11 : (camState.overview || !S || !S.running) ? Math.max(26, Z.W * 0.62) : (Z.outdoor ? 22 : 15);   // v10.3.1: the match court only, so shadow texels are ~2× denser if (sun.shadow.camera.right !== sc) { Object.assign(sun.shadow.camera, { left: -sc, right: sc, top: sc * 0.85, bottom: -sc * 0.85 }); sun.shadow.camera.updateProjectionMatrix(); }
+  const sc = BMV.cur ? 11 : (camState.overview || !S || !S.running) ? Math.max(26, Z.W * 0.62) : (Z.outdoor ? 30 : 15);   // v11.4: 30 outdoors so the physics building's shadow fits; v10.3.1: the match court only, so shadow texels are ~2× denser if (sun.shadow.camera.right !== sc) { Object.assign(sun.shadow.camera, { left: -sc, right: sc, top: sc * 0.85, bottom: -sc * 0.85 }); sun.shadow.camera.updateProjectionMatrix(); }
   placeSun(t, f, sc);
   sun.intensity = 0.1 + 1.1 * f;
   sun.color.setRGB(1, 0.92 - dusk * 0.25, 0.82 - dusk * 0.4);
