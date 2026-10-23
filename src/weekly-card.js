@@ -1,9 +1,9 @@
 /* 导师的一周 / My Advisor's Week — Copyright © 2026 Khaw Kim Siang. All rights reserved. See LICENSE.
-   v14.1 the share card: a 1080×1350 (4:5) picture of the week — grade, the one sentence, the moments, the fiction note,
-   a small brand mark and a QR code to the game — drawn on a canvas and saved (share sheet on phones, download elsewhere).
+   v14.1 the share card: a 1080×1350 (4:5) picture of the week — grade, the one sentence, the moments, the fiction note
+   and a QR code to the game — drawn on a canvas and saved (share sheet on phones, download elsewhere).
    Text comes from the same templates as the review (src/moments.js); nothing is generated. */
 'use strict';
-const CARD = { W: 1080, H: 1350, url: 'https://kimsiang.github.io/profgame/', brand: '从槟城出发的粒子', navy: '#051C2C', blue: '#2251FF', cyan: '#00A9F4', gold: '#FFC857', ink: '#EAF4FB', dim: '#9FBCCD' };
+const CARD = { W: 1080, H: 1350, url: 'https://kimsiang.github.io/profgame/', navy: '#051C2C', blue: '#2251FF', cyan: '#00A9F4', gold: '#FFC857', ink: '#EAF4FB', dim: '#9FBCCD' };
 /* Word-wrap for mixed Chinese / Latin text: Chinese breaks anywhere, Latin at spaces. */
 function cardWrap(g, text, maxW) {
   const lines = []; let line = '';
@@ -47,7 +47,7 @@ function weeklyCardCanvas() {
   // footer: fiction note, brand mark, QR
   g.fillStyle = 'rgba(255,255,255,0.18)'; g.fillRect(M, H - 150, W - M * 2, 1);
   g.fillStyle = CARD.dim; g.font = cardFont(400, 20, false); g.fillText('虚构设定，不针对任何单位和个人 · A work of fiction', M, H - 104);
-  g.fillText(`${CARD.brand} · ${CARD.url.replace(/^https?:\/\//, '')}`, M, H - 68);
+  g.fillText(CARD.url.replace(/^https?:\/\//, ''), M, H - 68);
   try {
     if (typeof qrcode === 'function') { const q = qrcode(0, 'M'); q.addData(CARD.url); q.make(); const n = q.getModuleCount(), size = 120, cell = size / n, x0 = W - M - size, y0 = H - 150 - size - 10;
       g.fillStyle = '#ffffff'; g.fillRect(x0 - 8, y0 - 8, size + 16, size + 16); g.fillStyle = CARD.navy;

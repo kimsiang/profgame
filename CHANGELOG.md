@@ -1,5 +1,8 @@
 # Changelog
 
+## v14.2.1 — No brand on the card (2026-10-23)
+- The share card's footer is the fiction note and the game's address only; the 从槟城出发的粒子 mark is gone (Kim).
+
 ## v14.2 — Four endings (2026-10-23)
 - A career can now end four ways (`assets/data/content/endings.json`): **院士** (the election, as before), **教学名师** (teaching KPI ≥ 75 on average over four weeks, trust ≥ 70, and on a Friday you told 王老师 *not* to file the talent-programme application — `end_talent`), **转去企业** (two consulting contracts bring a headhunter on Friday; saying "下周可以谈一谈" ends it — `end_headhunt`) and **离开** (three failed grants in a row, two students gone after week 3, or three weeks with two collapses each). Only 离开 is passive; the other three are chosen.
 - The closing screen replaces the week's sentence with the ending's line and the five moments with **the three decisions that led here**, picked from the career's moments (`career.moments`, the week's weightier ones, kept to 60). The share card draws the same.
