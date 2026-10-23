@@ -64,7 +64,7 @@
     const curtainM = mat('#d9d4c7', { roughness: 1 });
     const concreteM = mat('#9b9d9a', { roughness: 0.9 });
     const steelM = mat('#c5c9cc', { roughness: 0.35, metalness: 0.85, envMapIntensity: 0.9 });
-    const acM = mat('#dadcdb', { roughness: 0.6, metalness: 0.2 });
+    const acM = mat('#c9ccca', { roughness: 0.6, metalness: 0.2 });
     const pipeM = mat('#8d9398', { roughness: 0.5, metalness: 0.6 });
 
     /* ---------- dimensions ---------- */
@@ -108,7 +108,7 @@
           const r = rnd();
           if (r < 0.22) lits.push([q.x, y0 + sill + winH / 2, q.z, f[4], winW - 0.1, winH - 0.1, 1]);
           else if (r < 0.4) curtains.push([q.x, y0 + sill + winH / 2 + 0.1, q.z, f[4], winW - 0.2, winH - 0.3, 1]);
-          if (acSides.includes(f[0]) && rnd() < 0.45) { const a = toW(f, u + winW / 2 - 0.4, 0.3); acs.push([a.x, y0 + sill - 0.45, a.z, f[4], 1, 1, 1]); }
+          if (acSides.includes(f[0]) && rnd() < 0.3) { const a = toW(f, u + winW / 2 - 0.4, 0.3); acs.push([a.x, y0 + sill - 0.45, a.z, f[4], 1, 1, 1]); }
         }
       }
     }
@@ -203,5 +203,149 @@
     const night = (k) => { litM.emissiveIntensity = 1.4 * k; lampM.emissiveIntensity = 2.2 * k; glassM.opacity = 0.86 - 0.2 * k; };
     return { group: G, blocks, night, H };
   }
-  root.FacadeKit = { building };
+
+  /* ---------- a sports hall: concrete base, ribbed metal panels, louvres, a glazed gable, standing-seam barrel roof ---------- */
+  function hall(THREE, spec, o = {}) {
+    const G = new THREE.Group(), Q = o.quality || 'high', hiQ = Q !== 'low';
+    const dummy = new THREE.Object3D();
+    const M = {}, mat = (c, x = {}) => M[c + JSON.stringify(x)] || (M[c + JSON.stringify(x)] = new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: 0.7, metalness: 0.0, envMapIntensity: 0.35 }, x)));
+    const tex = (w, h, draw, srgb = true) => { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); if (srgb) t.encoding = THREE.sRGBEncoding; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8; return t; };
+    const shadow = (m, cast = true) => { m.castShadow = cast && hiQ; m.receiveShadow = true; return m; };
+    const inst = (geo, m, list, cast = true) => { if (!list.length) return null; const im = new THREE.InstancedMesh(geo, m, list.length); list.forEach((a, i) => { dummy.position.set(a[0], a[1], a[2]); dummy.rotation.set(0, a[3] || 0, 0); dummy.scale.set(a[4] || 1, a[5] || 1, a[6] || 1); dummy.updateMatrix(); im.setMatrixAt(i, dummy.matrix); }); im.instanceMatrix.needsUpdate = true; shadow(im, cast); G.add(im); return im; };
+    const box = (w, h, d, m, x, y, z, ry = 0, cast = true) => { const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); b.position.set(x, y + h / 2, z); b.rotation.y = ry; shadow(b, cast); G.add(b); return b; };
+    const W = spec.w, D = spec.d, X = spec.x, Zc = spec.z, H = spec.h || 9, baseH = 1.4;
+    const unit = new THREE.BoxGeometry(1, 1, 1);
+    // ribbed metal panel, mapped in world metres like the tiles
+    const ribTex = tex(256, 64, (g, w, h) => { g.fillStyle = '#d4d7d9'; g.fillRect(0, 0, w, h); for (let x = 0; x < w; x += 16) { g.fillStyle = '#c3c7ca'; g.fillRect(x, 0, 6, h); g.fillStyle = '#e4e6e8'; g.fillRect(x + 6, 0, 2, h); } for (let i = 0; i < 30; i++) { g.fillStyle = 'rgba(60,60,60,0.05)'; g.fillRect(Math.random() * w, 0, 1 + Math.random() * 3, h); } });
+    const panelM = new THREE.MeshStandardMaterial({ color: '#ffffff', map: ribTex, roughness: 0.55, metalness: 0.35, envMapIntensity: 0.5 });
+    panelM.onBeforeCompile = (sh) => { sh.vertexShader = sh.vertexShader.replace('#include <uv_vertex>', `#include <uv_vertex>
+#ifdef USE_INSTANCING
+  vec4 fkW = modelMatrix * instanceMatrix * vec4(position, 1.0);
+#else
+  vec4 fkW = modelMatrix * vec4(position, 1.0);
+#endif
+  vUv = vec2((fkW.x + fkW.z) * 0.5, fkW.y * 2.0);`); };
+    const concreteM = mat('#8e9091', { roughness: 0.9 }), frameM = mat('#2f3438', { roughness: 0.35, metalness: 0.7, envMapIntensity: 0.8 });
+    const glassM = new THREE.MeshStandardMaterial({ color: '#a9c6d8', roughness: 0.06, metalness: 0.9, envMapIntensity: 1.3, transparent: true, opacity: 0.8 });
+    const roofM = mat('#5d6670', { roughness: 0.4, metalness: 0.6, envMapIntensity: 0.7 }), steelM = mat('#c5c9cc', { roughness: 0.35, metalness: 0.85, envMapIntensity: 0.9 });
+    const louvreM = mat('#6c7378', { roughness: 0.5, metalness: 0.5 });
+    const darkIn = mat('#1b2229', { roughness: 0.95, envMapIntensity: 0 });
+    // body: dark interior core, concrete base, panel walls above the base (long sides), louvre band under the eaves
+    box(W - 0.6, H, D - 0.6, darkIn, X, 0, Zc, 0, false);
+    box(W + 0.2, baseH, D + 0.2, concreteM, X, 0, Zc);
+    const faces = [['s', W, X, Zc + D / 2, 0, 0, 1], ['n', W, X, Zc - D / 2, Math.PI, 0, -1], ['e', D, X + W / 2, Zc, Math.PI / 2, 1, 0], ['w', D, X - W / 2, Zc, -Math.PI / 2, -1, 0]];
+    const toW = (f, u, v) => ({ x: f[2] + Math.cos(f[4]) * u + f[5] * v, z: f[3] - Math.sin(f[4]) * u + f[6] * v });
+    const louvres = [], lamps = [];
+    for (const f of faces) {
+      const len = f[1], gable = f[0] === spec.gable;
+      if (!gable) {
+        const c = toW(f, 0, -0.1); box(len, H - baseH - 1.2, 0.2, panelM, c.x, baseH, c.z, f[4]);
+        // a band of high windows (sports halls light from above) and the louvre strip under the eaves
+        for (let u = -len / 2 + 2; u + 2.4 <= len / 2 - 1.5; u += 3.2) { const p = toW(f, u + 1.2, 0.02); box(2.4, 1.6, 0.06, glassM, p.x, H - 3.6, p.z, f[4], false); box(2.5, 0.06, 0.1, frameM, p.x, H - 3.6, p.z, f[4], false); box(2.5, 0.06, 0.1, frameM, p.x, H - 2.0, p.z, f[4], false); }
+        for (let u = -len / 2 + 0.4; u < len / 2 - 0.4; u += 0.25) { const p = toW(f, u, -0.08); louvres.push([p.x, H - 0.6, p.z, f[4], 0.2, 1.2, 0.03]); }
+      } else {
+        // the glazed gable end: full-height curtain wall with a mullion grid, the entrance doors in it
+        const gp = toW(f, 0, -0.06); const gl = new THREE.Mesh(new THREE.PlaneGeometry(len - 1, H - baseH), glassM); gl.position.set(gp.x, baseH + (H - baseH) / 2, gp.z); gl.rotation.y = f[4]; G.add(gl);
+        const mull = []; for (let u = -len / 2 + 0.5; u <= len / 2 - 0.5; u += 2.0) { const p = toW(f, u, 0.0); mull.push([p.x, baseH + (H - baseH) / 2, p.z, f[4], 0.1, H - baseH, 0.16]); }
+        for (let y = baseH + 2.6; y < H; y += 2.6) { const p = toW(f, 0, 0.0); mull.push([p.x, y, p.z, f[4], len - 1, 0.1, 0.16]); }
+        inst(unit, frameM, mull);
+        // entrance: a steel canopy on two columns, double doors with handles
+        const ew = spec.doorW || 6, cp = toW(f, 0, 2.0); box(ew + 2, 0.3, 3.8, roofM, cp.x, 3.6, cp.z, f[4]); box(ew + 2.3, 0.06, 4.1, steelM, cp.x, 3.9, cp.z, f[4], false);
+        [-ew / 2 - 0.3, ew / 2 + 0.3].forEach(u => { const p = toW(f, u, 3.6); const c = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 3.6, 12), steelM); c.position.set(p.x, 1.8, p.z); shadow(c); G.add(c); });
+        [-ew / 2, ew / 2, -0.04, 0.04].forEach(u => { const p = toW(f, u, 0.06); box(0.08, 2.8, 0.12, frameM, p.x, 0.0, p.z, f[4], false); });
+        const dp = toW(f, 0, 0.06); box(ew + 0.1, 0.12, 0.14, frameM, dp.x, 2.8, dp.z, f[4], false);
+        [-0.5, 0.5].forEach(u => { const h = toW(f, u, 0.16); box(0.03, 0.9, 0.03, steelM, h.x, 0.95, h.z, f[4], false); });
+      }
+      for (let u = -len / 2 + 3; u < len / 2 - 2; u += 7) { const p = toW(f, u, 0.15); lamps.push([p.x, 3.2, p.z, f[4], 0.2, 0.3, 0.3]); }
+    }
+    inst(unit, louvreM, louvres, false);
+    const lampM = new THREE.MeshStandardMaterial({ color: '#2a2e32', emissive: '#ffe7c4', emissiveIntensity: 0.0, roughness: 0.5 }); inst(unit, lampM, lamps);
+    // roof: a standing-seam barrel vault along x (as before), with a ridge ventilator and eaves gutters
+    const along = spec.gable === 's' || spec.gable === 'n';   // the barrel runs from gable to gable
+    const span = along ? W : D, run = along ? D : W, r = span / 2;
+    const seamTex = tex(256, 32, (g, w, h) => { g.fillStyle = '#8f98a1'; g.fillRect(0, 0, w, h); for (let x = 0; x < w; x += 12) { g.fillStyle = '#a3abb3'; g.fillRect(x, 0, 2, h); g.fillStyle = '#6f777f'; g.fillRect(x + 2, 0, 1, h); } });
+    const roofSeamM = new THREE.MeshStandardMaterial({ map: seamTex, roughness: 0.4, metalness: 0.6, envMapIntensity: 0.7 }); seamTex.repeat.set(span / 2, 1);
+    const vault = new THREE.Mesh(new THREE.CylinderGeometry(r, r, run + 0.6, 32, 1, false, 0, Math.PI), roofSeamM); vault.rotation.z = Math.PI / 2; vault.rotation.y = along ? Math.PI / 2 : 0; vault.position.set(X, H, Zc); vault.scale.set(spec.rise ? spec.rise / r : 0.5, 1, 1); shadow(vault); G.add(vault);
+    const rise = spec.rise || r * 0.5;
+    const vent = new THREE.Mesh(new THREE.BoxGeometry(along ? 1.6 : run * 0.6, 0.5, along ? run * 0.6 : 1.6), roofM); vent.position.set(X, H + rise + 0.2, Zc); shadow(vent); G.add(vent);
+    const gut = []; for (const f of faces) { if (f[0] === spec.gable || f[0] === ({ s: 'n', n: 's', e: 'w', w: 'e' })[spec.gable]) continue; const p = toW(f, 0, 0.12); gut.push([p.x, H - 0.1, p.z, f[4], f[1] + 0.3, 0.18, 0.18]); }
+    inst(unit, steelM, gut);
+    const pipes = []; faces.filter(f => f[0] !== spec.gable).forEach(f => { [-f[1] / 2 + 0.6, f[1] / 2 - 0.6].forEach(u => { const p = toW(f, u, 0.14); pipes.push([p.x, H / 2, p.z, 0, 0.1, H, 0.1]); }); });
+    inst(new THREE.CylinderGeometry(0.5, 0.5, 1, 10), steelM, pipes);
+    box(W + 2.4, 0.12, D + 2.4, concreteM, X, 0, Zc, 0, false);
+    const night = (k) => { lampM.emissiveIntensity = 2.2 * k; glassM.opacity = 0.8 - 0.15 * k; };
+    return { group: G, blocks: [[X - W / 2 - 0.3, Zc - D / 2 - 0.3, X + W / 2 + 0.3, Zc + D / 2 + 0.3]], night, H };
+  }
+
+  /* ---------- London planes (悬铃木), the Shanghai campus tree. forest() builds a whole list of trees as three instanced meshes:
+     mottled trunks with a few branches, and a crown of leaf cards (crossed alpha-cut planes) scattered through an ellipsoid,
+     so the canopy has edges and holes instead of being a ball. list: [x, z, scale, seed] ---------- */
+  function forest(THREE, list, o = {}) {
+    const G = new THREE.Group(), hiQ = (o.quality || 'high') !== 'low', dummy = new THREE.Object3D();
+    const bc = document.createElement('canvas'); bc.width = 128; bc.height = 256; { const g = bc.getContext('2d'); g.fillStyle = '#9a8d78'; g.fillRect(0, 0, 128, 256);
+      for (let i = 0; i < 160; i++) { g.fillStyle = ['#c9bda2', '#7d7460', '#b3a78c', '#6d6552', '#d8cfb6'][i % 5]; g.beginPath(); g.ellipse(Math.random() * 128, Math.random() * 256, 6 + Math.random() * 14, 10 + Math.random() * 24, Math.random(), 0, Math.PI * 2); g.fill(); } }
+    const bark = new THREE.CanvasTexture(bc); bark.encoding = THREE.sRGBEncoding; bark.wrapS = bark.wrapT = THREE.RepeatWrapping; bark.repeat.set(2, 3);
+    const lc = document.createElement('canvas'); lc.width = 256; lc.height = 256; { const g = lc.getContext('2d'); g.clearRect(0, 0, 256, 256);
+      // a cluster of maple-like leaves on a transparent card, denser in the middle
+      for (let i = 0; i < 90; i++) { const a = Math.random() * Math.PI * 2, d = Math.pow(Math.random(), 0.6) * 105, px = 128 + Math.cos(a) * d, py = 128 + Math.sin(a) * d, r = 12 + Math.random() * 14;
+        g.fillStyle = ['#4f8a3a', '#5c9a42', '#3f7a30', '#6ca84c', '#467f35', '#7fb356'][i % 6]; g.save(); g.translate(px, py); g.rotate(Math.random() * 6.3); g.beginPath();
+        for (let k = 0; k < 5; k++) { const t = k / 5 * Math.PI * 2; g.lineTo(Math.cos(t) * r, Math.sin(t) * r); g.lineTo(Math.cos(t + 0.63) * r * 0.45, Math.sin(t + 0.63) * r * 0.45); } g.closePath(); g.fill(); g.restore(); } }
+    const leaf = new THREE.CanvasTexture(lc); leaf.encoding = THREE.sRGBEncoding;
+    const barkM = new THREE.MeshStandardMaterial({ map: bark, roughness: 0.9 });
+    const leafM = new THREE.MeshStandardMaterial({ map: leaf, alphaTest: 0.45, side: THREE.DoubleSide, roughness: 0.85, color: '#ffffff' });
+    const trunks = [], branches = [], cards = [], blocks = [];
+    for (const [x, z, s0, seed] of list) {
+      let sd = (seed || 1) * 7919 + 13; const rnd = () => { sd = (sd * 16807) % 2147483647; return (sd - 1) / 2147483646; };
+      const s = s0 || 1, th = (4.6 + rnd() * 1.4) * s;
+      trunks.push([x, th / 2, z, rnd() * 6.3, s, th, s]);
+      const crownY = th * 0.9, cr = (2.6 + rnd() * 0.9) * s;
+      for (let i = 0; i < 5; i++) { const a = rnd() * Math.PI * 2, bl = cr * 1.1; branches.push([x, crownY + bl * 0.25, z, a, bl, s]); }
+      const n = hiQ ? 55 + Math.floor(rnd() * 20) : 28;
+      for (let i = 0; i < n; i++) {
+        // a point in the crown ellipsoid (wider than tall), biased to the shell so the middle stays airy
+        const u = rnd() * Math.PI * 2, v = Math.acos(2 * rnd() - 1), rr = cr * (0.55 + 0.45 * Math.pow(rnd(), 0.5));
+        const px = x + Math.sin(v) * Math.cos(u) * rr, py = crownY + cr * 0.55 + Math.cos(v) * rr * 0.65, pz = z + Math.sin(v) * Math.sin(u) * rr;
+        const cs = (0.9 + rnd() * 0.8) * s;
+        cards.push([px, py, pz, rnd() * 6.3, (rnd() - 0.5) * 1.2, rnd() * 6.3, cs]);
+      }
+      blocks.push([x - 0.3 * s, z - 0.3 * s, x + 0.3 * s, z + 0.3 * s]);
+    }
+    const tim = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.17, 0.28, 1, 9), barkM, trunks.length);
+    trunks.forEach((a, i) => { dummy.position.set(a[0], a[1], a[2]); dummy.rotation.set(0, a[3], 0); dummy.scale.set(a[4], a[5], a[6]); dummy.updateMatrix(); tim.setMatrixAt(i, dummy.matrix); }); tim.castShadow = hiQ; tim.receiveShadow = true; G.add(tim);
+    const bg = new THREE.CylinderGeometry(0.06, 0.11, 1, 7); bg.translate(0, 0.5, 0);
+    const bim = new THREE.InstancedMesh(bg, barkM, branches.length);
+    branches.forEach((a, i) => { dummy.position.set(a[0], a[1], a[2]); dummy.rotation.set(0, a[3], 0); dummy.rotateX(0.95); dummy.scale.set(a[5], a[4], a[5]); dummy.updateMatrix(); bim.setMatrixAt(i, dummy.matrix); }); bim.castShadow = hiQ; G.add(bim);
+    const cg = (() => { const a = new THREE.PlaneGeometry(1.4, 1.1), b = new THREE.PlaneGeometry(1.4, 1.1); b.rotateY(Math.PI / 2); return THREE.BufferGeometryUtils ? THREE.BufferGeometryUtils.mergeBufferGeometries([a, b]) : a; })();
+    const cim = new THREE.InstancedMesh(cg, leafM, cards.length);
+    cards.forEach((a, i) => { dummy.position.set(a[0], a[1], a[2]); dummy.rotation.set(a[4], a[3], a[5]); dummy.scale.set(a[6], a[6], a[6]); dummy.updateMatrix(); cim.setMatrixAt(i, dummy.matrix); }); cim.castShadow = hiQ; cim.receiveShadow = true; G.add(cim);
+    return { group: G, blocks };
+  }
+
+  /* ---------- a bike shed: steel posts, a sloping polycarbonate roof, a row of bikes ---------- */
+  function bikeShed(THREE, x, z, len, ry = 0, o = {}) {
+    const G = new THREE.Group(), hiQ = (o.quality || 'high') !== 'low', dummy = new THREE.Object3D();
+    const steel = new THREE.MeshStandardMaterial({ color: '#b9bec2', roughness: 0.35, metalness: 0.85, envMapIntensity: 0.9 });
+    const poly = new THREE.MeshStandardMaterial({ color: '#cfe6f2', roughness: 0.3, metalness: 0.1, transparent: true, opacity: 0.55, side: THREE.DoubleSide });
+    const roof = new THREE.Mesh(new THREE.BoxGeometry(len, 0.06, 2.4), poly); roof.position.set(0, 2.35, 0); roof.rotation.x = -0.12; roof.castShadow = hiQ; G.add(roof);
+    const posts = []; for (let u = -len / 2 + 0.4; u <= len / 2 - 0.3; u += 2.4) { posts.push([u, 1.1, -1.0, 0, 0.08, 2.2, 0.08]); posts.push([u, 1.25, 1.0, 0, 0.08, 2.5, 0.08]); }
+    const unit = new THREE.BoxGeometry(1, 1, 1), pim = new THREE.InstancedMesh(unit, steel, posts.length + 2);
+    posts.push([0, 2.22, -1.0, 0, len, 0.08, 0.08], [0, 2.5, 1.0, 0, len, 0.08, 0.08]);
+    posts.forEach((a, i) => { dummy.position.set(a[0], a[1], a[2]); dummy.rotation.set(0, 0, 0); dummy.scale.set(a[4], a[5], a[6]); dummy.updateMatrix(); pim.setMatrixAt(i, dummy.matrix); }); pim.castShadow = hiQ; G.add(pim);
+    // bikes: two wheels, a frame of three bars, a saddle; the whole row is three instanced meshes
+    const nb = Math.floor(len / 0.7), wheels = [], bars = [], saddles = [], cols = ['#2251FF', '#c0392b', '#3DDC97', '#222222', '#e8e8e8', '#f2c574'];
+    for (let i = 0; i < nb; i++) { if (i % 5 === 3) continue; const u = -len / 2 + 0.5 + i * 0.7, lean = (i % 2 ? 1 : -1) * 0.06;
+      wheels.push([u, 0.34, -0.55, 0, 1, 1, 1], [u, 0.34, 0.55, 0, 1, 1, 1]);
+      bars.push([u, 0.6, 0, 0, 0.03, 0.03, 1.0, cols[i % 6]], [u, 0.6, -0.15, 0.0, 0.03, 0.6, 0.03, cols[i % 6]], [u, 0.75, 0.35, 0, 0.03, 0.55, 0.03, cols[i % 6]]);
+      saddles.push([u, 0.95, -0.15, 0, 0.1, 0.05, 0.25]); saddles.push([u, 1.0, 0.45, 0, 0.45, 0.025, 0.03]); }
+    const wim = new THREE.InstancedMesh(new THREE.TorusGeometry(0.33, 0.025, 6, 18), new THREE.MeshStandardMaterial({ color: '#2a2d30', roughness: 0.7 }), wheels.length);
+    wheels.forEach((a, i) => { dummy.position.set(a[0], a[1], a[2]); dummy.rotation.set(0, Math.PI / 2, 0); dummy.scale.set(1, 1, 1); dummy.updateMatrix(); wim.setMatrixAt(i, dummy.matrix); }); wim.castShadow = hiQ; G.add(wim);
+    const bim = new THREE.InstancedMesh(unit, new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.4, metalness: 0.5 }), bars.length);
+    bars.forEach((a, i) => { dummy.position.set(a[0], a[1], a[2]); dummy.rotation.set(0, 0, 0); dummy.scale.set(a[4], a[5], a[6]); dummy.updateMatrix(); bim.setMatrixAt(i, dummy.matrix); bim.setColorAt(i, new THREE.Color(a[7])); }); bim.instanceColor.needsUpdate = true; G.add(bim);
+    const sim = new THREE.InstancedMesh(unit, new THREE.MeshStandardMaterial({ color: '#2a2d30', roughness: 0.8 }), saddles.length);
+    saddles.forEach((a, i) => { dummy.position.set(a[0], a[1], a[2]); dummy.rotation.set(0, 0, 0); dummy.scale.set(a[4], a[5], a[6]); dummy.updateMatrix(); sim.setMatrixAt(i, dummy.matrix); }); G.add(sim);
+    G.position.set(x, 0, z); G.rotation.y = ry;
+    const c = Math.cos(ry), sn = Math.sin(ry), hx = Math.abs(c) * len / 2 + Math.abs(sn) * 1.3, hz = Math.abs(sn) * len / 2 + Math.abs(c) * 1.3;
+    return { group: G, block: [x - hx, z - hz, x + hx, z + hz] };
+  }
+  root.FacadeKit = { building, hall, forest, bikeShed };
 })(typeof window !== 'undefined' ? window : this);
