@@ -1,5 +1,8 @@
 # Changelog
 
+## v13.2.1 — Title music (2026-10-23)
+- The title page was silent until a mode button was pressed: browsers only start audio inside a user gesture, and only those buttons opened the audio context. Now the first tap or key anywhere does, and the evening track plays behind the title. Test: `node tools/e2e/run.mjs title_music.mjs`.
+
 ## v13.2 — Skeleton, step 3: tested rules, a types seed (2026-10-23)
 - `src/rules/pure.js`: the arithmetic the balance depends on as pure functions — mortgage annuity, dossier score, grade bands, the week score (home cap, wellbeing floor), trust gain. The game calls them; `npm test` (Node's own test runner, no new dependency) checks them against the numbers in the design notes (¥14,946 a month; S 92 / A 84 / B 60 / C 46; never-home weeks capped under A).
 - `src/types.d.ts` + `tsconfig.json` + `npm run typecheck`: the shapes of the state, events, career, balance tables and the rules API as global declarations. New code goes in as `.ts` against them; the existing classic files are described, not yet converted.

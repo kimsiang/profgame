@@ -257,6 +257,10 @@ $('dlgLog').addEventListener('click', () => { if (S && S.dialog) S.dialog.typing
   el.addEventListener('wheel', (e) => { e.preventDefault(); camState.followDist = clamp(camState.followDist * (1 + Math.sign(e.deltaY) * 0.1), 13, 44); }, { passive: false });
 })();
 $('quickBM').onclick = () => quickMenu();
+// v14.0.1: browsers only let audio start inside a user gesture, so the title page was silent until a mode button was
+// pressed. The first tap or key anywhere (the title's lede, the emblem, a scroll on mobile) now opens the audio context;
+// musicTick() then plays the evening track behind the title as it already intended.
+['pointerdown', 'keydown', 'touchstart'].forEach(k => addEventListener(k, () => { ensureAudio(); if (actx && actx.state === 'suspended') actx.resume(); }, { once: true, capture: true, passive: true }));
 $('modeBasic').onclick = () => { setup.mode = 'basic'; ensureAudio(); renderSetup(); show('scrSetup'); };
 $('modePro').onclick = () => { if (!AI.ready()) return openAI('先选择服务商并填写 API Key，保存后再点「学者 Pro 版」。'); setup.mode = 'pro'; ensureAudio(); renderSetup(); show('scrSetup'); };
 $('aiBtnTitle').onclick = () => openAI();
