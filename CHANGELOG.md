@@ -1,5 +1,8 @@
 # Changelog
 
+## v12.3.6 — Copyright (2026-10-23)
+- `LICENSE` (proprietary, zh + en) and `THIRD-PARTY-NOTICES.md` (three.js MIT, Rocketbox MIT, Poly Haven CC0, fonts OFL). Copyright line in the page head, `<meta copyright>`, the title-screen footer, every `assets/js/*.js` header and the README.
+
 ## v11.4 — Campus facades (2026-10-23)
 Kim: "每一个大楼的外貌有点粗糙". The buildings were textured boxes; now they are built from a facade kit (`assets/js/facade.js`, specs in `assets/data/campus.json`).
 - 物理楼: grey ceramic tiles, dark aluminium frames, windows recessed with real depth, a two-storey glass podium with a lit lobby, canopy and double doors, planters, parapet and roof plant (plant room, tank, AC rows, antenna, a small observatory dome), downpipes, AC units on the side walls, wall lamps that come on at night.

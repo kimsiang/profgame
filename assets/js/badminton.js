@@ -1,3 +1,4 @@
+/* 导师的一周 / My Advisor's Week — Copyright © 2026 Khaw Kim Siang. All rights reserved. See LICENSE. */
 /* Badminton core (v10): shuttle physics, rules and opponent AI.
    Pure logic: no THREE, no DOM. index.html renders it; tools/bm_balance.js runs it in node for balance tests.
    Coordinates: metres. x across the court, z along it, y up. Side 'P' (player) is the near half z > net,

@@ -1,3 +1,4 @@
+/* 导师的一周 / My Advisor's Week — Copyright © 2026 Khaw Kim Siang. All rights reserved. See LICENSE. */
 /* v11.2 music engine: a small step sequencer that synthesises drums, bass, arpeggios, keys and pads with WebAudio.
    Tracks are data (assets/data/music.json). No samples, nothing to download beyond the JSON.
    API: ProfMusic.init(ctx, dest, data) · setTrack(id) · setVolume(v) · current() · stop(). Scheduling uses a

@@ -1,3 +1,4 @@
+/* 导师的一周 / My Advisor's Week — Copyright © 2026 Khaw Kim Siang. All rights reserved. See LICENSE. */
 /* Badminton venue (v10.3): the gym, rebuilt as a match stage for the broadcast camera.
    While a match is on, index.html hides the ordinary gym zone and shows this group instead. It is the same room
    (40 × 26 m, three courts, court 2 in the middle), dressed for a low camera: tall window walls, side courts in use,

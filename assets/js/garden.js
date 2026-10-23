@@ -1,3 +1,4 @@
+/* 导师的一周 / My Advisor's Week — Copyright © 2026 Khaw Kim Siang. All rights reserved. See LICENSE. */
 /* v11.2 botanical garden (6F): four climate zones, one per corner bed: tropical rainforest, desert, temperate forest and alpine.
    Procedural plants, modelled on real species (banana, monstera, tree fern, bromeliad; saguaro, barrel cactus, prickly pear,
    agave, aloe; oak, maple, birch, fern, foxglove; dwarf pine, cushion plants, edelweiss, gentian). Repeated parts are instanced.

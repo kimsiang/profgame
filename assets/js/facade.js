@@ -1,3 +1,4 @@
+/* 导师的一周 / My Advisor's Week — Copyright © 2026 Khaw Kim Siang. All rights reserved. See LICENSE. */
 /* v11.4 campus facades. A modular building kit: every building on campus is built from the same parts
    (floor bands, piers, recessed windows with aluminium frames and glass, a glass podium, entrance canopy and steps,
    parapet, roof plant, downpipes, AC units, lamps), driven by a spec from assets/data/campus.json.
