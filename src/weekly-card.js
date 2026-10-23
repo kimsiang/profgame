@@ -44,7 +44,7 @@ function weeklyCardCanvas() {
     y += 34 * ls.length + 26;
     if (y > H - 220) break;
   }
-  // footer: fiction note, brand mark, QR
+  // footer: fiction note, address, QR
   g.fillStyle = 'rgba(255,255,255,0.18)'; g.fillRect(M, H - 150, W - M * 2, 1);
   g.fillStyle = CARD.dim; g.font = cardFont(400, 20, false); g.fillText('虚构设定，不针对任何单位和个人 · A work of fiction', M, H - 104);
   g.fillText(CARD.url.replace(/^https?:\/\//, ''), M, H - 68);
