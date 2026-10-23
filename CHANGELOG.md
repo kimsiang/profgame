@@ -10,6 +10,12 @@ Kim: "每一个大楼的外貌有点粗糙". The buildings were textured boxes; 
 - Cost: whole campus ~150 draw calls per pass (shadow pass doubles it), 320k triangles at mid quality; the ≤45 fps auto-downgrade (v10.4) still applies.
 - Test: walk out of the physics building; `HUD=0 CAM=120,24,100,52,8,20 node tools/e2e/run.mjs campus_shot.mjs` for the reference frame.
 
+## v12.3.5 — Diorama by default (2026-10-23)
+- New players start in 微缩模型 (stylised diorama, Q 版人物). 写实 is still one tap away on the title page or the top bar.
+- Players who already picked a style keep it (`prof-art` in localStorage is read first).
+- Title-page buttons reordered: 微缩模型 first, marked 默认. `real_shot.mjs` now sets `prof-art=real` itself.
+- Test: clear site data (or a private window), open the game → 5F is the diorama and the top bar reads 微缩模型.
+
 ## v12.3.4 — Disclaimer (2026-10-23)
 - Title screen, under the English name: 虚构设定，不针对任何单位和个人 (zh + en). The footer's existing fiction note says the same in full.
 
