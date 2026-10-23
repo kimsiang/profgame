@@ -1020,11 +1020,19 @@ function envLoad(key, file) {
   ENV.hdr[key] = null;
   new THREE.RGBELoader().setDataType(THREE.UnsignedByteType).load('assets/textures/' + file, (t) => {
     const pm = new THREE.PMREMGenerator(renderer); ENV.hdr[key] = pm.fromEquirectangular(t).texture; pm.dispose(); t.dispose();
-    if (ENV.want === key) scene.environment = ENV.hdr[key];
+    if (ENV.want === key) { if (REAL) scene.environment = ENV.hdr[key]; cityEnv(); }
   }, undefined, () => { /* keep the studio room */ });
 }
-function setEnvFor(z) { const k = z && z.outdoor ? 'outdoor' : 'indoor'; ENV.want = k; scene.environment = ENV.hdr[k] || ENV.room; }
-if (REAL) { envLoad('indoor', 'blender_institute_1k.hdr'); envLoad('outdoor', 'kloofendal_48d_partly_cloudy_puresky_1k.hdr'); }
+// v12.3.6: the diorama keeps the studio room for its own rooms, but the skyline outside reflects the same HDRI as the
+// realistic look, so both styles share one background (the white studio room washed the towers out to a pale grey).
+function cityEnv() {
+  if (REAL) return;
+  let list; try { list = city; } catch (e) { return; }   // skyline not built yet
+  const env = ENV.hdr[ENV.want] || null;
+  list.forEach(m => { if (m.material.envMap !== env) { m.material.envMap = env; m.material.needsUpdate = true; } });
+}
+function setEnvFor(z) { const k = z && z.outdoor ? 'outdoor' : 'indoor'; ENV.want = k; if (REAL) scene.environment = ENV.hdr[k] || ENV.room; cityEnv(); }
+envLoad('indoor', 'blender_institute_1k.hdr'); envLoad('outdoor', 'kloofendal_48d_partly_cloudy_puresky_1k.hdr');   // both styles: the skyline uses them
 
 /* ---------- camera (perspective, orbit around the player) ---------- */
 const cam = new THREE.PerspectiveCamera(30, 1, 1, 900);
