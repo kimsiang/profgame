@@ -4,7 +4,7 @@
 import fs from 'fs';
 import path from 'path';
 const root = new URL('../', import.meta.url).pathname, nm = path.join(root, 'node_modules'), out = path.join(root, 'vendor');
-fs.rmSync(out, { recursive: true, force: true });
+fs.rmSync(path.join(out, 'fonts'), { recursive: true, force: true });   // vendor/three is tracked in git (so the raw repo still runs); vendor/fonts is generated
 // three.js: the same files the page used to load from cdnjs / jsDelivr, in the same order
 const THREE = ['build/three.min.js', 'examples/js/utils/BufferGeometryUtils.js', 'examples/js/shaders/CopyShader.js', 'examples/js/shaders/LuminosityHighPassShader.js', 'examples/js/shaders/SSAOShader.js', 'examples/js/shaders/SMAAShader.js', 'examples/js/shaders/HorizontalTiltShiftShader.js', 'examples/js/shaders/VerticalTiltShiftShader.js', 'examples/js/shaders/BokehShader.js', 'examples/js/postprocessing/EffectComposer.js', 'examples/js/postprocessing/RenderPass.js', 'examples/js/postprocessing/ShaderPass.js', 'examples/js/postprocessing/UnrealBloomPass.js', 'examples/js/postprocessing/SSAOPass.js', 'examples/js/postprocessing/SMAAPass.js', 'examples/js/postprocessing/BokehPass.js', 'examples/js/loaders/GLTFLoader.js', 'examples/js/loaders/RGBELoader.js', 'examples/js/math/SimplexNoise.js', 'examples/js/geometries/RoundedBoxGeometry.js', 'examples/js/environments/RoomEnvironment.js', 'examples/js/utils/SkeletonUtils.js'];
 for (const f of THREE) { const d = path.join(out, 'three', f); fs.mkdirSync(path.dirname(d), { recursive: true }); fs.copyFileSync(path.join(nm, 'three', f), d); }
