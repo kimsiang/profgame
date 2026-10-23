@@ -1,5 +1,14 @@
 # Changelog
 
+## v12.4 — One building, two casts (2026-10-23)
+Kim: "I only want to maintain one." The two styles no longer have separate rooms.
+- Everyone gets the realistic building: Poly Haven floors and walls, clear glass, steel thresholds, grey slab, warm ceiling light, indoor and sky HDRIs.
+- The choice is now the cast only: **Q版** (default) or **写实**. Title page and top bar read 人物：Q版 / 写实.
+- The Q版 cast are vinyl figurines: PBR material lit by the room and its HDRI, real shadows, no ink outline (the LittleBigPlanet lesson: stylised figures fit a real world when they look like physical objects under the same light).
+- Removed: the diorama rooms (procedural floors, glowing cyan trim and thresholds, navy slab with neon edge, tinted light pools, cyan glass), toon shading and outlines, and the v12.3.6 skyline workaround. About 80 lines less, and every future room is built once.
+- Saves and old settings carry over: `prof-art=diorama` (and the preview's `figurine`) open the Q版 cast.
+- Test: private window → 5F has tiled floors with Q版 figures casting shadows; top bar 人物 Q版; tap twice → 写实 cast in the same rooms.
+
 ## v12.3.7 — Copyright (2026-10-23)
 - `LICENSE` (proprietary, zh + en) and `THIRD-PARTY-NOTICES.md` (three.js MIT, Rocketbox MIT, Poly Haven CC0, fonts OFL). Copyright line in the page head, `<meta copyright>`, the title-screen footer, every `assets/js/*.js` header and the README.
 
