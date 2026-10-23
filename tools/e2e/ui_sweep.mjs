@@ -10,7 +10,7 @@ export default async ({ page, sleep, logs }) => {
   await tryCall('toggleSave', `toggleSave()`); await tryCall('toggleSave2', `toggleSave()`);
   await tryCall('renderSetup', `renderSetup()`);
   await ev(`(() => { localStorage.clear(); setup.mode = 'basic'; startGame(); return 1; })()`); await sleep(1500);
-  await tryCall('showPlanner', `showPlanner && showPlanner()`);
+  await tryCall('showPlanner', `showPlanner(0)`);
   await ev(`beginDay(0, INTENTS[0].id)`); await sleep(2500);
   await tryCall('tutorial hide', `if (typeof TUT !== 'undefined') TUT.done.all = true; tutHide()`);
   await tryCall('openDesk', `openDesk()`); await tryCall('closeDialog', `closeDialog()`);
