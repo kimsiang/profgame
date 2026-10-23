@@ -1,5 +1,10 @@
 # Changelog
 
+## v12.3.6 — One background for both styles (2026-10-23)
+- 微缩模型 now uses the 写实 background: the skyline towers outside 5F (and the physics building seen from campus) reflect the same Poly Haven HDRIs as the realistic look. Before, they reflected the white studio room and looked pale and washed out.
+- The diorama's own rooms keep the studio-room lighting, so the interior look is unchanged. Both HDRIs now load in either style (about 2 MB).
+- Test: open 5F in 微缩模型, zoom out (overview): the towers are dark glass with lit windows, as in 写实.
+
 ## v11.4 — Campus facades (2026-10-23)
 Kim: "每一个大楼的外貌有点粗糙". The buildings were textured boxes; now they are built from a facade kit (`assets/js/facade.js`, specs in `assets/data/campus.json`).
 - 物理楼: grey ceramic tiles, dark aluminium frames, windows recessed with real depth, a two-storey glass podium with a lit lobby, canopy and double doors, planters, parapet and roof plant (plant room, tank, AC rows, antenna, a small observatory dome), downpipes, AC units on the side walls, wall lamps that come on at night.
