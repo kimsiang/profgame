@@ -46,7 +46,7 @@ function newState(career) {
     v: { energy: 86, full: 55, bladder: 18 },
     k: k0,
     grant: setup.day === 'crunch' ? 8 : 20, submitted: false, paper: 20, paperSubmitted: false, coffees: 0, meals: 0, day: 0, collapses: 0, lastEnd: 'time', dayLogStart: 0, cardStart: 0, kStart: null, totals: { done: 0, missed: 0, all: 0 }, coffeesWeek: 0, mealsWeek: 0,
-    activity: null, events: [], log: [], cards: [], flags: Object.assign({}, career.flags), muons: 0,
+    activity: null, events: [], log: [], cards: [], flags: Object.assign({}, career.flags, endingReadiness(career)), muons: 0,
     dialog: null, ended: false, path: [], autoTarget: null, warned: {}, moving: false, run: false,
     xp: 0, level: 0, ach: [], rooms: {}, zones: {}, sports: {}, reads: 0, clears: 0, hadQuests: false, autoRoute: null, autoNext: null,
   };

@@ -225,7 +225,7 @@ function endWeek(reason) {
   S.weekResult = { grade: G[0], score: Math.round(score), pts, homeCap, kAvg: Math.round(avg), grantQ: S.submitted ? dossierScore('grant') : null, paperQ: S.paperSubmitted ? dossierScore('paper') : null, outs: outs.map(o => [o[0], o[1], o[3]]) };
   const c = S.career, rank0 = c.rank, post0 = c.post;
   c.pts += pts;
-  c.history.push({ week: S.week, grade: G[0], pts, grant: outs[0][1], paper: outs[1][1], lost: S.lost.length, grantOk: outs[0][0] === 'ok', accept: /直接接收/.test(outs[1][1]), trust: Math.round(avgTrust()) });
+  c.history.push({ week: S.week, grade: G[0], pts, grant: outs[0][1], paper: outs[1][1], lost: S.lost.length, grantOk: outs[0][0] === 'ok', accept: /直接接收/.test(outs[1][1]), trust: Math.round(avgTrust()), k: Object.assign({}, S.k), collapses: S.collapses });   // v14.2: k and collapses for the endings
   // v8: titles need points and a record; posts are offered; 院士 is voted on every 4 weeks from 讲席教授.
   const blocked = promote(c, S.week);
   if (c.post) {
@@ -259,12 +259,16 @@ function endWeek(reason) {
       : ['ok', `钱：余额 ${fmtY(F.cash)} · 本月 ${money.net >= 0 ? '+' : ''}${fmtY(money.net)}`, `${F.mortgage ? `房贷还剩 ${fmtY(F.mortgage.bal)}。` : ''}${F.consult === S.week ? '这个月接了横向：科研 −2。' : ''}${money.aud ? '有一张“会议餐费”被审计了。' : ''}`, 0]);
   }
   const carry = freshDossier(); carry.grant.letter = S.dos.grant.letter; carry.grant.idea = Math.max(0, S.dos.grant.idea - 1); carry.grant.data = Math.max(0, S.dos.grant.data - 1);
-  Object.assign(c, { week: S.week + 1, trust: Object.assign({}, S.trust), lost: S.lost.slice(), flags: S.flags.ally_coach ? { ally_coach: 1 } : {}, wb: clamp(S.wb + 8), k: Object.assign({}, S.k), setup: Object.assign({}, setup), fam: Object.assign({}, S.fam), dos: carry, tableSeen: (S.tableSeen || []).slice(), fin: S.fin ? JSON.parse(JSON.stringify(S.fin)) : c.fin });
+  Object.assign(c, { week: S.week + 1, trust: Object.assign({}, S.trust), lost: S.lost.slice(), flags: Object.assign(S.flags.ally_coach ? { ally_coach: 1 } : {}, Object.fromEntries(Object.entries(S.flags).filter(([k]) => k.startsWith('end_')))) /* v14.2: ending choices carry */, wb: clamp(S.wb + 8), k: Object.assign({}, S.k), setup: Object.assign({}, setup), fam: Object.assign({}, S.fam), dos: carry, tableSeen: (S.tableSeen || []).slice(), fin: S.fin ? JSON.parse(JSON.stringify(S.fin)) : c.fin });
+  // v14.2: the week's weightier moments join the career's; an ending (other than the election) is decided here
+  c.moments = (c.moments || []).concat((S.moments || []).filter(m => m.w >= 3).map(m => Object.assign({}, m, { week: S.week }))).slice(-60);
+  let ending = vote && vote.elected ? endingById('academician') : null;
+  if (!ending && !c.done && ENDINGS.data) { const e = Rules.ending(Rules.careerFacts(c), ENDINGS.data.endings); if (e) { ending = e; c.done = true; c.ending = e.id; c.academician = S.week; } }
   saveCareer(c);
   const promoted = c.rank > rank0, nxt = RANKS[c.rank + 1], elected = !!(vote && vote.elected);
   if (elected) unlock('academician');
-  $('endEyebrow').textContent = elected ? `第 ${S.week} 周 · 职业生涯结局` : `第 ${S.week} 周 · 周日 23:59 · 一周结束`;
-  $('endHead').textContent = elected ? '当选院士' : promoted ? `晋升：${RANKS[c.rank].n}！` : reason === 'collapse' ? '周日晚上，你在办公桌前睡着了' : '这一周结束了';
+  $('endEyebrow').textContent = ending ? `第 ${S.week} 周 · 职业生涯结局` : `第 ${S.week} 周 · 周日 23:59 · 一周结束`;
+  $('endHead').textContent = ending ? (ending.id === 'academician' ? '当选院士' : `结局：${ending.name_zh}`) : promoted ? `晋升：${RANKS[c.rank].n}！` : reason === 'collapse' ? '周日晚上，你在办公桌前睡着了' : '这一周结束了';
   $('endGrade').textContent = G[0];
   $('endImg').src = portrait(PLAYER_LOOK(S.avatar === 'f'), promoted || G[0] === 'S' || G[0] === 'A' ? 'happy' : G[0] === 'D' ? 'sleepy' : 'normal');
   $('endTitle').textContent = elected ? `院士 · ${RANKS[c.rank].n}${postLabel(c)}` : G[1] + ` · ${RANKS[c.rank].n}${postLabel(c)}`;
@@ -282,15 +286,18 @@ function endWeek(reason) {
   $('endLog').innerHTML = S.log.map(l => `<div><span class="t">${DAYS[l.day || 0].name.slice(1)} ${fmt(l.t)}</span><span>${esc(l.text)}</span></div>`).join('');
   $('cardsHead').textContent = `本周收集的科普卡 · ${S.cards.length} / ${Object.keys(CARDS).length}`;
   $('endCards').innerHTML = S.cards.map(c2 => `<div class="card"><h4>${esc(CARDS[c2].t)}</h4><p>${esc(CARDS[c2].b)}</p></div>`).join('');
-  $('againBtn').textContent = elected ? '开始新的职业生涯 ▶' : `开始第 ${c.week} 周 ▶`;
+  $('againBtn').textContent = ending ? '开始新的职业生涯 ▶' : `开始第 ${c.week} 周 ▶`;
   // v14.0: the review opens with one sentence and the week's moments; the dashboard stays behind 看详细
   $('wkGrade').textContent = G[0]; $('wkTitle').textContent = $('endTitle').textContent; $('wkSub').textContent = `第 ${S.week} 周 · ${T.all} 件事，亲手处理 ${T.done} 件 · 回家 ${S.homeNights} 晚`;
+  // v14.2: an ending replaces the sentence with its line and the five moments with the three decisions that led here
+  S.endingView = ending ? { line: ending.line_zh, moments: endingDecisions(c, ending) } : null;
+  if (ending) { $('wkTitle').textContent = `${ending.name_zh} · ${ending.name_en}`; $('wkSub').textContent = `职业生涯 ${S.week} 周 · ${ENDINGS.data ? ENDINGS.data.decisions_title_zh : ''}`; }
   const wkLine = weeklyLine(); $('wkLine').textContent = wkLine; $('wkLine').classList.toggle('hidden', !wkLine);
-  $('wkMoments').innerHTML = weeklyTop(5).map(m => `<div class="wm"><span class="d">${esc(DAYS[m.day] ? DAYS[m.day].name : '')} ${esc(fmt(m.t))}</span><span class="i">${esc(m.icon)}</span><span>${esc(momentText(m))}</span></div>`).join('');
+  $('wkMoments').innerHTML = weeklyTop(5).map(m => `<div class="wm"><span class="d">${esc(m.week ? 'W' + m.week + ' ' : '')}${esc(DAYS[m.day] ? DAYS[m.day].name : '')} ${esc(fmt(m.t))}</span><span class="i">${esc(m.icon)}</span><span>${esc(momentText(m))}</span></div>`).join('');
   $('wkAgain').textContent = $('againBtn').textContent; $('weekly').classList.remove('hidden');
   const sc = $('scrEnd'); sc.classList.add('wk'); sc.classList.remove('open'); $('wkDetail').textContent = '看详细 ▾';
-  if (elected) $('endOffer').innerHTML = ''; else renderOffer(offer, c);
-  if (elected) $('endCareer').innerHTML += careerEpilogue(c);
+  if (ending) $('endOffer').innerHTML = ''; else renderOffer(offer, c);
+  if (ending) $('endCareer').innerHTML += careerEpilogue(c);
   $('endMoney').innerHTML = money ? finStatementHTML(money) : '';
   $('endPeople').innerHTML = peopleRows().map(([k, t, d]) => `<div class="oc ${k}"><span class="m">${k === 'ok' ? '✓' : k === 'bad' ? '✕' : '~'}</span><div><b>${esc(t)}</b><small>${esc(d)}</small></div><em></em></div>`).join('');
   clearSave(); refreshContinue();

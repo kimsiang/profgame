@@ -65,7 +65,7 @@ function finSpend(n, label, fx) {
 // @fin_* flags from choices. They act on the ledger and are removed so they never gate other events.
 function finFlag(f) {
   const F = S.fin; delete S.flags[f];
-  if (f === 'fin_consult') { F.consult = S.week; F.consultHalf = false; F.log.push([S.week, '接了一个横向课题']); }
+  if (f === 'fin_consult') { F.consult = S.week; F.consultHalf = false; F.log.push([S.week, '接了一个横向课题']); if (S.career) S.career.consultN = (S.career.consultN || 0) + 1; }
   else if (f === 'fin_consult_half') F.consultHalf = true;
   else if (f === 'fin_reimb') { F.reimb.push({ week: S.week, amt: 800 }); moment('reimb'); }
   else if (f === 'fin_book') F.bookDone = true;

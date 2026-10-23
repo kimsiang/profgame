@@ -2,6 +2,12 @@
 
 Living summary of the systems in the build. Full design notes (goal, player experience, data, edge cases, playtest questions) live in the claude.ai project under `design-notes/`.
 
+## v14 Moments, the week review, the endings — how they work
+- `moment(kind, data)` (`src/moments.js`) is called at the decision points that already exist; templates, icons and weights are in `assets/data/content/moments.json`. `S.moments` is the week's list (saved); at week end the ones with weight ≥ 3 join `career.moments` (≤ 60).
+- The review's sentence: `weeklyLine()` tries `moments.json → weekly` in order and fills the first template whose `when` holds against `weeklyFacts()`. The timeline: `weeklyTop(5)`, by weight then time, one per kind while the week is rich enough. `momentText()` strips the day prefix where the time is already shown.
+- The card: `weeklyCardCanvas()` (`src/weekly-card.js`), 1080×1350, same text sources; QR from `vendor/qrcode`.
+- Endings: `Rules.careerFacts(career)` → `Rules.ending(facts, endings.json)`; evaluated in `endWeek()` after promotion, except 院士 which the election decides. The two Friday choice events (`end_talent`, `end_headhunt` in `week.json`) are gated by `teach_ready` / `industry_ready`, which `endingReadiness(career)` sets in `newState()`; their choices set carried `end_*` flags. The closing screen uses `S.endingView` to swap the sentence and the moments for the ending's line and `endingDecisions()`.
+
 ## v13.0 Files (the former single script, cut at its section banners)
 `index.html` is the HTML skeleton plus an ordered `<script src>` list; the scripts are classic scripts sharing the global scope (not modules yet — that is v13.1). Load order matters: a file may only *call* into earlier files at load time.
 | File | Was | Holds |

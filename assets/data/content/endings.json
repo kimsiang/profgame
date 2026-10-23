@@ -1,0 +1,83 @@
+{
+  "_comment": "v14.2 career endings. Checked at the end of every week in this order; the first whose `when` holds ends the career (academician is decided by the election code and listed here for its text). kinds = the moment kinds the closing screen replays. Fields for `when`: flag (carried career flag), grantFailStreak, lost, collapseWeeks (consecutive weeks with >= 2 collapses), teachAvg4 (teaching KPI mean of the last 4 weeks), trust, consultN. weeks = weeks played; a lost-students exit needs three weeks so a first week cannot end a career.",
+  "endings": [
+    {
+      "id": "academician",
+      "name_zh": "院士",
+      "name_en": "Academician",
+      "kinds": [
+        "academy",
+        "promote",
+        "submit",
+        "table"
+      ],
+      "line_zh": "你站在学部大会的台上。想起的不是答辩，是周二食堂的那碗面。",
+      "line_en": "On the stage of the academy's assembly, what you remember is not the defence but Tuesday's noodles in the canteen."
+    },
+    {
+      "id": "leave",
+      "name_zh": "离开",
+      "name_en": "Leaving",
+      "kinds": [
+        "lost",
+        "collapse",
+        "submit",
+        "crisis",
+        "debt"
+      ],
+      "when": {
+        "any": [
+          {
+            "grantFailStreak": 3
+          },
+          {
+            "lost": 2,
+            "weeks": 3
+          },
+          {
+            "collapseWeeks": 3
+          }
+        ]
+      },
+      "line_zh": "非升即走。合同到期那天，你把科普卡一张张收进箱子。走廊尽头，503 的灯还亮着，只是不再是你的。",
+      "line_en": "Up or out. On the day the contract ended you packed the science cards one by one. Down the corridor the lights of 503 were still on; they were just no longer yours."
+    },
+    {
+      "id": "teacher",
+      "name_zh": "教学名师",
+      "name_en": "The teacher",
+      "kinds": [
+        "table",
+        "crisis",
+        "home",
+        "post"
+      ],
+      "when": {
+        "flag": "end_teach",
+        "teachAvg4": 75,
+        "trust": 70
+      },
+      "line_zh": "你没有成为院士。二十年后，有三个人在自己实验室的门口放了和你一样的那张沙发。",
+      "line_en": "You never became an academician. Twenty years on, three people put the same sofa you had outside their own labs."
+    },
+    {
+      "id": "industry",
+      "name_zh": "转去企业",
+      "name_en": "To industry",
+      "kinds": [
+        "reimb",
+        "debt",
+        "submit",
+        "post",
+        "table"
+      ],
+      "when": {
+        "flag": "end_industry"
+      },
+      "line_zh": "你把 503 的钥匙交给小陈。第一次在周五下午六点准时下班，电梯里没有人认识你。",
+      "line_en": "You handed the key to 503 to Xiao Chen. For the first time you left at six on a Friday, and nobody in the lift knew who you were."
+    }
+  ],
+  "decisions_title_zh": "把你带到这里的三个决定",
+  "decisions_title_en": "The three decisions that brought you here"
+}

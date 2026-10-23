@@ -1,5 +1,12 @@
 # Changelog
 
+## v14.2 — Four endings (2026-10-23)
+- A career can now end four ways (`assets/data/content/endings.json`): **院士** (the election, as before), **教学名师** (teaching KPI ≥ 75 on average over four weeks, trust ≥ 70, and on a Friday you told 王老师 *not* to file the talent-programme application — `end_talent`), **转去企业** (two consulting contracts bring a headhunter on Friday; saying "下周可以谈一谈" ends it — `end_headhunt`) and **离开** (three failed grants in a row, two students gone after week 3, or three weeks with two collapses each). Only 离开 is passive; the other three are chosen.
+- The closing screen replaces the week's sentence with the ending's line and the five moments with **the three decisions that led here**, picked from the career's moments (`career.moments`, the week's weightier ones, kept to 60). The share card draws the same.
+- Rules in `src/rules/pure.js` (`careerFacts`, `ending`) with tests; `history` entries now keep the KPI snapshot and collapses.
+- Harness: grinder and random careers now end at week 3 (离开) — intended; balanced and mentor careers continue and their rows match the v12.5 baseline exactly.
+- Test: `node tools/e2e/run.mjs endings.mjs`.
+
 ## v14.1 — The share card (2026-10-23)
 - 保存卡片 on the week review draws a 1080×1350 (4:5) picture: grade, title, the one sentence, up to five moments, the fiction note, a small 从槟城出发的粒子 mark and a QR code to the game (`src/weekly-card.js`, `vendor/qrcode/qrcode.js`, MIT). Phones get the share sheet; desktops a PNG download. Text comes from the same templates as the review — nothing generated goes into the picture.
 - Test: `weekly_shot.mjs` writes `out/v14_card.png`.

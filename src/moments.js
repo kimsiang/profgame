@@ -6,6 +6,24 @@
 'use strict';
 const MOMENTS = { data: null, p: null };
 MOMENTS.p = fetch('assets/data/content/moments.json').then(r => r.json()).then(d => { MOMENTS.data = d; }).catch(() => { /* review falls back to the dashboard */ });
+/* v14.2 endings (assets/data/content/endings.json): text, kinds and conditions; the rule itself is Rules.ending(). */
+const ENDINGS = { data: null };
+fetch('assets/data/content/endings.json').then(r => r.json()).then(d => { ENDINGS.data = d; }).catch(() => { /* no endings: the career runs on */ });
+function endingById(id) { return ENDINGS.data ? ENDINGS.data.endings.find(e => e.id === id) : null; }
+/* Flags that open the Friday choice events: a teaching path once four good weeks are behind you, the headhunter after two consulting contracts. */
+function endingReadiness(career) {
+  const f = Rules.careerFacts(career), out = {};
+  if (f.teachAvg4 >= 75 && f.trust >= 70 && !f.flags.end_teach) out.teach_ready = 1;
+  if (f.consultN >= 2 && !f.flags.end_industry) out.industry_ready = 1;
+  return out;
+}
+/* The three career moments that led to an ending: of the ending's kinds first, by weight, then anything else; in time order. */
+function endingDecisions(career, ending) {
+  const all = (career.moments || []).slice(), kinds = ending.kinds || [];
+  const rank = (m) => (kinds.includes(m.kind) ? 100 - kinds.indexOf(m.kind) : 0) + m.w;
+  const pick = all.sort((a, b) => rank(b) - rank(a)).slice(0, 3);
+  return pick.sort((a, b) => (a.week || 0) - (b.week || 0) || a.day - b.day || a.t - b.t);
+}
 const momentLang = () => (typeof LANG !== 'undefined' && LANG === 'en') ? 'en' : 'zh';
 /* Fill {name} slots; missing slots become ''. */
 function momentFill(tpl, data) { return String(tpl).replace(/\{(\w+)\}/g, (_, k) => data[k] == null ? '' : String(data[k])); }
@@ -44,6 +62,7 @@ function momentFor(kinds) {
 }
 /* The one sentence. Templates are tried in order; the first whose conditions hold is filled. */
 function weeklyLine() {
+  if (S && S.endingView) return S.endingView.line;
   if (!MOMENTS.data) return '';
   const f = weeklyFacts(), lang = momentLang();
   for (const tpl of MOMENTS.data.weekly) {
@@ -57,6 +76,7 @@ function weeklyLine() {
 /* A moment's line without its own day/time prefix, for places that already show the time (the timeline, the card). */
 function momentText(m, lang) { return m[lang || momentLang()].replace(/^(周[一二三四五六日]|[A-Z][a-z]+)(\s+\d\d:\d\d)?(（[^）]*）|\([^)]*\))?[，,:：]?\s*/, ''); }
 function weeklyTop(n = 5) {
+  if (S && S.endingView) return S.endingView.moments;
   const all = (S.moments || []).slice().sort((a, b) => b.w - a.w || a.day - b.day || a.t - b.t);
   const pick = [], seen = new Set();
   for (const m of all) { if (pick.length >= n) break; if (seen.has(m.kind) && all.length > n) continue; seen.add(m.kind); pick.push(m); }
