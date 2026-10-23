@@ -1,5 +1,12 @@
 # Changelog
 
+## v13.0 — Skeleton, step 1: the single script cut into files (2026-10-23)
+- `index.html` (6 582 lines, one 5 600-line script) is now an HTML skeleton plus 27 ordered scripts in `src/` and `src/styles.css`; `assets/js/*` moved to `src/`. Same global scope, same order, no module system yet.
+- Three load-order fixes were needed (function declarations no longer hoist across files): the prop-kit wrapping moved next to the builders it wraps (`props-5f.js`, `floors.js`); the kit-GLB callback guards `lighting` in case the model arrives before `main.js`.
+- Proof of no change: the balance harness (4 weeks × 3 careers × 4 policies) matches the pre-split run row for row; smoke, boot and frame checks pass.
+- Tools: `tools/split-check.mjs` (static forward-reference list), `tools/e2e/boot_errors.mjs`.
+- Known, not fixed (v13 freezes gameplay): none found during the cut.
+
 ## v12.3.7 — Copyright (2026-10-23)
 - `LICENSE` (proprietary, zh + en) and `THIRD-PARTY-NOTICES.md` (three.js MIT, Rocketbox MIT, Poly Haven CC0, fonts OFL). Copyright line in the page head, `<meta copyright>`, the title-screen footer, every `assets/js/*.js` header and the README.
 

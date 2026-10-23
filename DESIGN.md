@@ -2,7 +2,24 @@
 
 Living summary of the systems in the build. Full design notes (goal, player experience, data, edge cases, playtest questions) live in the claude.ai project under `design-notes/`.
 
-## Systems and where they live in `index.html`
+## v13.0 Files (the former single script, cut at its section banners)
+`index.html` is the HTML skeleton plus an ordered `<script src>` list; the scripts are classic scripts sharing the global scope (not modules yet — that is v13.1). Load order matters: a file may only *call* into earlier files at load time.
+| File | Was | Holds |
+|---|---|---|
+| `src/engine.js` | ENGINE | renderer, camera, zones, IBL, sky, post-processing |
+| `src/world/materials.js` · `architecture.js` · `props-5f.js` · `skyline.js` | WORLD 5F | textures, PBR, geometry builders, the 5F building and props, the skyline call |
+| `src/characters.js` · `src/portraits.js` | CHARACTERS, PORTRAITS | procedural cast, model loading, busts |
+| `src/world/fx.js` | PARTICLES … PATH FINDING | particles, markers, lights, A* |
+| `src/world/floors.js` · `src/world/campus.js` | 1F–6F, roof, campus, gym | the other zones |
+| `src/content.js` · `src/pro.js` | CONTENT, Pro | hotspots, event framework, science cards, Pro-mode config |
+| `src/rules/data.js` · `src/rules/finance.js` | v5/v6/v9 DATA | dossier, family, ranks, money tables |
+| `src/game.js` · `game-badminton.js` · `game-dialogue.js` · `game-flow.js` | GAME | state, clock, activities, match hook, dialogue and mini games, movement, ending |
+| `src/hud.js` · `src/saves.js` · `src/screens.js` · `src/main.js` | HUD, saves, screens, MAIN LOOP | HUD and navigator, saves and career, title/setup screens, loop, boot, `?debug` / `?sim` bridges |
+| `src/badminton.js` · `bm-venue.js` · `garden.js` · `facade.js` · `music.js` | `assets/js/*` | self-contained kits (IIFEs) |
+| `src/styles.css` | `<style>` | all CSS |
+`node tools/split-check.mjs` lists project identifiers used at load time before their file has loaded; `tools/e2e/boot_errors.mjs` is the runtime check. Proof the cut changed nothing: `tools/balance/out/v13-baseline.json` vs `v13.0.json` — 48 rows identical.
+
+## Systems and where they live in the sources
 | Version | System | Data tables | Logic |
 |---|---|---|---|
 | v6 | Home block, dossier stars, Monday tutorial | `DOSSIER`, `FAMILY`, `HOME_SCENES`, `TUTORIAL` | `goHome`, `familyEvents`, `addStar`, `dossierScore` |
