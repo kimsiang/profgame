@@ -988,8 +988,11 @@ const HAS_POST = !!(THREE.EffectComposer && THREE.RenderPass && THREE.ShaderPass
 const IS_TOUCH = matchMedia('(pointer:coarse)').matches;
 // v11.1: art style (default 'diorama' since v12.3.5). 'real' = real materials, HDRI light and the Rocketbox cast (v11); 'diorama' = the stylised v10 look
 // (chibi cast, procedural floors, cyan trim). Chosen on the title page or the top bar; reloads like the quality setting.
-const ART = (() => { try { const a = localStorage.getItem('prof-art'); if (a === 'real' || a === 'diorama') return a; } catch (e) { /* storage blocked */ } return 'diorama'; })();   // v12.3.5: diorama is the default; a saved choice still wins
-const REAL = ART === 'real';
+const ART = (() => { try { const a = localStorage.getItem('prof-art'); if (a === 'real' || a === 'diorama' || a === 'figurine') return a; } catch (e) { /* storage blocked */ } return 'diorama'; })();   // v12.3.5: diorama is the default; a saved choice still wins
+// PREVIEW 'figurine': realistic rooms (REAL) with the Q版 cast as vinyl figurines instead of toon cartoons.
+const REAL = ART !== 'diorama';          // rooms, floors, light: realistic
+const CAST_REAL = ART === 'real';        // characters: Rocketbox cast
+const FIG = ART === 'figurine';          // characters: Q版 in vinyl PBR, no outlines
 function setArt(a) { try { localStorage.setItem('prof-art', a); } catch (e) { /* storage blocked */ } location.reload(); }
 let QUALITY = (() => { try { const q = localStorage.getItem('prof-day-q'); if (q) return q; } catch (e) { /* storage blocked */ } return IS_TOUCH || innerWidth < 900 ? 'mid' : 'high'; })();
 if (!HAS_POST && QUALITY !== 'low') QUALITY = 'low';
@@ -1863,6 +1866,7 @@ const RIM = { value: new THREE.Color('#ffe0b8') };
 function toon(color, o = {}) {
   const k = color + JSON.stringify(o);
   if (!toonCache[k]) {
+    if (FIG) { toonCache[k] = new THREE.MeshStandardMaterial(Object.assign({ color, roughness: 0.48, metalness: 0, envMapIntensity: 0.9 }, o)); return toonCache[k]; }   // soft vinyl toy
     const m = new THREE.MeshToonMaterial(Object.assign({ color, gradientMap: TOON_GRAD }, o));
     m.onBeforeCompile = (sh) => {
       sh.uniforms.uRim = RIM;
@@ -1883,7 +1887,7 @@ function outlineMat(t) {
   return outlineCache[t];
 }
 function part(geo, m, parent, x = 0, y = 0, z = 0, ol = 0.016) {
-  if (QUALITY === 'low') ol = 0;
+  if (QUALITY === 'low' || FIG) ol = 0;
   const mesh = new THREE.Mesh(geo, m); mesh.position.set(x, y, z); mesh.castShadow = true; mesh.receiveShadow = false; parent.add(mesh);
   if (ol) { const o = new THREE.Mesh(geo, outlineMat(ol)); o.castShadow = false; o.raycast = () => {}; mesh.add(o); }
   return mesh;
@@ -1954,7 +1958,7 @@ function makeChar(o = {}, parent = Z.group) {
   const head = new THREE.Group(); head.position.set(0, 1.2, 0); body.add(head); P.head = head;
   part(geo.head, skin, head, 0, 0, 0, OL(0.018));
   if (!LO) { part(geo.ear, skin, head, -0.265, -0.02, 0, 0.01); part(geo.ear, skin, head, 0.265, -0.02, 0, 0.01); }
-  const faceM = new THREE.MeshToonMaterial({ map: faceTex('normal', o.eye, o.brow), transparent: true, alphaTest: 0.35, gradientMap: TOON_GRAD, polygonOffset: true, polygonOffsetFactor: -1 });
+  const faceM = FIG ? new THREE.MeshStandardMaterial({ map: faceTex('normal', o.eye, o.brow), transparent: true, alphaTest: 0.35, roughness: 0.48, polygonOffset: true, polygonOffsetFactor: -1 }) : new THREE.MeshToonMaterial({ map: faceTex('normal', o.eye, o.brow), transparent: true, alphaTest: 0.35, gradientMap: TOON_GRAD, polygonOffset: true, polygonOffsetFactor: -1 });
   const face = new THREE.Mesh(geo.face, faceM); head.add(face);
   const hs = o.hairStyle || 'short';
   if (hs !== 'bald') { const c = part(geo.cap, hairM, head, 0, 0.012, -0.005, OL(0.016)); c.rotation.x = -0.32; }
@@ -1972,7 +1976,7 @@ function makeChar(o = {}, parent = Z.group) {
   root.userData = Object.assign(root.userData, { P, faceM, face: o, state: 'idle', expr: 'normal', blinkT: 1 + Math.random() * 3, phase: Math.random() * 6, baseY: 0, emote: null });
   parent.add(root);
   // v11.1: everyone without a named model gets a realistic extra from the generic pool (after the caller had its chance to attachModel)
-  if (REAL && !o.portrait) queueMicrotask(() => { if (!root.userData.modelId) attachModel(root, o.model || genericModel(o)); });
+  if (CAST_REAL && !o.portrait) queueMicrotask(() => { if (!root.userData.modelId) attachModel(root, o.model || genericModel(o)); });
   return root;
 }
 const GEN_POOL = { m: ['gen_m1', 'gen_m2', 'gen_m3', 'gen_m4', 's1', 'grad1'], f: ['gen_f1', 'gen_f2', 'gen_f3', 'gen_f4', 's2', 'zhou'] }, GEN_N = { m: 0, f: 0 };
@@ -2083,7 +2087,7 @@ const EXPR_KEYS = ['blink', 'happy', 'worried', 'shock', 'sleepy'];
     if (CHAR_MODELS.s2 && !CHAR_MODELS.min) CHAR_MODELS.min = CHAR_MODELS.s2;   // 小敏 likewise, bay5
     if (CHAR_MODELS.oldprof && !CHAR_MODELS.nb) CHAR_MODELS.nb = CHAR_MODELS.oldprof;
     // v11.1: realistic cast (Microsoft Rocketbox, MIT). Any id in the real manifest replaces its stylised model.
-    if (REAL) try { const rr = await fetch('assets/characters/real/manifest.json'); if (rr.ok) Object.assign(CHAR_MODELS, await rr.json()); } catch (e) { /* stylised cast only */ }
+    if (CAST_REAL) try { const rr = await fetch('assets/characters/real/manifest.json'); if (rr.ok) Object.assign(CHAR_MODELS, await rr.json()); } catch (e) { /* stylised cast only */ }
     MODELS_READY = true;
     for (const [id, m] of Object.entries(CHAR_MODELS)) if (m.portrait) { const img = new Image(); img.onload = () => { PORTRAIT_IMG[id] = { img, p: m.portrait }; }; img.src = m.portrait.url; }
     loadVisibleModels();
@@ -2159,7 +2163,7 @@ function loadModelFor(c) {
       const morph = !!(n.morphTargetInfluences && n.morphTargetInfluences.length);
       n.material = castMat(n.material.name || '', morph); n.castShadow = true; n.frustumCulled = false;
       if (morph) morphs.push(n);
-      if (QUALITY !== 'low' && n.isSkinnedMesh && !/emit/.test(n.material.name || '')) outl.push(n);
+      if (QUALITY !== 'low' && !FIG && n.isSkinnedMesh && !/emit/.test(n.material.name || '')) outl.push(n);
     });
     outl.forEach(n => { const o = new THREE.SkinnedMesh(n.geometry, outlineFor(!!n.morphTargetInfluences)); o.bind(n.skeleton, n.bindMatrix); o.position.copy(n.position); o.quaternion.copy(n.quaternion); o.scale.copy(n.scale);
       if (n.morphTargetInfluences) { o.morphTargetInfluences = n.morphTargetInfluences; o.morphTargetDictionary = n.morphTargetDictionary; } o.frustumCulled = false; o.castShadow = false; n.parent.add(o); });
@@ -6312,7 +6316,7 @@ const QNAME = { high: '高', mid: '中', low: '低' };
 $('qualLbl').textContent = '画质 ' + QNAME[QUALITY];
 $('bQual').onclick = () => { const order = ['high', 'mid', 'low']; const nq = order[(order.indexOf(QUALITY) + 1) % 3]; if ($('bQual').dataset.arm === nq) return setQuality(nq); $('bQual').dataset.arm = nq; $('qualLbl').textContent = `画质 ${QNAME[nq]}？`; toast(`再点一次切换到「${QNAME[nq]}」画质。页面会重新载入，今天的进度会清空。`); };
 // v11.1 art style: title-page pair and a top-bar toggle (two taps, as for quality: it reloads the page)
-const ARTNAME = { real: '写实', diorama: '微缩模型' };
+const ARTNAME = { real: '写实', diorama: '微缩模型', figurine: '手办（预览）' };
 $('artLbl').textContent = ARTNAME[ART];
 $('bArt').onclick = () => { const na = REAL ? 'diorama' : 'real'; if ($('bArt').dataset.arm === na) return setArt(na); $('bArt').dataset.arm = na; $('artLbl').textContent = `${ARTNAME[na]}？`; toast(`再点一次切换到「${ARTNAME[na]}」画风。页面会重新载入，今天的进度会清空。`); };
 document.querySelectorAll('.qualRow [data-art]').forEach(b => { b.classList.toggle('on', b.dataset.art === ART); b.onclick = () => { if (b.dataset.art !== ART) setArt(b.dataset.art); }; });
