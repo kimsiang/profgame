@@ -1,5 +1,27 @@
 # Changelog
 
+## v13.2 — Skeleton, step 3: tested rules, a types seed (2026-10-23)
+- `src/rules/pure.js`: the arithmetic the balance depends on as pure functions — mortgage annuity, dossier score, grade bands, the week score (home cap, wellbeing floor), trust gain. The game calls them; `npm test` (Node's own test runner, no new dependency) checks them against the numbers in the design notes (¥14,946 a month; S 92 / A 84 / B 60 / C 46; never-home weeks capped under A).
+- `src/types.d.ts` + `tsconfig.json` + `npm run typecheck`: the shapes of the state, events, career, balance tables and the rules API as global declarations. New code goes in as `.ts` against them; the existing classic files are described, not yet converted.
+- Proof: balance table identical to the baseline (48 rows); boot clean; dist builds.
+- Not done: JSON Schema for the content files — `tools/validate-data.mjs` already checks shapes and cross references, and a schema would duplicate it until the files change.
+
+## v13.1 — Skeleton, step 2: build, no CDN, self-hosted fonts, Pages workflow (2026-10-23)
+- `npm install` brings three.js r128 and the fonts (Inter, Playfair Display, JetBrains Mono, Rajdhani, Noto Serif SC) from npm; `tools/sync-vendor.mjs` copies what the page needs into `vendor/` (git-ignored). **No request leaves the site any more** — no cdnjs, no jsDelivr, no Google Fonts — which is what mainland players were waiting on.
+- `npm run build` (Vite) → `dist/`: one `game.js` (the 27 scripts concatenated in page order, same global scope), one `three.js`, hashed CSS and font files under `build/`, `assets/` copied. Fonts are woff2, latin + CJK chunks only, 7.6 MB on disk; a page fetches only the chunks it shows.
+- `.github/workflows/pages.yml` builds and publishes `main` to GitHub Pages. **One-time setting needed: Settings → Pages → Source → "GitHub Actions".** Until then the old raw-repo publishing keeps working *only if* `vendor/` exists — it does not in git — so flip the setting right after merging.
+- The source tree still runs as is (`python3 -m http.server 8123` after `npm run sync-vendor`); all e2e scenarios keep working against it. New: `tools/e2e/dist_check.mjs` (dist boots, no failed requests, fonts loaded).
+- `tools/validate-data.mjs` reads `src/` now.
+- Not done, on purpose: converting the files to ES modules and per-zone code splitting. The game code is 590 KB; the 84 MB that matter are assets and already load lazily. Modules come with v13.2's typed files, one file at a time.
+
+## v13.0 — Skeleton, step 1: the single script cut into files (2026-10-23)
+- `index.html` (6 582 lines, one 5 600-line script) is now an HTML skeleton plus 27 ordered scripts in `src/` and `src/styles.css`; `assets/js/*` moved to `src/`. Same global scope, same order, no module system yet.
+- Three load-order fixes were needed (function declarations no longer hoist across files): the prop-kit wrapping moved next to the builders it wraps (`props-5f.js`, `floors.js`); the kit-GLB callback guards `lighting` in case the model arrives before `main.js`.
+- Proof of no change: the balance harness (4 weeks × 3 careers × 4 policies) matches the pre-split run (`tools/balance/out/v12.5-baseline.json`) row for row; smoke and boot checks pass.
+- The cut was redone on top of v12.5 (`tools/split-check.mjs` and a banner-based splitter), so the v12.4/v12.5 changes made in parallel are in.
+- Tools: `tools/split-check.mjs` (static forward-reference list), `tools/e2e/boot_errors.mjs`.
+- Known, not fixed (v13 freezes gameplay): none found during the cut.
+
 ## v12.5 — Q版 only (2026-10-23)
 Kim: "写实人物 looks ugly. Remove them all together."
 - The realistic (Rocketbox) cast is gone: its models, animation packs, portraits, the conversion tools (`tools/rocketbox/`) and screenshot scripts. The repo is 52 MB lighter.

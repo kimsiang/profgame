@@ -1,0 +1,30 @@
+{
+  "name": "my-advisors-week",
+  "private": true,
+  "version": "13.1.0",
+  "description": "导师的一周 / My Advisor's Week — © 2026 Khaw Kim Siang. All rights reserved. See LICENSE.",
+  "type": "module",
+  "scripts": {
+    "dev": "python3 -m http.server 8123",
+    "sync-vendor": "node tools/sync-vendor.mjs",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node --test tests/*.test.cjs",
+    "typecheck": "tsc --noEmit",
+    "validate": "node tools/validate-data.mjs",
+    "split-check": "node tools/split-check.mjs",
+    "balance": "cd tools/e2e && node run.mjs balance.mjs"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0",
+    "typescript": "^5.6.0"
+  },
+  "dependencies": {
+    "three": "0.128.0",
+    "@fontsource/inter": "^5.1.0",
+    "@fontsource/playfair-display": "^5.1.0",
+    "@fontsource/jetbrains-mono": "^5.1.0",
+    "@fontsource/rajdhani": "^5.1.0",
+    "@fontsource/noto-serif-sc": "^5.1.0"
+  }
+}
