@@ -4,7 +4,7 @@ const OUT = new URL('./out/music/', import.meta.url).pathname;
 export default async ({ page, sleep }) => {
   fs.mkdirSync(OUT, { recursive: true });
   await page.goto('http://localhost:8123/tools/rocketbox/portrait.html', { waitUntil: 'load', timeout: 120000 });
-  await page.addScriptTag({ url: 'http://localhost:8123/assets/js/music.js' });
+  await page.addScriptTag({ url: 'http://localhost:8123/src/music.js' });
   const data = JSON.parse(fs.readFileSync(new URL('../../assets/data/music.json', import.meta.url)));
   for (const t of data.tracks) {
     const res = await page.evaluate(async (data, id) => {

@@ -6,7 +6,9 @@ import fs from 'fs';
 import path from 'path';
 const ROOT = path.resolve(new URL('..', import.meta.url).pathname);
 const DIR = path.join(ROOT, 'assets/data/content');
-const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+// v13.0: the game code lives in src/ (ordered as in index.html); "html" is the page plus all of it, as the one script it used to be.
+const page = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+const html = page + '\n' + [...page.matchAll(/<script src="(src\/[^"]+)"><\/script>/g)].map((m) => fs.readFileSync(path.join(ROOT, m[1]), 'utf8')).join('\n');
 const J = (f) => JSON.parse(fs.readFileSync(path.join(DIR, f), 'utf8'));
 const errs = [], warns = [];
 const err = (where, msg) => errs.push(`${where}: ${msg}`);

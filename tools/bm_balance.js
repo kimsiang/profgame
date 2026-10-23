@@ -1,6 +1,6 @@
 // Balance runs for the v10 badminton match: a bot swings with human-like timing noise.
 // Usage: node tools/bm_balance.js [matches=200] [sigma=0.085]
-const BMCore = require('../assets/js/badminton.js');
+const BMCore = require('../src/badminton.js');
 const D = require('../assets/data/badminton.json');
 const N = +process.argv[2] || 200, SIG = +process.argv[3] || 0.085;
 
