@@ -1,5 +1,8 @@
 # Changelog
 
+## v12.3.4 — Disclaimer (2026-10-23)
+- Title screen, under the English name: 虚构设定，不针对任何单位和个人 (zh + en). The footer's existing fiction note says the same in full.
+
 ## v12.3.3 — No more ghosts; badminton names (2026-10-23)
 - 小敏 (博士一年级) is a member of the group (`min`): seated at bay5, trust, memory lines, lunch companion. The anonymous `s2` figure that sat there is hidden.
 - 陈老师 (化学系) now shows her bust in dialogs (she already had a figure on the tennis court).

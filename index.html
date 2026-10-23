@@ -299,6 +299,7 @@ body:not(.bm) #bmHelp{display:none}
 .emblem{width:74px;height:74px}
 .hero h1{font:900 clamp(48px,8.6vw,108px)/1 var(--serif-cn);margin:16px 0 4px;letter-spacing:.01em;text-wrap:balance;background:linear-gradient(180deg,#ffffff 30%,#9fd9ff);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 30px rgba(0,169,244,.35))}
 .hero .en{font:700 clamp(14px,1.8vw,20px) var(--tech);letter-spacing:.5em;color:var(--cyan);text-transform:uppercase}
+.hero .fict{font-size:12px;font-weight:300;letter-spacing:.08em;color:#8fb3c6;margin-top:8px}
 .hero .lede{font-size:clamp(14px,1.5vw,16px);font-weight:300;line-height:1.8;max-width:600px;color:#cfe2ee;margin-top:18px}
 .modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:14px;margin-top:30px;max-width:740px}
 .mode{text-align:left;border:1px solid var(--line);padding:20px;background:var(--panel);display:flex;flex-direction:column;gap:8px;transition:.2s;min-width:0;clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px);position:relative}
@@ -674,6 +675,7 @@ body.talking #lbT,body.talking #lbB{height:7vh}
     <svg class="emblem" viewBox="0 0 80 80" aria-hidden="true"><defs><linearGradient id="eg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#00A9F4"/><stop offset="1" stop-color="#2251FF"/></linearGradient></defs><polygon points="40,3 75,22 75,58 40,77 5,58 5,22" fill="rgba(5,28,44,.6)" stroke="url(#eg)" stroke-width="2.5"/><ellipse cx="40" cy="40" rx="26" ry="10" fill="none" stroke="#FFC857" stroke-width="1.5" transform="rotate(-25 40 40)"/><text x="40" y="51" text-anchor="middle" font-family="Georgia,serif" font-size="34" font-weight="700" fill="#EAF4FB">μ</text></svg>
     <h1>导师的一周</h1>
     <div class="en">My Advisor's Week</div>
+    <div class="fict">虚构设定，不针对任何单位和个人 · A work of fiction; no real institution or person is depicted.</div>
     <p class="lede">从周一到周日，一位物理教授的一整周：约 150 件大大小小的事，从组会、上课、研究生复试，到高压报警、液氮泄漏、钓鱼邮件。周五 23:59 基金截止，周日 23:59 论文修改稿截止。还要记得吃饭、喝咖啡、上厕所，以及回家睡觉。</p>
     <div class="modes">
       <button class="mode" id="modeBasic" type="button">
@@ -700,7 +702,7 @@ body.talking #lbT,body.talking #lbB{height:7vh}
       <span style="margin-left:14px">画风</span>
       <button class="ib" type="button" data-art="real" title="写实：真实材质、真实光照、写实人物">写实</button><button class="ib" type="button" data-art="diorama" title="微缩模型：风格化场景和 Q 版人物">微缩模型</button>
     </div>
-    <p class="foot">教育模拟游戏，人物与情节均为虚构。科普卡中的数据来自公开资料；实验室安全与心理健康内容仅为常识性介绍，遇到真实情况请联系所在单位的安全与心理支持部门。</p>
+    <p class="foot">教育模拟游戏。虚构设定，不针对任何单位和个人：人物、机构与情节均为虚构，如有雷同纯属巧合。科普卡中的数据来自公开资料；实验室安全与心理健康内容仅为常识性介绍，遇到真实情况请联系所在单位的安全与心理支持部门。</p>
   </div>
 </section>
 
