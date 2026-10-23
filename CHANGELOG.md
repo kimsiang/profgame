@@ -1,5 +1,13 @@
 # Changelog
 
+## v12.5 — Q版 only (2026-10-23)
+Kim: "写实人物 looks ugly. Remove them all together."
+- The realistic (Rocketbox) cast is gone: its models, animation packs, portraits, the conversion tools (`tools/rocketbox/`) and screenshot scripts. The repo is 52 MB lighter.
+- The style toggle is gone from the title page and the top bar. Everyone plays with the Q版 figurines in the realistic building (v12.4).
+- Code removed: `loadRealFor`, the generic realistic extras, the Rocketbox bone and racket-grip branches in badminton, `setArt` and the `prof-art` setting (an old value is simply ignored).
+- Rocketbox removed from `THIRD-PARTY-NOTICES.md` and the title-page credits.
+- Test: open the game; no 人物 / 画风 buttons; 5F, campus and a badminton match all show Q版 figures.
+
 ## v12.4 — One building, two casts (2026-10-23)
 Kim: "I only want to maintain one." The two styles no longer have separate rooms.
 - Everyone gets the realistic building: Poly Haven floors and walls, clear glass, steel thresholds, grey slab, warm ceiling light, indoor and sky HDRIs.
