@@ -41,3 +41,20 @@ test('trust: ×1.5 on a 学生优先 day, gains only', () => {
   assert.equal(Rules.trustGain(6, 'grant'), 6);
   assert.equal(Rules.trustGain(-6, 'students'), -6);
 });
+
+test('endings: leave on three failed grants, two lost students or three collapse weeks; teacher and industry need the chosen flag', () => {
+  const E = JSON.parse(fs.readFileSync(path.join(__dirname, '../assets/data/content/endings.json'), 'utf8')).endings;
+  const wk = (o) => Object.assign({ grade: 'B', grantOk: true, collapses: 0, trust: 60, k: { teaching: 60 } }, o);
+  const none = { history: [wk({}), wk({})], lost: [], flags: {} };
+  assert.equal(Rules.ending(Rules.careerFacts(none), E), null);
+  assert.equal(Rules.ending(Rules.careerFacts({ history: [wk({ grantOk: false }), wk({ grantOk: false }), wk({ grantOk: false })], lost: [], flags: {} }), E).id, 'leave');
+  assert.equal(Rules.ending(Rules.careerFacts({ history: [wk({ grantOk: true }), wk({ grantOk: false }), wk({ grantOk: false })], lost: [], flags: {} }), E), null);
+  assert.equal(Rules.ending(Rules.careerFacts({ history: [wk({})], lost: ['lin', 'zhou'], flags: {} }), E), null);                 // not in the first week
+  assert.equal(Rules.ending(Rules.careerFacts({ history: [wk({}), wk({}), wk({})], lost: ['lin', 'zhou'], flags: {} }), E).id, 'leave');
+  assert.equal(Rules.ending(Rules.careerFacts({ history: [wk({ collapses: 2 }), wk({ collapses: 3 }), wk({ collapses: 2 })], lost: [], flags: {} }), E).id, 'leave');
+  const good = [wk({ trust: 80, k: { teaching: 80 } }), wk({ trust: 80, k: { teaching: 78 } }), wk({ trust: 80, k: { teaching: 76 } }), wk({ trust: 80, k: { teaching: 90 } })];
+  assert.equal(Rules.ending(Rules.careerFacts({ history: good, lost: [], flags: {} }), E), null);                    // no choice made yet
+  assert.equal(Rules.ending(Rules.careerFacts({ history: good, lost: [], flags: { end_teach: 1 } }), E).id, 'teacher');
+  assert.equal(Rules.ending(Rules.careerFacts({ history: good.slice(0, 3), lost: [], flags: { end_teach: 1 } }), E), null);   // needs four weeks
+  assert.equal(Rules.ending(Rules.careerFacts({ history: [wk({})], lost: [], flags: { end_industry: 1 } }), E).id, 'industry');
+});

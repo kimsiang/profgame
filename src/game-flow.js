@@ -48,10 +48,11 @@ function endDay(reason) {
   for (const ev of activeEvents()) { ev.state = 'expired'; settleEvent(ev); }
   const d = S.day, total = S.events.length, done = S.events.filter(e => e.state === 'resolved').length;
   S.totals.done += done; S.totals.all += total; S.totals.missed += total - done;
-  S.lastEnd = reason === 'home' && S.t >= hm(22) ? 'time' : reason; if (reason === 'collapse') { S.collapses++; S.wb = clamp(S.wb - 15); }
+  S.lastEnd = reason === 'home' && S.t >= hm(22) ? 'time' : reason; if (reason === 'collapse') { S.collapses++; S.wb = clamp(S.wb - 15); moment('collapse'); }
   S.endT = S.t; S.dayBlocks = S.blockUse.map(u => topCat(u));
   // v6: the family drifts on nights you are not home; weekends count double.
   if (!S.homeToday) { const k = d >= 5 ? 2 : 1; Object.keys(S.fam).forEach(f => { const m = S.fin && ((f === 'house' && S.fin.help) ? 0 : (f === 'child' && S.fin.tutor) ? 0.5 : 1); S.fam[f] = clamp(S.fam[f] - FAM_DRIFT * k * (m ?? 1)); }); S.famSkip++; logIt(d >= 5 ? '周末也没回家。' : '又是一个没回家的晚上。'); } else S.famSkip = 0;
+  if (!S.homeToday && reason !== 'collapse') moment(d >= 4 ? 'nohome_w' : 'nohome');   // v14: Friday and the weekend count double
   S.atHome = false;
   KPI.forEach(([k]) => { S.k[k] = S.k[k] - (S.k[k] - 50) * BAL.kpiNight; });   // v12.3: standing fades a little overnight
   // Attention is a resource: people you did not help today drift a little.
@@ -61,7 +62,7 @@ function endDay(reason) {
   Object.keys(S.trust).forEach(id => {
     if (S.lost.includes(id) || S.trust[id] >= 30) return;
     if (S.crisisSeen[id] && d < 6) { loseStudent(id); logIt(`${STUDENTS[id].n}的信任跌到了谷底，决定离开课题组。`); }
-    else if (d < 6) { S.crisis[id] = d + 1; S.crisisSeen[id] = 1; logIt(`${STUDENTS[id].n}今天一直没怎么说话。`); }
+    else if (d < 6) { S.crisis[id] = d + 1; S.crisisSeen[id] = 1; moment('crisis', { who: STUDENTS[id].n }); logIt(`${STUDENTS[id].n}今天一直没怎么说话。`); }
   });
   if (d === 3 && (S.intents.filter(x => x === 'students').length >= 2 || avgTrust() >= 75)) S.flags.students_week = 1;
   if (d === 4 && !S.submitted) { applyFx({ rep: -10, research: -6 }); logIt(`基金申请书没有提交（停在 ${Math.floor(S.grant)}%）。明年再来。`); }

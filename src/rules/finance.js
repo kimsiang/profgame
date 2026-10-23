@@ -54,7 +54,8 @@ const FIN_EVENTS = {};   // v12.1: filled from assets/data/content by loadConten
 // Week's cash movement from events, gifts and daily spends, so the statement can say where it went.
 function finMove(d, label) {
   const F = S && S.fin; if (!F || !d) return;
-  F.cash += d; if (d > 0) F.wk.earn += d; else F.wk.spend -= d;
+  const was = F.cash; F.cash += d; if (d > 0) F.wk.earn += d; else F.wk.spend -= d;
+  if (was >= 0 && F.cash < 0) moment('debt');
   if (label) F.wk.items.push([label, d]);
 }
 function finSpend(n, label, fx) {
@@ -64,9 +65,9 @@ function finSpend(n, label, fx) {
 // @fin_* flags from choices. They act on the ledger and are removed so they never gate other events.
 function finFlag(f) {
   const F = S.fin; delete S.flags[f];
-  if (f === 'fin_consult') { F.consult = S.week; F.consultHalf = false; F.log.push([S.week, '接了一个横向课题']); }
+  if (f === 'fin_consult') { F.consult = S.week; F.consultHalf = false; F.log.push([S.week, '接了一个横向课题']); if (S.career) S.career.consultN = (S.career.consultN || 0) + 1; }
   else if (f === 'fin_consult_half') F.consultHalf = true;
-  else if (f === 'fin_reimb') F.reimb.push({ week: S.week, amt: 800 });
+  else if (f === 'fin_reimb') { F.reimb.push({ week: S.week, amt: 800 }); moment('reimb'); }
   else if (f === 'fin_book') F.bookDone = true;
   else if (f === 'fin_sellcar' && F.car) { const value = FIN.car.price * Math.pow(1 - FIN.car.dep, FIN.car.months - F.car.left), gain = value - F.car.bal; F.car = null; F.commute = 'metro'; finMove(Math.round(gain), '卖车（还清车贷后）'); F.log.push([S.week, '卖了车']); }
   else if (f === 'fin_buy') {
@@ -204,7 +205,7 @@ function promote(c, week) {
   while (c.rank < RANKS.length - 1 && c.pts >= RANKS[c.rank + 1].pts) {
     const un = reqUnmet(RANKS[c.rank + 1], c);
     if (un.length) return un;
-    c.rank++; (c.rankLog = c.rankLog || []).push({ week, n: RANKS[c.rank].n });
+    c.rank++; (c.rankLog = c.rankLog || []).push({ week, n: RANKS[c.rank].n }); moment('promote', { n: RANKS[c.rank].n });
   }
   return null;
 }

@@ -224,6 +224,7 @@ function bmAfter(opp, win, ctx, score) {
   if (ctx && ctx.event === 'chem') {
     applyFx(win ? { team: 3, rep: 3, wellbeing: 2 } : { rep: 1 });
     logIt(win ? `决胜单打 ${score} 赢了化学系的阿龙，物理系拿下研究生羽毛球赛。` : `决胜单打 ${score} 输给化学系的阿龙。阿丹说明年再来。`);
+    moment('match', { win: win ? '赢了' : '输给', who: '化学系的阿龙', score });
     if (win) S.flags.chemWin = 1;
   }
   ACT.badminton(30);

@@ -20,6 +20,20 @@
       const homeCap = w.homeNights < 2; if (homeCap) score = Math.min(score, bal.grades[1] - 1);
       return { score, grade: Rules.gradeOf(score, bal.grades), homeCap };
     },
+    /* Career facts the endings test (v14.2), from the week history and the carried flags. */
+    careerFacts(c) {
+      const h = c.history || [], last4 = h.slice(-4), fl = c.flags || {};
+      let streak = 0; for (let i = h.length - 1; i >= 0; i--) { if (h[i].grantOk) break; streak++; }
+      let cw = 0; for (let i = h.length - 1; i >= 0; i--) { if ((h[i].collapses || 0) >= 2) cw++; else break; }
+      const teach = last4.length === 4 ? last4.reduce((a, x) => a + ((x.k && x.k.teaching) || 0), 0) / 4 : 0;
+      return { grantFailStreak: streak, lost: (c.lost || []).length, collapseWeeks: cw, teachAvg4: teach, trust: h.length ? (h[h.length - 1].trust || 0) : 0, consultN: c.consultN || 0, flags: fl, weeks: h.length };
+    },
+    /* The first ending whose conditions hold, or null. `any` = at least one of the listed condition sets; numbers are minimums. */
+    ending(facts, endings) {
+      const holds = (w) => Object.entries(w).every(([k, v]) => k === 'any' ? v.some(holds) : k === 'flag' ? !!facts.flags[v] : (facts[k] || 0) >= v);
+      for (const e of endings) if (e.when && holds(e.when)) return e;
+      return null;
+    },
     /* Trust gained from a positive delta is ×1.5 on a 学生优先 day (v5). */
     trustGain(n, intent) { return Math.round(n * (intent === 'students' && n > 0 ? 1.5 : 1)); },
   };

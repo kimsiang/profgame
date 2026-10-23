@@ -261,7 +261,19 @@
   <div class="wrap">
     <div class="eyebrow" id="endEyebrow">23:59 · 熄灯</div>
     <h2 class="sec" id="endHead">今天结束了</h2>
-    <div class="endGrid">
+    <!-- v14.0: the week review opens with one sentence and five moments; the dashboard below is behind 看详细 -->
+    <div class="weekly hidden" id="weekly">
+      <div class="row" style="gap:22px;align-items:flex-end"><div class="grade" id="wkGrade">A</div><div><div class="gradeTitle" id="wkTitle"></div><div class="wkSub" id="wkSub"></div></div></div>
+      <p class="wkLine" id="wkLine"></p>
+      <div class="wkMoments" id="wkMoments"></div>
+      <div class="row" style="margin-top:22px;gap:10px;flex-wrap:wrap">
+        <button class="btn gold" id="wkAgain" type="button">开始下一周 ▶</button>
+        <button class="btn ghost" id="wkDetail" type="button">看详细 ▾</button>
+        <button class="btn ghost" id="wkCard" type="button">保存卡片</button>
+        <button class="btn ghost" id="wkHome" type="button">回到首页</button>
+      </div>
+    </div>
+    <div class="endGrid" id="endGrid">
       <div>
         <div class="row" style="gap:22px;align-items:flex-end"><div class="grade" id="endGrade">A</div><img id="endImg" alt="" style="width:120px;height:150px;object-fit:cover"></div>
         <div class="gradeTitle" id="endTitle">稳健的长聘教授</div>
@@ -401,6 +413,7 @@
 <script src="vendor/three/examples/js/postprocessing/BokehPass.js"></script>
 <script src="vendor/three/examples/js/loaders/GLTFLoader.js"></script>
 <script src="vendor/three/examples/js/utils/SkeletonUtils.js"></script>
+<script src="vendor/qrcode/qrcode.js"></script>
 <script src="vendor/three/examples/js/environments/RoomEnvironment.js"></script>
 <script src="vendor/three/examples/js/loaders/RGBELoader.js"></script>
 <script src="vendor/three/examples/js/geometries/RoundedBoxGeometry.js"></script>
@@ -424,6 +437,8 @@
 <script src="src/rules/pure.js"></script>
 <script src="src/rules/data.js"></script>
 <script src="src/rules/finance.js"></script>
+<script src="src/moments.js"></script>
+<script src="src/weekly-card.js"></script>
 <script src="src/game.js"></script>
 <script src="src/game-badminton.js"></script>
 <script src="src/game-dialogue.js"></script>

@@ -18,7 +18,7 @@ const hsBlock = html.slice(html.indexOf('const HS = {'), html.indexOf('};', html
 const HOTSPOTS = new Set([...hsBlock.matchAll(/^\s+(\w+): \{ x:/gm)].map((m) => m[1]));
 const FXKEYS = new Set([...html.match(/const FXNAME = \{([^}]*)\}/)[1].matchAll(/(\w+):/g)].map((m) => m[1]));
 const SPEAKERS = new Set([...html.match(/const SPEAKERS = \{([^}]*)\}/)[1].matchAll(/'([^']+)':/g)].map((m) => m[1]));
-const codeFlags = new Set([...html.matchAll(/S\.flags\.(\w+) = |flags\.(\w+) = 1|S\.flags\[['"](\w+)['"]\]|finFlag\('(\w+)'\)|flag: '(\w+)'/g)].map((m) => m.slice(1).find(Boolean)));
+const codeFlags = new Set([...html.matchAll(/S\.flags\.(\w+) = |flags\.(\w+) = 1|S\.flags\[['"](\w+)['"]\]|finFlag\('(\w+)'\)|flag: '(\w+)'|out\.(\w+_ready) = 1/g)].map((m) => m.slice(1).find(Boolean)));
 const MOODS = new Set(['normal', 'happy', 'worried', 'shock', 'sleepy']);
 const ACTS = new Set([...html.slice(html.indexOf('const ACT = {'), html.indexOf('\n};', html.indexOf('const ACT = {'))).matchAll(/^  (\w+): /gm)].map((m) => m[1]));
 
