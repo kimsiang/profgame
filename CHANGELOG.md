@@ -1,5 +1,11 @@
 # Changelog
 
+## v12.3.5 — Diorama by default (2026-10-23)
+- New players start in 微缩模型 (stylised diorama, Q 版人物). 写实 is still one tap away on the title page or the top bar.
+- Players who already picked a style keep it (`prof-art` in localStorage is read first).
+- Title-page buttons reordered: 微缩模型 first, marked 默认. `real_shot.mjs` now sets `prof-art=real` itself.
+- Test: clear site data (or a private window), open the game → 5F is the diorama and the top bar reads 微缩模型.
+
 ## v12.3.4 — Disclaimer (2026-10-23)
 - Title screen, under the English name: 虚构设定，不针对任何单位和个人 (zh + en). The footer's existing fiction note says the same in full.
 

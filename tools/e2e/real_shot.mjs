@@ -2,7 +2,7 @@
 const SHOT = new URL('./out/', import.meta.url).pathname;
 export default async ({ page, sleep }) => {
   const ev = (code) => page.evaluate((c) => window.__prof(c), code);
-  await page.evaluateOnNewDocument((q) => { try { localStorage.clear(); localStorage.setItem('prof-day-q', q); } catch (e) {} }, process.env.Q || 'mid');
+  await page.evaluateOnNewDocument((q) => { try { localStorage.clear(); localStorage.setItem('prof-day-q', q); localStorage.setItem('prof-art', 'real'); } catch (e) {} }, process.env.Q || 'mid');
   await page.goto('http://localhost:8123/index.html?debug', { waitUntil: 'load', timeout: 180000 });
   await sleep(3000);
   await ev(`setup.mode = 'basic'; startGame();`); await sleep(2500);
